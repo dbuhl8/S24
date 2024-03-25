@@ -1,0 +1,14 @@
+ Hey I'm processor            0  and I've just sent            1  TO   processor            1  on msg :           1
+ Hey I'm processor            0  and I've just recv            2  from processor            1  on msg :           2
+ Hey I'm processor            0  and I've just sent            3  TO   processor            1  on msg :           3
+ Hey I'm processor            0  and I've just recv            4  from processor            1  on msg :           4
+ Hey I'm processor            0  and I've just sent            5  TO   processor            1  on msg :           5
+ Hey I'm processor            0  and I've just recv            6  from processor            1  on msg :           6
+ Hey I'm processor            0  and I've just sent            7  TO   processor            1  on msg :           7
+ Hey I'm processor            1  and I've just recv            1  FROM processor            0  on msg :           1
+ Hey I'm processor            1  and I've just sent            2  to   processor            0  on msg :           2
+ Hey I'm processor            1  and I've just recv            3  FROM processor            0  on msg :           3
+ Hey I'm processor            1  and I've just sent            4  to   processor            0  on msg :           4
+ Hey I'm processor            1  and I've just recv            5  FROM processor            0  on msg :           5
+ Hey I'm processor            1  and I've just sent            6  to   processor            0  on msg :           6
+ Hey I'm processor            1  and I've just recv            7  FROM processor            0  on msg :           7

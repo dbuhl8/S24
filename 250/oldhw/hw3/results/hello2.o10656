@@ -1,0 +1,27 @@
+
+
+           [1;37mWelcome [0;32mto [1;35mGrape[1;37m!
+           UCSCs Supercomputer with old programs :)
+
+
+   [1;37m[Aliases]
+   ---------
+   [1;37mcd250 [1;35m∝ [0;32mGo to Fortran folder for AM250
+   [1;37mc4 [1;35m∝ [0;32mCompile following Fortran file
+   [1;37mv4 [1;35m∝ [0;32mRun last compiled Fortran file
+   [1;37mbconf [1;35m∝ [0;32mOpen Bash config file
+   [1;37mrbash [1;35m∝ [0;32mSource Bash config file
+   [1;37mvconf [1;35m∝ [0;32mOpen Vim config file
+   [1;37mcdvcf [1;35m∝ [0;32mOpen Vim Plugged Folder
+   [1;37mm4 [1;35m∝ [0;32mCompile MPI fortran file
+   [1;37mo4 [1;35m∝ [0;32mCompile OpenMP fortran file
+   [1;37mviewjob [1;35m∝ [0;32mView job queue on grape
+
+ Hello world from processor            4  out of            8
+ Hello world from processor            5  out of            8
+ Hello world from processor            6  out of            8
+ Hello world from processor            0  out of            8
+ Hello world from processor            1  out of            8
+ Hello world from processor            2  out of            8
+ Hello world from processor            3  out of            8
+ Hello world from processor            7  out of            8

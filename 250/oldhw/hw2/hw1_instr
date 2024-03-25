@@ -1,0 +1,34 @@
+
+
+Author: Dante Buhl
+Date: 4/21/23
+
+Instructions to Compile and Run trap.f90 and ones.f90:
+
+trap.f90:
+
+1. Compile the fortran file, "gfortran -o output.out trap.f90"
+
+2. Run the output file, "./output.out"
+
+3. Enter the values requested in the order: (start of interval, end of interval, step size, function-value)
+    Note: The function value determines whether the function x^2 or sin(x) is used. 
+        x^2 -> f = 1
+        sin(x) -> f = 2
+    Note: You have to manually type out as many digits of Pi that you want to use.
+
+4. An approximate value of the integral will be printed. 
+
+
+ones.f90:
+
+1. Compile the fortran file, "gfortran -o output.out ones.f90"
+
+2. Run the output file, "./output.out"
+
+3. Enter an integer value, n, for the size of the square matrix, and a seed for the random number generator.
+
+4. The program will display a randomly-generated, square matrix A and then a square matrix B. Each cell of B will have a 1
+   if only 3 of the corresponding adjacent cells in A are ones.
+
+

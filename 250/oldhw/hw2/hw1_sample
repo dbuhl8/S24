@@ -1,0 +1,26 @@
+
+
+Author: Dante Buhl
+Date: 4/21/23
+
+Sample Outputs from Code:
+
+trap.f90:
+
+Given the values (a, b, n, f) = (0, 2, 30, 1), the program returns: 2.66814
+
+Given values (0, 2, 5, 1), the program returns: 2.720003
+
+Given values (0, 2, 15, 1), the program returns: 2.6725931
+
+Given the values (a, b, n, f) = (0, 3.141592653589, 30, 2), the program returns: 1.9926991
+
+Given values (0, 3.141592653589, 5, 2), the program returns: 1.7491074
+
+Given values (0, 3.141592653589, 15, 2), the program returns: 1.9709114
+
+
+
+ones.f90:
+
+A sample output is seen in the file, ones_output.txt
