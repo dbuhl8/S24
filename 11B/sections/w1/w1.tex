@@ -1,0 +1,117 @@
+\documentclass{beamer}
+
+\title{Section Week 1}
+\author{TA: Dante Buhl}
+\institute{UCSC AM-11B}
+\graphicspath{ {./images/} }
+\usepackage{verbatim}
+\usetheme{Dresden}
+\usecolortheme{spruce}
+\usefonttheme{serif}
+\usepackage{amsmath}
+\usepackage{pifont}
+\usepackage{hyperref}
+
+
+\begin{document}
+
+\newcommand{\bmp}[1]{\begin{minipage}{#1\textwidth}}
+\newcommand{\emp}{\end{minipage}}
+
+\frame{\titlepage}
+
+\section{Agenda}
+\begin{frame}{Plan for Today}
+    Topics to Cover
+    \begin{itemize}
+        \item Introduction
+        \item Differentiation Review
+        \item Antiderivatives and Integrals
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Learning Outcomes}
+    \begin{itemize}
+        \item Connecting the ideas of differentiation and integration
+        \item Understanding the notation used for anti-derivatives and integrals.
+    \end{itemize}
+\end{frame}
+
+\section{Activity / Review}
+
+\begin{frame}{Derivative Practice!}
+
+    \begin{enumerate}
+
+        \item Power Rule\[\frac{d}{dx} x^9 + 2x^2 + 4200000x\]
+
+        \item Chain Rule\[\frac{d}{dx} \ln(x^9 + 2x^2 + 4200000x)\]
+
+        \item Product Rule\[\frac{d}{dx} 4x^3e^x\]
+    
+        \item Quotient Rule\[\frac{d}{dx} \frac{x+2}{\sqrt{x}}\]
+
+        \item Chain Rule\[\frac{d}{dx} \sqrt[3]{4x + x^3}\]
+
+    \end{enumerate}
+
+\end{frame}
+
+\begin{frame}{Antiderivatives / Integrals}
+
+    Lets dissect the basic notation!
+
+    \[
+        \int f(x) dx, \quad \int_a^b f(x) dx
+    \]
+    
+    The example can be read as, ``the integral of $f(x)$ with respect to $x$ from $a$ to $b$''.
+
+    \begin{itemize}
+
+        \item $f(x)$ is denoted the ``integrand''
+
+        \item $dx \sim$ ``infinitesimal'', indicates which variable to integrate with
+
+        \item $a, b$ are the lower and upper ``limits of integration''
+
+    \end{itemize}
+
+    Note: the left is an indefinite integral, and the right is a definite integral.
+
+\end{frame}
+
+
+\begin{frame}{Antiderivatives?????}
+
+    There is a basic relationship between derivatives and integrals. This is summarized by the Fundamental Theorem of Calculus. We have, 
+    
+    \[
+        \frac{d}{dx} F(x) = f(x), \quad \text{f is the derivative of F}
+    \]
+
+    \[
+        \int f(x) dx = F(x) + C, \quad \text{F is the antiderivative of f}
+    \]
+
+\end{frame}
+
+\begin{frame}{Lets Practice}
+
+    \begin{enumerate}
+
+        \item \[\int 9x^8 + 4x + 4200000 dx\]
+
+        \item \[\int \frac{9x^8 + 4x + 4200000}{x^9 + 2x^2 + 4200000x}dx\]
+
+        \item \[\int e^x\left(12x^2 + 4x^3\right)dx\]
+    
+        \item \[\int \frac{1}{2}x^{-\frac{1}{2}} - x^{-\frac{3}{2}}\]
+
+        \item \[\int \frac{4 + 3x^2}{3\left(4x + x^3\right)^{2/3}}\]
+
+    \end{enumerate}
+
+\end{frame}
+
+\end{document}
