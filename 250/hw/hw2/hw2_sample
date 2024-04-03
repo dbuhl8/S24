@@ -1,0 +1,97 @@
+
+
+ -------------------------------------------------------
+
+  Question 1: Trapezoidal Rule
+
+ Please enter in the following order separated by commas: interval start, interval end, number of data points, and the function number (2 = sin, 1 = x^2)
+0, 3.1415926535, 10000, 2
+ The integral is approximated to    2.000 after 10000 iterations.
+
+  Convergence Trials for sin(x)
+
+ Actual Value: 2
+Iterations:    10, Computed Value:    1.935
+Iterations:    20, Computed Value:    1.984
+Iterations:    30, Computed Value:    1.993
+Iterations:    40, Computed Value:    1.996
+Iterations:    50, Computed Value:    1.997
+Iterations:    60, Computed Value:    1.998
+Iterations:    70, Computed Value:    1.999
+Iterations:    80, Computed Value:    1.999
+Iterations:    90, Computed Value:    1.999
+Iterations:   100, Computed Value:    1.999
+Iterations:   110, Computed Value:    1.999
+Iterations:   120, Computed Value:    2.000
+Iterations:   130, Computed Value:    2.000
+Iterations:   140, Computed Value:    2.000
+Iterations:   150, Computed Value:    2.000
+Iterations:   160, Computed Value:    2.000
+Iterations:   170, Computed Value:    2.000
+Iterations:   180, Computed Value:    2.000
+Iterations:   190, Computed Value:    2.000
+Iterations:   200, Computed Value:    2.000
+Iterations:   210, Computed Value:    2.000
+Iterations:   220, Computed Value:    2.000
+Iterations:   230, Computed Value:    2.000
+Iterations:   240, Computed Value:    2.000
+Iterations:   250, Computed Value:    2.000
+
+  Convergence Trials for x^2
+
+ Actual Value: 8/3 ~ 2.6666
+Iterations:    10, Computed Value:    2.680
+Iterations:    20, Computed Value:    2.670
+Iterations:    30, Computed Value:    2.668
+Iterations:    40, Computed Value:    2.668
+Iterations:    50, Computed Value:    2.667
+Iterations:    60, Computed Value:    2.667
+Iterations:    70, Computed Value:    2.667
+Iterations:    80, Computed Value:    2.667
+Iterations:    90, Computed Value:    2.667
+Iterations:   100, Computed Value:    2.667
+Iterations:   110, Computed Value:    2.667
+Iterations:   120, Computed Value:    2.667
+Iterations:   130, Computed Value:    2.667
+Iterations:   140, Computed Value:    2.667
+Iterations:   150, Computed Value:    2.667
+Iterations:   160, Computed Value:    2.667
+Iterations:   170, Computed Value:    2.667
+Iterations:   180, Computed Value:    2.667
+Iterations:   190, Computed Value:    2.667
+Iterations:   200, Computed Value:    2.667
+Iterations:   210, Computed Value:    2.667
+Iterations:   220, Computed Value:    2.667
+Iterations:   230, Computed Value:    2.667
+Iterations:   240, Computed Value:    2.667
+Iterations:   250, Computed Value:    2.667
+
+ -------------------------------------------------------
+
+  Question 2: Ones
+
+ What size matrices would you like to create? Please type an integer greater than 3.
+6
+ Please choose a seed for the random generator!: Any integer will do:
+3
+
+ Original matrix obtained for A
+
+ 0.000 0.000 0.000 0.000 1.000 1.000
+ 0.000 0.000 0.000 0.000 1.000 0.000
+ 0.000 0.000 0.000 0.000 0.000 1.000
+ 0.000 1.000 1.000 0.000 1.000 0.000
+ 1.000 0.000 0.000 1.000 0.000 0.000
+ 1.000 1.000 0.000 1.000 0.000 1.000
+
+ Resulting matrix obtained, B
+
+ 0.000 0.000 0.000 0.000 0.000 0.000
+ 0.000 0.000 0.000 0.000 1.000 0.000
+ 0.000 0.000 0.000 1.000 1.000 0.000
+ 0.000 0.000 0.000 1.000 0.000 0.000
+ 1.000 0.000 0.000 1.000 0.000 0.000
+ 0.000 0.000 1.000 0.000 1.000 0.000
+
+ -------------------------------------------------------
+

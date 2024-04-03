@@ -1,0 +1,25 @@
+
+
+Hi Uli!
+
+
+    In order to run my code, please "make" in this directory. Then run the executable, "driver.exe" with the following command, 
+
+    $ ./driver.exe
+
+    This will prompt two things to happen, the terminal will beign to prompt you for the inputs regarding the problems. Next, it will print outputs to the terminal and some test runs for convergence for the trapezoidal rule problems. 
+
+    Notice that the single driver file will call all of the routines needed for both problem 1 and 2. 
+
+    The responses for the questions asked for problem one are also located here. 
+
+    1. The analytical solution for the integrals are 2.0 for sin, and 8/3 for x^2. The routine seems to converge to a decent solution within 100-120 iterations for sin(x) and 30 or 50 iterations for x^2.
+
+  Let me know if you have any questions or have difficulty running the code. 
+
+
+  Take care,
+    -Dante-
+
+
+
