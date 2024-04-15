@@ -34,8 +34,40 @@ module NumDE
 
   end subroutine BDF3 
 
+  subroutine aeRK3(F, Y, A, B, ma, num_points, dt)
+    ! autonomous, explicit
+    ! on entry F, Y, are 2-d arrays
+
+    implicit none
+                        
+    real :: Y(:, :), F(:, :), A(:, :), B(:)
+    integer, intent(in) :: ma, num_points
+    integer :: i, j, k
+    real, dimension(ma, ma) :: K
+
+    do i = 1, num_points
+
+        K = 0.0
+    
+        ! update k vectors
+        do j = 1, ma
+            K(:, i) = matmul(F, Y(:, i) + dt*matmul(A(:, i:i), K))
+        end do
+
+        ! update y
+        Y(:, i+1) = Y(:, i)
+        do j = 1, ma
+            Y(:, i+1) = Y(:, i+1) + dt*b(j)*K(:, j)
+        end do
+
+    end do
+
+  end subroutine aeRK3
+
+  subroutine AM3(F, num_points, dx)
 
 
+  end subroutine AM3
 
 end module NumDE
 
