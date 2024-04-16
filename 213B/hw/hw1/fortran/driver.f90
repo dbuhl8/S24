@@ -7,6 +7,7 @@ program driver
 
   implicit none
 
+  ! problem 1
   integer, parameter :: n1=20, n2=60, n3=200, ne=200, ae = 1, be = 10000
   real, parameter :: a = 0.0, b = 1.0
   integer :: i, j, de
@@ -17,7 +18,24 @@ program driver
   real, allocatable :: XE(:), FE(:), FaE(:), XaE(:)
   real, dimension(ne) :: E
   integer, dimension(ne) :: N
+  ! problem 2
+  integer, parameter :: num_points = 1000, ma = 2
+  real, dimension(ma, num_points+3) :: Y
+  real, dimension(ma, ma) :: F
+  real, dimension(num_points+3) :: T
+  real, dimension(3) :: rB, rC
+  real, dimension(3, 3) :: rA
+  real :: dt, tf = 10.
+  real, dimension(4) :: dt_array
+  real, allocatable :: YE(:, :), TE(:), ER(:), EA(:)
+  integer :: np
+  
 
+  print *, " "
+  print *, "--------------------------------------------------------------------------"
+  print *, " "
+  print *, " Question 1: Finite Difference Backwards Differentiation Method: BDF3"
+  print *, " "
 
   ! Ploting the n=20, n=60 approx
 
@@ -62,7 +80,6 @@ program driver
   do i = 1, ne
 
     N(i) = ae + de*(i-1)
-    print *, N(i)
 
     allocate(XE(N(i)+4), FE(N(i)+4), FaE(N(i)+4), XaE(N(i)+4))
 
@@ -93,9 +110,124 @@ program driver
         write(12, "(I8, 2F20.15)") N(i), E(i), real(N(i))**(-3)
     end do
   close(12)
-  
-  
 
+
+  print *, " "
+  print *, "--------------------------------------------------------------------------"
+  print *, " "
+  print *, " Question 2: Implicit/Explicit Multistep Methods for ODEs"
+  print *, " "
+
+  T = 0.
+  F(1, :) = (/ -1.0, 3.0 /)
+  F(2, :) = (/ -3.0, -1.0 /)
+
+  Y(1, 1) = -3.0
+  Y(2, 1) = 1.0
+
+  dt = 0.01
+
+  ! call RK3 method here
+  
+  ! defining the RK3 Coefficient Matrices
+  rA(1, :) = (/ 0.0, 0.0, 0.0/)
+  rA(2, :) = (/ 1./3., 0.0, 0.0/)
+  rA(3, :) = (/ 0.0, 2./3., 0.0/)
+   
+  rB = (/1./4., 0., 3./4./)
+
+  rC = (/ 0.0, 1./3., 2./3./)
+
+  ! Runge Kutta 3
+  call RK3(F, Y, T, ma, num_points, rA, rB, rC, dt)
+
+  open(12, file="rk3.dat")
+
+    do i = 1, num_points
+        write(12, "(3F8.4)") T(i), Y(:, i)
+    end do
+
+  close(12)
+
+  open(14, file="actual.dat")
+    
+    do i = 1, num_points
+
+        write(14, "(3F8.4)") T(i), (-3.*cos(3.*T(i)) + sin(3.*T(i)))*exp(-T(i)), (3.*sin(3.*T(i))+cos(3.*T(i)))*exp(-T(i))
+
+    end do
+
+  close(14)
+
+  ! Adams Moulton 3
+  Y = 0.
+  T = 0.
+  Y(1, 1) = -3.0
+  Y(2, 1) = 1.0
+
+  ! need to get first 2 points with RK3
+  call RK3(F, Y, T, ma, 2, rA, rB, rC, dt)
+  call AM3(F, Y, T, ma, num_points-2, dt)
+
+  open(13, file="am3.dat")
+
+    do i = 1, num_points
+        write(13, "(3F8.4)") T(i), Y(:, i)
+    end do
+
+  close(13)
+
+  dt_array = (/0.1, 0.05, 0.005, 0.0005/)
+
+  do i = 1, 4
+
+    np = tf/dt_array(i)
+
+    allocate(YE(2, np+1), TE(np+1), ER(np+1), EA(np+1))
+
+    YE = 0.
+    TE = 0.
+    YE(1, 1) = -3.0
+    YE(2, 1) = 1.0
+
+    call RK3(F, YE, TE, ma, np, rA, rB, rC, dt_array(i))
+   
+    YE(1, :) = YE(1, :) - (-3.*cos(3.*TE) + sin(3.*TE))*exp(-TE)
+    YE(2, :) = YE(2, :) - (3.*sin(3.*TE)+cos(3.*TE))*exp(-TE)
+ 
+    call vectwonorm(YE, ER, np)
+
+    YE = 0.
+    TE = 0.
+    YE(1, 1) = -3.0
+    YE(2, 1) = 1.0
+
+    call RK3(F, YE, TE, ma, 2, rA, rB, rC, dt_array(i))
+    call AM3(F, YE, TE, ma, np-2, dt_array(i))
+ 
+    YE(1, :) = YE(1, :) - (-3.*cos(3.*TE) + sin(3.*TE))*exp(-TE)
+    YE(2, :) = YE(2, :) - (3.*sin(3.*TE)+cos(3.*TE))*exp(-TE)
+   
+    call vectwonorm(YE, EA, np)
+
+    open(15, file="error"//trim(str(i))//".dat")
+    do j = 1, np+1
+       write(15, "(3F20.15)") TE(j), ER(j), EA(j)
+    end do
+    close(15)
+
+    if (i .eq. 1) then
+        open(16, file="finalerror.dat")
+            write(16, "(5F20.15)") dt_array(i), ER(np), real(np)**(-3), EA(np), real(np)**(-4)
+        close(16)
+    else
+        open(16, file="finalerror.dat", status="old", position="append")
+            write(16, "(5F20.15)") dt_array(i), ER(np), real(np)**(-3), EA(np), real(np)**(-4)
+        close(16)
+    end if
+    deallocate(YE, TE, ER, EA)
+
+  end do   
 
 end program driver
 

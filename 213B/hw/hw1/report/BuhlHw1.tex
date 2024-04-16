@@ -5,6 +5,7 @@
 \usepackage{amsthm}
 \usepackage{amssymb}
 \usepackage{amsfonts}
+\usepackage{enumitem}
 \usepackage{verbatim}
 \usepackage{xcolor}
 
@@ -35,7 +36,8 @@
 \maketitle
 
 \section*{Problem 1: }
-\begin{enumerate}
+\begin{enumerate}[label=\alph*)]
+
 
     \item Derive the four-point finite-difference backward differentiation formula (BDF3) ap-
 proximation of the first derivative of $f$. 
@@ -124,7 +126,11 @@ function,
         \[
             f'(x) = \frac{1}{\ln(10)(2 + \sin(2\pi x))}(2\pi\cos(2\pi x))
         \]
-        Next we implement a scheme in fortran to compute the BDF3 derivative approximation at each step.
+        Next we implement a scheme in fortran to compute the BDF3 derivative approximation at each step. This is done in fortran in my code. In my code, the error is computed for each calculated timestep and we can plot the error. When this is done, another line is plotted next to it corresponding to $\frac{1}{N^3}$, that is, one over the number of points in the grid cubed. In a log-log plot they are parallel, this indicates that the error for BDF3 converges on order 3.
+
+        \begin{center}
+            \includegraphics[width=.9\textwidth]{../fortran/BDF3_error.png}
+        \end{center}
         
     \end{proof}
         
@@ -132,6 +138,90 @@ function,
 \end{enumerate}
 
 
-\section*{Problem 2: }
+\section*{Problem 2: Implicit/Explicit Multistep Methods for ODEs}
+
+\begin{enumerate}[label=\alph*)]
+
+    \item Solve the linear system,
+
+        \begin{align}
+             \Biggl\{\begin{split}
+                \frac{d\bs{y}}{dt} = \bs{Ay} \\ \bs{y}(0) = \bs{y}_0
+            \end{split} \\
+            \bs{y}_0 = \left[\begin{array}{c}-3 \\ 1\end{array}\right], \quad &\text{and} \quad \bs{A} = \left[\begin{array}{c c}-1 & 3 \\ -3 & -1 \end{array}\right]
+        \end{align}
+
+        We solve this problem using the eigenvalues and eigenvectors of the linear system. 
+
+        \begin{align}
+            P_{\lambda}(A) &= \lambda^2 - \Tr{A}\lambda + \det(A) \\
+            P_{\lambda}(A) &= \lambda^2 +2\lambda + 10 \\
+            \lambda &= \frac{-2 \pm \sqrt{-36}}{2} \\
+            \lambda &= -1 \pm 3i
+        \end{align}
+
+        We now solve the eigenvector problem analytically, this comes out rather obviously, 
+        \begin{align}
+            \lambda_1 = -1 + 3i, \quad v_1 = \left[\begin{array}{c}1 \\ i \end{array}\right] \\
+            \lambda_2 = -1 - 3i, \quad v_2 = \left[\begin{array}{c}i \\ 1 \end{array}\right] \\
+        \end{align}
+        We then use this to write our solution.
+        \begin{align}
+            \bs{y}(t) &= c_1v_1e^{-t + 3it} + c_2v_2e^{-t - 3it} \\
+            \bs{y}(t) &= c_1\left[\begin{array}{c}1 \\ i \end{array}\right]e^{-t}\left(\cos(3t) + i\sin(3t)\right) 
+                         + c_2\left[\begin{array}{c}i \\ 1 \end{array}\right]e^{-t}\left(\cos(3t) - i\sin(3t)\right) \\
+             \bs{y}(t) &= c_1\left[\begin{array}{c}1 \\ 0 \end{array}\right]e^{-t}\cos(3t) 
+                        +  c_1\left[\begin{array}{c}0 \\ -1 \end{array}\right]e^{-t}\sin(3t)
+                         + c_2\left[\begin{array}{c}0 \\ 1 \end{array}\right]e^{-t}\cos(3t)
+                          + c_2\left[\begin{array}{c}1 \\ 0 \end{array}\right]e^{-t}\sin(3t)
+        \end{align}
+        We now solve for our coefficients. 
+        \begin{align}
+            \bs{y}(0) = c_1\left[\begin{array}{c}1\\0\end{array}\right] + c_2\left[\begin{array}{c}0\\1\end{array}\right] =
+                        \left[\begin{array}{c}-3\\1\end{array}\right] \\
+            c_1 = -3, \quad c_2 = 1
+        \end{align}
+        \begin{align}
+            \bs{y}(t) &= \left[\begin{array}{c}1 \\ 0 \end{array}\right]e^{-t}\left(-3\cos(3t) + \sin(3t)\right)
+                        +  \left[\begin{array}{c}0 \\ 1 \end{array}\right]e^{-t}\left(3\sin(3t) + \cos(3t)\right) \\
+            \bs{y}(t) &= \left[\begin{array}{c}-3\cos(3t)+\sin(3t)\\3\sin(3t)+\cos(3t)\end{array}\right]e^{t}              
+        \end{align}
+        A plot of this function is shown below. 
+        \begin{center}
+            \includegraphics[width=.8\textwidth]{../fortran/question2a.png}
+        \end{center}
+
+        \item I wrote the code haha. Go see the fortran directory and see the NumDE.f90 module.
+
+        \item We can demonstrate the exact formulations for this specific RK3 and AM3 methods. They are as follows. 
+        For RK3, we have, 
+
+        \begin{align}
+            K_1 &= f(y_k) = Ay_k \\
+            K_2 &= f(y_k + \frac{\Delta t}{3} K_1) = Ay_k + \frac{\Delta t}{3} A^2y_k\\
+            K_3 &= f(y_k + \frac{2\Delta t}{3} K_2) = Ay_k + \frac{2\Delta t}{3} A^2y_k + \frac{2\Delta t^2}{9} A^3y_k \\
+            y_{k+1} &= y_k + \Delta t \sum_{i=1}^3 b_iK_i = y_k + \frac{\Delta t}{4} K_1 + \frac{3\Delta t}{4} K_3
+        \end{align}
+
+        For AM3, we have, 
+        \begin{align}
+            \left(\I - \frac{9\Delta t}{24}A\right)y_{k+3}^{(0)} = y_{k+2} + \frac{\Delta t}{24}\left(19Ay_{k+2} - 5Ay_{k+1} + Ay_{k}\right) \\
+            y_{k+3}^{(0)} = \left(\I - \frac{9\Delta t}{24}A\right)^{-1}\left[y_{k+2} + \frac{\Delta t}{24}\left(19Ay_{k+2} - 5Ay_{k+1} + Ay_{k}\right)\right] \\
+            y_{k+3}^{(1)} = y_{k+2} + \frac{\Delta t}{24}\left(9Ay_{k+3}^{(0)} + 19Ay_{k+2} - 5Ay_{k+1} + Ay_{k}\right)
+        \end{align}
+
+        \item Here is the plot obtained for this question: 
+        \begin{center}
+            \includegraphics[width=.8\textwidth]{../fortran/error_v_t.png}
+        \end{center}
+
+        \item  The order of convergence observed for AM3 is order 4 and the order of convergence obtained for RK3 is order 3. Here is a picture of the produced plots alongside plots of order 4 and order 3 converegence for comparasion (these are plotted with lines). There are two sets of parallel lines in the plot indicating that parallel pairs have the same order of convergence. 
+        \begin{center}
+            \includegraphics[width=.8\textwidth]{../fortran/final_error.png}
+        \end{center}
+       
+       
+
+\end{enumerate}
 
 \end{document}
