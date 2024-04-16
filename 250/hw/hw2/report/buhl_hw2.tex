@@ -1,0 +1,61 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{verbatim}
+\usepackage{tikz}
+\usepackage{xcolor}
+
+\title{Homework 2: Report}
+\author{Dante Buhl}
+
+
+\DeclareMathOperator{\cond}{cond}
+\DeclareMathOperator{\vecspan}{span}
+\DeclareMathOperator{\sign}{sign}
+
+\begin{document}
+
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+\newcommand{\bmp}[1]{\begin{minipage}{#1\textwidth}}
+\newcommand{\emp}{\end{minipage}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\K}{\bs{\mathrm{K}}}
+\newcommand{\m}{\bs{\mu}_*}
+\newcommand{\s}{\bs{\Sigma}_*}
+\newcommand{\dt}{\Delta t}
+\newcommand{\tr}[1]{\text{Tr}(#1)}
+\newcommand{\Tr}[1]{\text{Tr}(#1)}
+
+\maketitle
+
+
+
+\begin{enumerate}
+
+    \item Trapezoidal Integration Problem
+
+    The fortran code is not very complex to run this algorithm. The most tedious part if the I/O becuase this requires that you run the executable without a default output file. Here are the answers to each individual question. 
+    \begin{align}
+        \int_0^2 x^2 dx = \frac{8}{3} \\
+        \int_0^{\pi} \sin(x) dx = 2
+    \end{align}
+    We see from the code output that we get a good solution near 100 iterations for $\sin(x)$ and around 30-50 iterations for $x^2$. 
+
+   \item Ones matrices, neighbor update scheme. 
+    
+    This problem was more interesting, mostly because of the awful way I integrated it. Rather than manually index around each cell in the array that was to be updated, A, I created a second matrix, B, (very bad for memory usage at high resolution) and then added subsections of the original matrix to the second one. That way at each cell B, had the neighborhood sum for a corresponding cell in A. What was left was simply to iterate through the array and update A based on the value of B in the same cell. If I were to write this algorithm again, what I would do (especially to make it parallel) is to draw pencils three columns wide and containing each row of the matrix. This way, each processor I give a pencil to, can update the center column of the pencil without having to communicate with neighboring cells. The routine to compute the neighborhood sum would also be changed so something like this, 
+    \begin{align}
+        \text{sum}_{ij} &= \sum_{k = j-1}^{j+1} A_{i+1, k} +\sum_{k = j-1}^{j+1} A_{i-1, k} 
+\sum_{k = j-1, k \neq j}^{j+1} A_{i, k} \\
+        \text{if sum}_{ij} &= 3, \text{ then update A}
+    \end{align}
+    Overall, my current algorithm works and I won't rewrite it until the Game of Life project towards the end of the quarter. 
+\end{enumerate}
+\end{document}
