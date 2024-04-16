@@ -2,12 +2,15 @@ OBJECTS = LinAl.o NumDE.o driver.o
 	
 MODULES = LinAl.mod NumDE.mod
 
-FFLAGS = -fdefault-real-8 -fdefault-double-8 -llapack -lblas -fbounds-check -g
+OUTPUTS = *.png *.dat *.mod output.txt
+
+FFLAGS = -fdefault-real-8 -fdefault-double-8 -fbounds-check -g
 
 .PHONY: clean
 
 output.txt: driver.exe
 	./driver.exe > output.txt
+	gnuplot plot.p
 
 driver.exe: $(MODULES) $(OBJECTS)
 	gfortran $(OBJECTS) $(FFLAGS) -o driver.exe
@@ -19,4 +22,4 @@ driver.exe: $(MODULES) $(OBJECTS)
 	gfortran -c $(FFLAGS) $<
 
 clean:
-	rm -f $(OBJECTS) $(DOBJECTS) $(MODULES) driver.exe 
+	rm -f $(OBJECTS) $(OUTPUTS) $(MODULES) driver.exe 

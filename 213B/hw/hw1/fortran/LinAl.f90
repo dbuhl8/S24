@@ -907,4 +907,17 @@ subroutine readMat(filename)
 
   end subroutine invdiag
 
+  subroutine vectwonorm(A, Norm, na)
+
+    implicit none
+    
+    integer :: na, i
+    real :: A(:, :), norm(:)
+
+    do i = 1, na
+       call twonorm(A(:, i), norm(i)) 
+    end do
+
+  end subroutine vectwonorm
+
 end module LinAl
