@@ -1,0 +1,58 @@
+\documentclass[10pt,english]{article}
+\usepackage{geometry}
+ \geometry{verbose,tmargin=2cm,bmargin=2cm,footskip=1cm}
+\usepackage{babel}
+\usepackage{bm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{setspace}
+\onehalfspacing
+
+
+\def\vss{\vspace{1cm}}
+\def\vs{\vspace{0.2cm}}
+
+\begin{document}
+
+\noindent
+\centerline{
+\textbf{\large Numerical Methods for the Solution of Differential Equations (AM 213B)}}\\
+\centerline{{\bf Homework 1 - grading form}}
+%
+\centerline{\line(1,0){480}}\vspace{.cm}
+
+\vspace{0.2cm}
+\flushleft{\bf Name:} Dante Buhl
+\vs
+\flushleft{\bf Final score:} 96.5
+
+\vss\noindent
+\centerline{\bf Point allocation explanation}
+
+
+\vs
+{\bf Question 1 (30/30 points):} X stands for the total points you scored in question 1. Provide here an overall assessment of question 1.  
+%
+If you knock points off write below what you did wrong in each part of question 1. Use the grading rubric to assess your score in each part. You can add equations and plots if you'd like to provide an in-depth explanation. 
+
+\begin{enumerate}
+\item [1a)] (10/10 points): Full points, the correct derivation is used, with no algebra errors.
+\item [1b)] (10/10 points): Full points, the correct derivation is used, with no algebra errors (student didn't include higher order terms in the norm at the end, but they are washed away by the norm anyways). 
+\item [1c)] (10/10 points): Whoever wrote the homework was not specific asa to whether $\log$ was to indicate the natural log, $\ln$, or log base 10 $\log_{10}$. Since latex has a built in $\ln$ command, I pressumed it was intentionally written as $\log$ to indicate $\log_{10}$. My solution for 1.c. was predicated on this so there is scalar coefficient error in my work, but this is due to a lack of specificity. Also note, that the png included in the report does not include the plot requested. But after running the code (i.e. running the Makefile), several png plots are produced. The ones titled BDF3\_plot.png and BDF3\_error.png will include the plots requested.
+\end{enumerate}
+
+
+\vs   
+{\bf Question 2 (66.5/70 points):} Provide here an overall assessment of question 2.
+
+\begin{enumerate}
+    \item [2a)] (12/15 points): Minus 2.5 points, because a plot of $y_1$ and $y_2$ versus time was not included. Minus 0.5 points for a typo in final solution for $y$. (Should be $e^{-t}$). 
+\item [2b)] (20/20 points): Code works, plot of actual solution and numerical solution is indistiguishable unless zoomed in. 
+\item [2c)] (4.5/5 points): Minus 0.5 points, Student did not include time dependence in the explicit formulation. The dynamical system is autonomous and so explicitly writing the time dependence is meaningless anyways. 
+\item [2d)] (20/20 points): Student produced one plot with all of the data instead of seperated plots. It was not specified that each timestep length should have its own plot so no points are deducted here (the assignment clearly states to ``plot the error in logarithmic scale versus time for each case'', not ``plot the error in its own plot in logarithmic scale versus time for each case''). Although readability is sacrified. 
+\item [2e)] (10/10 points): Again readability is sacrificed, but the plot, once investigated, does indeed show order 3 and order 4 convergence with comparisons to how each method performed. Upon reading the students description this is made clear. 
+\end{enumerate}
+
+\end{document}
