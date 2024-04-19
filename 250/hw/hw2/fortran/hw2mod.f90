@@ -47,50 +47,31 @@ module hw2mod
 
 !   end subroutine ones
 
-    subroutine transfMat(A, B, n)
+    subroutine transfMat(A, n)
         ! A, B are both n by n matrices
         implicit none
         integer, intent(in) :: n
-        real, intent(in) :: A(:, :)
-        real :: B(:, :)
+        real :: A(:, :)
+        real, dimension(n, n) :: B
+        integer, dimension(n) :: iplus, iminus
         integer :: i, j
 
+        do i = 1 , n
+            iplus(i) = i+1
+            iminus(i) = i-1
+        end do 
+        iplus(n) = 1
+        iminus(1) = n
         B = 0.0
-    
-        !Down, completed
-        B(2:n, :) = B(2:n, :) +  A(1:(n-1), :)
-        B(1, :) = B(1, :) + A(n, :)
-        !Up, completed
-        B(1:(n-1), :) = B(1:(n-1), :) + A(2:n, :)
-        B(n, :) = B(n, :) + A(1, :)
-        !Left, completed
-        B(:, 1:(n-1)) = B(:, 1:(n-1)) + A(:, 2:n)
-        B(:, n) = B(:, n) + A(:, 1)
-        !Right, completed
-        B(:, 2:n) = B(:, 2:n) + A(:, 1:(n-1))
-        B(:, 1) = B(:, 1) + A(:, n)
-        !Up-right, completed
-        B(1:(n-1), 2:n) = B(1:(n-1), 2:n) + A(2:n, 1:(n-1))
-        B(n, 1) = B(n, 1) + A(1, n)
-        B(1:(n-1), 1) = B(1:(n-1), 1) + A(2:n, n)
-        B(n, 2:n) = B(n, 2:n) + A(1, 1:(n-1))
-        !Up-left, completed
-        B(1:(n-1), 1:(n-1)) = B(1:(n-1), 1:(n-1)) + A(2:n, 2:n)
-        B(1, 1) = B(1, 1) + A(n, n)
-        B(1:(n-1), n) = B(1:(n-1), n) + A(2:n, 1)
-        B(n, 1:(n-1)) = B(n, 1:(n-1)) + A(1, 2:n)
-        !Down right, completed
-        B(2:n, 2:n) = B(2:n, 2:n) + A(1:(n-1), 1:(n-1))
-        B(n, n) = B(n, n) + A(1, 1)
-        B(2:n, 1) = B(2:n, 1) + A(1:(n-1), n)
-        B(1, 2:n) = B(1, 2:n) + A(n, 1:(n-1))
-        !Down left, completed
-        B(2:n, 1:(n-1)) = B(2:n, 1:(n-1)) + A(1:(n-1), 2:n)
-        B(1, n) = B(1, n) + A(n, 1)
-        B(2:n, n) = B(2:n, n) + A(1:(n-1), 1)
-        B(1, 1:(n-1)) = B(1, 1:(n-1)) + A(n, 2:n)
 
-     
+        do j = 1, n
+            do i = 1, n
+                B(i, j) = A(iplus(i), iplus(j)) + A(iplus(i), j) + A(iplus(i), iminus(j)) &
+                          + A(i, iplus(j)) + A(i, iminus(j)) + A(iminus(i), iplus(j)) &
+                          + A(iminus(i), j) + A(iminus(i), iminus(j))
+            end do 
+        end do 
+    
         do j = 1, n
             do i = 1, n
                 if (B(i, j) .eq. 3.0) then
@@ -100,6 +81,41 @@ module hw2mod
                 end if
             end do
         end do
+
+        A = B
+ 
+        !Down, completed
+        !B(2:n, :) = B(2:n, :) +  A(1:(n-1), :)
+        !B(1, :) = B(1, :) + A(n, :)
+        !Up, completed
+        !B(1:(n-1), :) = B(1:(n-1), :) + A(2:n, :)
+        !B(n, :) = B(n, :) + A(1, :)
+        !Left, completed
+        !B(:, 1:(n-1)) = B(:, 1:(n-1)) + A(:, 2:n)
+        !B(:, n) = B(:, n) + A(:, 1)
+        !Right, completed
+        !B(:, 2:n) = B(:, 2:n) + A(:, 1:(n-1))
+        !B(:, 1) = B(:, 1) + A(:, n)
+        !Up-right, completed
+        !B(1:(n-1), 2:n) = B(1:(n-1), 2:n) + A(2:n, 1:(n-1))
+        !B(n, 1) = B(n, 1) + A(1, n)
+        !B(1:(n-1), 1) = B(1:(n-1), 1) + A(2:n, n)
+        !B(n, 2:n) = B(n, 2:n) + A(1, 1:(n-1))
+        !Up-left, completed
+        !B(1:(n-1), 1:(n-1)) = B(1:(n-1), 1:(n-1)) + A(2:n, 2:n)
+        !B(1, 1) = B(1, 1) + A(n, n)
+        !B(1:(n-1), n) = B(1:(n-1), n) + A(2:n, 1)
+        !B(n, 1:(n-1)) = B(n, 1:(n-1)) + A(1, 2:n)
+        !Down right, completed
+        !B(2:n, 2:n) = B(2:n, 2:n) + A(1:(n-1), 1:(n-1))
+        !B(n, n) = B(n, n) + A(1, 1)
+        !B(2:n, 1) = B(2:n, 1) + A(1:(n-1), n)
+        !B(1, 2:n) = B(1, 2:n) + A(n, 1:(n-1))
+        !Down left, completed
+        !B(2:n, 1:(n-1)) = B(2:n, 1:(n-1)) + A(1:(n-1), 2:n)
+        !B(1, n) = B(1, n) + A(n, 1)
+        !B(2:n, n) = B(2:n, n) + A(1:(n-1), 1)
+        !B(1, 1:(n-1)) = B(1, 1:(n-1)) + A(n, 2:n)
     
     end subroutine transfMat
 

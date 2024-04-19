@@ -1,4 +1,4 @@
-OBJECTS = LinAl.o NumDE.o driver.o
+OBJECTS = LinAl.o NumDE.o hw1_driver.o
 	
 MODULES = LinAl.mod NumDE.mod
 
@@ -10,7 +10,7 @@ FFLAGS = -fdefault-real-8 -fdefault-double-8 -fbounds-check -g
 
 output.txt: driver.exe
 	./driver.exe > output.txt
-	gnuplot plot.p
+	gnuplot hw1_plot.p
 
 driver.exe: $(MODULES) $(OBJECTS)
 	gfortran $(OBJECTS) $(FFLAGS) -o driver.exe

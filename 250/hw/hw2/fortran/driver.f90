@@ -76,23 +76,21 @@ program driver
     
 
     !call subroutines
-    
-    call transfMat(A, B, n)
-
     print *, " "
     print *, "Original matrix obtained for A"
     print *, " "
 
     call printmat(A, n, n)
+    
+    call transfMat(A, n)
 
     print *, " "
     print *, "Resulting matrix obtained, B"
     print *, " "
 
-    call printmat(B, n, n)
+    call printmat(A, n, n)
 
     
-    !close
     print *, " "
     print *, "-------------------------------------------------------"
     print *, " "

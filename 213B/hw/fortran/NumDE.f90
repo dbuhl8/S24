@@ -63,6 +63,16 @@ module NumDE
 
     end do
 
+    ! Debugging stuff here
+    !print *, " " 
+    !print *, " Coefficients for K vectors ----------------------------------- " 
+    !print *, " T = ", T(num_points+1)
+    !print *, " " 
+    !call printmat(K, ma, 3)
+    !print *, " " 
+    !print *, " -------------------------------------------------------------- " 
+    !print *, " " 
+
   end subroutine RK3
 
   subroutine AM3(F, Y, T, ma, num_points, dt)
