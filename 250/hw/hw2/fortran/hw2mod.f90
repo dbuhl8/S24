@@ -59,23 +59,40 @@ module hw2mod
     
         !Down, completed
         B(2:n, :) = B(2:n, :) +  A(1:(n-1), :)
+        B(1, :) = B(1, :) + A(n, :)
         !Up, completed
         B(1:(n-1), :) = B(1:(n-1), :) + A(2:n, :)
+        B(n, :) = B(n, :) + A(1, :)
         !Left, completed
         B(:, 1:(n-1)) = B(:, 1:(n-1)) + A(:, 2:n)
+        B(:, n) = B(:, n) + A(:, 1)
         !Right, completed
         B(:, 2:n) = B(:, 2:n) + A(:, 1:(n-1))
+        B(:, 1) = B(:, 1) + A(:, n)
         !Up-right, completed
         B(1:(n-1), 2:n) = B(1:(n-1), 2:n) + A(2:n, 1:(n-1))
+        B(n, 1) = B(n, 1) + A(1, n)
+        B(1:(n-1), 1) = B(1:(n-1), 1) + A(2:n, n)
+        B(n, 2:n) = B(n, 2:n) + A(1, 1:(n-1))
         !Up-left, completed
         B(1:(n-1), 1:(n-1)) = B(1:(n-1), 1:(n-1)) + A(2:n, 2:n)
+        B(1, 1) = B(1, 1) + A(n, n)
+        B(1:(n-1), n) = B(1:(n-1), n) + A(2:n, 1)
+        B(n, 1:(n-1)) = B(n, 1:(n-1)) + A(1, 2:n)
         !Down right, completed
         B(2:n, 2:n) = B(2:n, 2:n) + A(1:(n-1), 1:(n-1))
+        B(n, n) = B(n, n) + A(1, 1)
+        B(2:n, 1) = B(2:n, 1) + A(1:(n-1), n)
+        B(1, 2:n) = B(1, 2:n) + A(n, 1:(n-1))
         !Down left, completed
         B(2:n, 1:(n-1)) = B(2:n, 1:(n-1)) + A(1:(n-1), 2:n)
+        B(1, n) = B(1, n) + A(n, 1)
+        B(2:n, n) = B(2:n, n) + A(1:(n-1), 1)
+        B(1, 1:(n-1)) = B(1, 1:(n-1)) + A(n, 2:n)
+
      
-        do j = 1, n, 1
-            do i = 1, n, 1
+        do j = 1, n
+            do i = 1, n
                 if (B(i, j) .eq. 3.0) then
                     B(i, j) = 1.0
                 else
@@ -85,6 +102,36 @@ module hw2mod
         end do
     
     end subroutine transfMat
+
+    !subroutine neighborUpdate(A, i, j, sm)
+        !implicit none
+        !integer :: i, j, ma, na
+        !real :: A, sm
+        !
+        !!logic tree in order to enforce periodic boundaries
+        !ma = shape(A, 1)
+        !na = shape(A, 2)
+        !if (j .gt. 1) then
+            !if ( i .gt. 1) then
+                !
+            !end if
+        !else 
+        !sm = sum(A(i-1:i+1, j-1)) + sum(A(i-1:i+1, j+1)) + A(i+1, j) + A(i-1, j)
+    !end subroutine 
+
+
+    !function onedge(n, m, i, j) result(bool)
+
+        !integer :: i, j, n, m
+        !real :: A(:, :)
+        !logical :: bool 
+
+        !m = shape(A, 1)
+        !n = shape(A, 2)
+            
+        !if ( j) then 
+
+    !end function
 
 
     function trapInt(f, a, b, n) result(s)
