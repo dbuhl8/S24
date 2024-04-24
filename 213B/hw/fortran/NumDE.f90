@@ -14,15 +14,17 @@ module NumDE
     ! assumes an evenly spaced grid
     
     ! At Input:
-    ! F should be a vector containing at num_points + 3 entries such that each entry is
-    ! F(i) = f(i), where f(x) is any function we want to differentiate. The first 3 points should be padding
-    ! points, i.e. points used to calculate the first derivative points at F(4)
+    ! F should be a vector containing at num_points + 3 entries such that each
+    ! entry is F(i) = f(i), where f(x) is any function we want to differentiate.
+    ! The first 3 points should be padding points, i.e. points used to calculate
+    !  the first derivative points at F(4)
     ! F(1:num_points+3) = f(X(1:num_points+3)), where X(4) = x_0
     
     ! dx should be the step size between adjecent entries of.
 
     ! on Output: 
-    ! F(1:num_points) are the values of the derivative df/dx according to the BDF3 Method
+    ! F(1:num_points) are the values of the derivative df/dx
+    ! according to the BDF3 Method
 
     implicit none
 
@@ -50,7 +52,7 @@ module NumDE
     
         ! update k vectors
         do j = 1, 3
-            K(:, j:j) = matmul(F, Y(:, i:i) + dt*matmul(K, transpose(A(j:j, :))))
+            K(:, j:j) = matmul(F, Y(:, i:i) + dt*matmul(K, transpose(A(j:j,:))))
         end do
 
         ! update y
@@ -62,16 +64,6 @@ module NumDE
         T(i+1) = T(i) + dt
 
     end do
-
-    ! Debugging stuff here
-    !print *, " " 
-    !print *, " Coefficients for K vectors ----------------------------------- " 
-    !print *, " T = ", T(num_points+1)
-    !print *, " " 
-    !call printmat(K, ma, 3)
-    !print *, " " 
-    !print *, " -------------------------------------------------------------- " 
-    !print *, " " 
 
   end subroutine RK3
 
@@ -99,14 +91,16 @@ module NumDE
         Jac = eye - (9.*dt/24.)*F
         call LU(Jac, ma, bool, P)
     
-        B = Y(:, i:i) + (dt/24.)*(19.*matmul(F, Y(:, i:i)) - 5.*matmul(F, Y(:, i-1:i-1)) + matmul(F, Y(:, i-2:i-2)))
+        B = Y(:, i:i) + (dt/24.)*(19.*matmul(F, Y(:, i:i)) - &
+            5.*matmul(F, Y(:, i-1:i-1)) + matmul(F, Y(:, i-2:i-2)))
         X = 0.0
         call LUsolve(Jac, ma, B, X, 1, P)
         Y(:, i+1) = X(:, 1)
 
         ! AM3 Method
-        Y(:, i+1) = Y(:, i) + (dt/24.0)*(9.*matmul(F, Y(:, i+1)) + 19.*matmul(F, Y(:, i)) &
-                                         - 5.*matmul(F, Y(:, i-1)) + matmul(F, Y(:, i-2)))
+        Y(:, i+1) = Y(:, i) + (dt/24.0)*(9.*matmul(F, Y(:, i+1)) &
+                    + 19.*matmul(F, Y(:, i)) - 5.*matmul(F, Y(:, i-1))  &
+                    + matmul(F, Y(:, i-2)))
 
         T(i+1) = T(i) + dt
 
