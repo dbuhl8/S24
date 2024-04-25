@@ -1,4 +1,4 @@
-documentclass{article}
+\documentclass{article}
 \usepackage{graphicx} % Required for inserting images
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath}
@@ -35,14 +35,66 @@ documentclass{article}
       
 \maketitle
 
-\section*{Problem 1: }
+\section*{Problem 1: Absolute Stability for AB3}
 \begin{enumerate}[label=\alph*)]
 
-  \item Determine the largest value of $\Delta t$, for which the three-step Adams-Bashforth method (AB3)
+  \item Determine the largest value of $\Delta t$, for which the three-step 
+        Adams-Bashforth method (AB3)
     \begin{proof}
       We use the condition for absolute stability: 
       \begin{align}
         \lim_{k \to \infty} ||\bs{u}_k|| = 0
+      \end{align}
+      For this specific numerical method, we have the following characteristic
+      polynomial for the numerical method. (Note that since the columns of $B$
+      are linearly independent we have that $B$ is diagonalizable).
+      \begin{align}
+        \bs{u}_{k+3} = \bs{u}_{k+2} + \frac{\dt}{12}\left(23\bs{f}_{k+2} -
+        16\bs{f}_{k+1} + 5\bs{f}_k\right)\\
+        \bs{u}_{k+3} - \bs{u}_{k+2} = \frac{\dt}{12}\left( 23\bs{Au}_{k+2} -
+        16\bs{Au}_{k+1} + 5\bs{Au}_k\right)\\
+        \bs{w}_{k+3} - \bs{w}_{k+2} = \frac{\dt}{12}\Lambda\left( 23\bs{w}_{k+2} -
+        16\bs{w}_{k+1} + 5\bs{w}_k\right)
+      \end{align}
+      From this form of the Adams Bashforth method, we have that the
+      coefficients $\alpha_i$ and $\beta_i$ are as follows, 
+      \begin{align}
+        \bs{\alpha} = [0, 0, -1, 1], \quad \bs{\beta} = \left[ \frac{5}{12},
+        -\frac{16}{12}, \frac{23}{12}, 0\right]  \\
+        \sum_{i=0}^3 (\alpha_i - \dt\lambda_m\beta_i)\bs{w}_{k+i}^m = 0
+      \end{align}
+      At this point, bother to find the eigenvalues of the matrix A which form
+      $\Lambda$. Using a matlab eigenvalue solver, we find the eigenvalues of
+      $A$ to be, 
+      \begin{align}
+            \lambda \approx \left[ -0.9667 \pm i 30.1255, -99.0667\right]\\
+            \R(\lambda) \approx \left[ -0.9667, -99.0667\right]
+      \end{align}
+      We also only consider the real part of $\lambda$ as this is what will
+      contribute to the convergence/stability. At this point we have 2 equations
+      to solve in order to find the requirement on $\dt$ for the absolute
+      convergence. The two equations are related to the characteristic
+      polynomial for the iteration process. 
+      \begin{align}
+        \pi(z) = p(z) - \dt\lambda_i\sigma(z) = 0\\
+        p(z) = \sum_{j=0}^{q} \alpha_j z^j, \quad 
+        \sigma(z) = \sum_{j=0}^{q} \beta_j z^j
+      \end{align}   
+      We solve $(9)$ twice in order, once for each eigenvalue of our original
+      linear transformation, $A$. The exact polynomial becomes,
+      \begin{align}
+        z^3 - z^2 -\frac{dt\lambda}{12}\left(\frac{5}{12} - \frac{16}{12}z +
+        \frac{23}{12}z^2\right) &= 0\\
+        z^3 - z^2\left(1 + \frac{23\dt\lambda}{12}\right) +
+        \frac{16\dt\lambda}{12}z - \frac{5\dt\lambda}{12} &= 0
+        \end{align}
+        \begin{align}
+        \begin{split}
+         z^3 - z^2\left(1 + \frac{23\dt(-0.9667)}{12}\right) +
+        \frac{16\dt(-0.9667)}{12}z - \frac{5\dt(-0.9667)}{12} &= 0\\
+          z^3 - z^2\left(1 + \frac{23\dt(-99.0667)}{12}\right) +
+        \frac{16\dt(-99.0667)}{12}z - \frac{5\dt(-99.0667)}{12} &= 0
+        \end{split}
       \end{align}
     \end{proof}
   \item 
@@ -50,12 +102,17 @@ documentclass{article}
 \end{enumerate}
 
 
-\section*{Problem 2: Implicit/Explicit Multistep Methods for ODEs}
+\section*{Question 2: Convergence and Asbolute Stability for the BDF3 Method}
+
 
 \begin{enumerate}[label=\alph*)]
 
   \item       
 
 \end{enumerate}
+\section*{Question 3: Consistency, Convergence, and Stability for an LMM}
+
+\section*{Question 4: Convergence and Stability for an RK Method}
+
 
 \end{document}
