@@ -57,15 +57,15 @@ subroutine readMat(filename)
 
   end subroutine twonorm
 
-  subroutine printmat(A, m, n)
+  subroutine printmat(A, ma, na)
 
     real, intent(in) :: A(:, :)
-    integer, intent(in) :: m, n
+    integer, intent(in) :: ma, na
     integer :: i, j
 
     !print "(A, I3, A, I3)", "This is a ", m," by ", n," matrix."
-    do i = 1, m
-        print "("//trim(str(n))//"F10.3)", A(i, :)
+    do i = 1, ma
+        print "("//trim(str(na))//"F10.3)", A(i, :)
     end do
 
   end subroutine printmat
@@ -201,10 +201,8 @@ subroutine readMat(filename)
             A(j, i:ma) = A(j, i:ma) - L(j, i)*A(i, i:ma)
         end do
     end do 
-!    print *, "Printing L before adding L to A"
-!    call printmat(L, ma, ma)
-    A = A + L !this gives A as L + U where the only overlap is along the diagonals
-
+    !this gives A as L + U where the only overlap is along the diagonals
+    A = A + L 
   end subroutine LU
 
   subroutine LUsolve(LU, ma, B, X, mb, P)
@@ -287,7 +285,8 @@ subroutine readMat(filename)
     A(:, 1) = A(:, 1)/sqrt(A(1, 1))
     do j = 2, ma
         A(j, j) = sqrt(A(j, j) - sum(A(j, 1:j-1)**2))
-        A(j+1:ma, j:j) = (A(j+1:ma, j:j) - matmul(A(j+1:ma, 1:j-1), transpose(A(j:j, 1:j-1))))/A(j, j)
+          A(j+1:ma, j:j) = (A(j+1:ma, j:j) - matmul(A(j+1:ma, 1:j-1), &
+                                      transpose(A(j:j, 1:j-1))))/A(j, j)
     end do
             
   end subroutine cholesky
@@ -308,8 +307,9 @@ subroutine readMat(filename)
   end subroutine LLsolve
 
   subroutine householderQR(A, Rvec, ma, na, isSingular, tol)
-    !this routine takes A (some m by n matrix) and returns a matrix with an upper triangular R (diagonal entries of R are
-    !stores in rvec and the vectors that form Q on/below the diagonal 
+    !this routine takes A (some m by n matrix) and returns a matrix with an
+    !upper triangular R (diagonal entries of R are stores in rvec and the
+    !vectors that form Q on/below the diagonal 
 
     implicit none
 
@@ -342,7 +342,8 @@ subroutine readMat(filename)
             x = x/norm
         end if
         ! Multiply A by the householder reflector
-        A(i:ma, i:na) = A(i:ma, i:na) - 2*matmul(x, matmul(transpose(x), A(i:ma, i:na)))
+        A(i:ma, i:na) = A(i:ma, i:na) - 2*matmul(x, matmul(transpose(x),&
+                                                 A(i:ma, i:na)))
         Rvec(i) = A(i, i)
         A(i, i) = 0
         A(i:ma, i) = x(:, 1)
@@ -369,8 +370,8 @@ subroutine readMat(filename)
   end subroutine ident
 
   subroutine formQstar(A, Q, ma, na)
-    ! takes A such that on/below diagonal the vectors vi that compose qi are in the ith column of A. 
-    ! returns Q = Q1...QN
+    ! takes A such that on/below diagonal the vectors vi that compose qi are in
+    ! the ith column of A.  returns Q = Q1...QN
 
     implicit none
 
@@ -398,7 +399,8 @@ subroutine readMat(filename)
     do j = 1, na
         i = na - j + 1
         Qi = eye
-        Qi(i:ma, i:ma) = Qi(i:ma, i:ma) - 2*matmul(A(i:ma, i:i), transpose(A(i:ma, i:i))) ! H = I - 2vv^T
+        Qi(i:ma, i:ma) = Qi(i:ma, i:ma) - 2*matmul(A(i:ma, i:i), &
+                          transpose(A(i:ma, i:i))) ! H = I - 2vv^T
         QTEMP = matmul(Qi, QTEMP)
     end do
     Q = QTEMP(:, 1:na) 
@@ -406,8 +408,8 @@ subroutine readMat(filename)
   end subroutine formQstar
     
   subroutine formR(A, R, rvec, na)
-    ! takes in A such that above the diagonal are the above diagonal entries of R, and the diagonal entries are in rvec. 
-    ! returns and na x na matrix R
+    ! takes in A such that above the diagonal are the above diagonal entries of
+    ! R, and the diagonal entries are in rvec.  returns and na x na matrix R
 
     implicit none
 
@@ -437,8 +439,8 @@ subroutine readMat(filename)
     logical :: isSingular
     real, intent(in) :: tol
 
-    !checks the diagonal elements to see if they are zero (this would influence the backsub/forward sub
-    !a better way would be to 
+    !checks the diagonal elements to see if they are zero (this would influence 
+    ! the backsub/forward sub a better way would be to 
     
   end subroutine checksingular
 
@@ -469,8 +471,10 @@ subroutine readMat(filename)
         x(1, 1) = x(1, 1) + (x(1, 1)/abs(x(1, 1)))*norm
         call twonorm(x(:, 1), norm)
         x = x/norm
-        A(i+1:ma, i:ma) = A(i+1:ma, i:ma) - 2*matmul(x, matmul(transpose(x), A(i+1:ma, i:ma)))
-        A(1:ma, i+1:ma) = A(1:ma, i+1:ma) - 2*(matmul(A(1:ma, i+1:ma), matmul(x, transpose(x))))
+        A(i+1:ma, i:ma) = A(i+1:ma, i:ma) - 2*matmul(x, matmul(transpose(x), &
+                          A(i+1:ma, i:ma)))
+        A(1:ma, i+1:ma) = A(1:ma, i+1:ma) - 2*(matmul(A(1:ma, i+1:ma), &
+                          matmul(x, transpose(x))))
         deallocate(x)
         
     end do
@@ -494,6 +498,9 @@ subroutine readMat(filename)
   end subroutine diag
   
   subroutine eigQR(A, ma, shift, tol)
+    ! this routine takes in a matrix A, performs the QR algorithm with or
+    ! without shifts. On output, A is a diagonal matrix with the eigenvalues in
+    ! the diagonal. 
 
     implicit none
 
