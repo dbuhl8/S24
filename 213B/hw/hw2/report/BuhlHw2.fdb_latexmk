@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1714252045.162 "BuhlHw2.tex" "BuhlHw2.pdf" "BuhlHw2" 1714252045.30529 0
+["pdflatex"] 1714360658.25077 "BuhlHw2.tex" "BuhlHw2.pdf" "BuhlHw2" 1714360658.45898 0
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1713199481 1120 1e8878807317373affa7f7bba4cf2f6a ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy7.tfm" 1713199481 1120 7f9f170e8aa57527ad6c49feafd45d54 ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1713199481 1004 54797486969f23fa377b128694d548df ""
@@ -30,6 +30,7 @@
   "/usr/share/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm" 1713199481 1116 933a60c408fc0a863a92debe84b2d294 ""
   "/usr/share/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm" 1713199481 1120 8b7d695260f3cff42e636090a8002094 ""
   "/usr/share/texmf-dist/fonts/tfm/public/cm/cmti10.tfm" 1713199481 1480 aa8e34af0eb6a2941b776984cf1dfdc4 ""
+  "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb" 1713199481 34811 78b52f49e893bcba91bd7581cdc144c0 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb" 1713199481 32080 340ef9bf63678554ee606688e7b5339d ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb" 1713199481 30251 6afa5cb1d0204815a708a080681d4674 ""
   "/usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1713199481 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
@@ -78,9 +79,15 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1713199481 41588 b43d3e860a4f94167ee1e725ff526a72 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1713316826.96338 325518 3dff2bac5bde75cd7e600320ce8a00d6 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1713316820 7112999 8213a138af340f377b6d17784aa6543f ""
-  "1bStabRegion.png" 1714251962.71662 13190 fc93d379567f154862d898854e2d6543 ""
-  "BuhlHw2.aux" 1714252045.2823 32 ab05033ccbb38b00a31b200ccedf8001 "pdflatex"
-  "BuhlHw2.tex" 1714252044.75564 6910 c21bc5f5a842dcd5b702149e8e39fc3b ""
+  "1bAbsStabReg.png" 1714350611.00666 13215 70af059e1163380cd5fedf1fc1359b1c ""
+  "1cdt<dt_crit.png" 1714359993.65183 49483 1dd6ade8f8b3fe27a5a6bbb82e4a0161 ""
+  "1cdt=10-4.png" 1714359993.61516 30929 3b173dbd8d3dd14d0c44ea26acea61c0 ""
+  "1cdt>dt_crit.png" 1714359993.68516 42384 e3f8e3f5fd7d7e337af613a03fd904e5 ""
+  "2bAbsStabReg.png" 1714350560.71046 11744 d3ba05ad5edae1ace2aaba2d8c34867e ""
+  "3cAbsStabRegion.png" 1714350580.09028 9828 ef38bdebdad461b4963289279386fb61 ""
+  "4cAbsStab.png" 1714349818.71738 15720 d7f4e18ea87e965b32e95a3154cf3ab0 ""
+  "BuhlHw2.aux" 1714360658.4333 927 c1a113c36dda69b82dcf224dcd0940b1 "pdflatex"
+  "BuhlHw2.tex" 1714360657.67665 12951 5a6dc9613652744c970bae48c5838d99 ""
   (generated)
   "BuhlHw2.aux"
   "BuhlHw2.log"

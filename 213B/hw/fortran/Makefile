@@ -10,10 +10,11 @@ FFLAGS = -fdefault-real-8 -fdefault-double-8 -fbounds-check -g
 
 hw2: driver.exe
 	./driver.exe > output.txt
+	gnuplot hw2_plot.p
 
-#hw1: driver.exe
-#	./driver.exe > output.txt
-#	gnuplot hw1_plot.p
+hw1: driver.exe
+	./driver.exe > output.txt
+	gnuplot hw1_plot.p
 
 %.exe: $(MODULES) $(OBJECTS)
 	gfortran $(OBJECTS) $(FFLAGS) -o driver.exe

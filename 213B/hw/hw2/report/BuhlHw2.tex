@@ -33,6 +33,7 @@
 \newcommand{\dt}{\Delta t}
 \newcommand{\tr}[1]{\text{Tr}(#1)}
 \newcommand{\Tr}[1]{\text{Tr}(#1)}
+\newcommand{\hl}[1]{\colorbox{yellow}{#1}}
       
 \maketitle
 
@@ -100,28 +101,18 @@
         \max \R(\dt) &\implies \nabla_h \R\left(\frac{\rho(x, y)}{\sigma(x,
         y)}\right) = \vec{0}
       \end{align}
-      \begin{align*}
-        \rho(x, y) &= x^3 - 3xy^2 - x^2 + y^2 + i\left(3x^2y - y^3 - 2xy\right)\\
-        \sigma(x, y) &= \frac{23x^2 - 23y^2 -16x + 5 + i\left(46xy -16y\right)}{12}
-      \end{align*}
-      \begin{align*}
-        \frac{\rho(x,y)}{\sigma(x,y)} &=
-        \frac{\rho(x,y)\overline{\sigma}(x,y)}{|\sigma(x,y)|^2}\\
-        \R\left(\frac{\rho(x,y)}{\sigma(x,y)}\right) &=
-        \frac{\R\left(\rho(x,y)\overline{\sigma}(x,y)\right)}{|\sigma(x,y)|^2}\\
-        \mathbb{I}\left(\frac{\rho(x,y)}{\sigma(x,y)}\right) &=
-        \frac{\mathbb{I}\left(\rho(x,y)\overline{\sigma}(x,y)\right)}{|\sigma(x,y)|^2}\\
-      \end{align*}
-      The actual function beign considered here is quite unpleasant to write
+      The actual function being considered here is quite unpleasant to write
       out explicitly. So the rest of this problem will proceed by the result of
       numerical work. The easiest way to solve this problem is as it is put in
       the notes. We consider the boundary of the domain for the eigenvalue, $z$,
       that will yield a contraction. This is of course the unit circle, $z =
       e^{i\theta}$. Then, we find the region of absolute stability from
-      $\frac{\rho(e^{i\theta})}{\sigma(e^{i\theta})}$.
-      \begin{center}
-        \includegraphics[width=0.6\textwidth]{1bStabRegion.png}
-      \end{center}
+      $\frac{\rho(e^{i\theta})}{\sigma(e^{i\theta})}$ (\textbf{Fig. 1}).
+      \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.5\textwidth]{1bAbsStabReg.png}
+        \caption{Region of Abs. Stab. for AB3 (Blue) (inside boundary)}
+      \end{figure}
       This yields a plot on the
       complex plane with eigenvalues that satisfy the problem we wish to solve.
       Then we overplot the normalized eigenvalues from our original matrix A, and draw
@@ -136,27 +127,182 @@
       absolute stability, and appropriate $\dt$ for this eigenvalue is very
       close to $\dt = 0.00550593$. 
     \end{proof}
-  \item 
+  \item See \textbf{Fig. 1}.
+
+  \item We can plot the results of AB3 with three values of $\dt$. We have $\dt
+  \in [10^{-4}, \dt^* - 10^{-4}, \dt^* + 10^{-4}]$, where $\dt^* = 0.0055$ (we
+  only consider up to 4 decimal digits since we perturb it by $10^{-4}$). The
+  results can be seen in figure 2. Evidently, above the critical $\dt$ the
+  numerical method diverges and doesn't resemble that of the other two plots.
+  This demonstrates the concept of absolute stability and we can see its import
+  on numerical methods for ODEs and PDEs. 
+
+  \begin{figure}
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth]{1cdt=10-4.png}
+    \end{minipage}
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth]{1cdt<dt_crit.png}
+    \end{minipage}
+
+    \begin{minipage}{0.6\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth]{1cdt>dt_crit.png}
+    \end{minipage}
+    \caption{Plots of AB3 with distinct $\dt$. (Top-left: $\dt = 10^{-4}$, 
+    Top-right: $\dt = \dt^* - 10^{-4}$, Bottom: $\dt = \dt^* +10^{-4}$)}
+  \end{figure}
 
 \end{enumerate}
 
 
 \section*{Question 2: Convergence and Asbolute Stability for the BDF3 Method}
 
-Criterion for Consistency for a linear multistep method
-\begin{align}
-\rho(1) &=0 \\
-\rho(1) - \sigma(1) &=0
-\end{align}
+\begin{enumerate}[label=\alph*)]
+
+  \item \hl{Don't forget about this}
+
+  \item No, BDF3 is not A-stable. This is clear from the plot since the region
+  of absolute stability intersects the ``imaginary'' (y) axis in the complex
+  plane. Because of this, there is some part of $\C^-$ which is not in the
+  region of absolute stability. Thus, BDF3 is not A-Stable.
+
+  \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{2bAbsStabReg.png}
+    \caption{Region of Abs. Stab. is outside of the plotted boundary}
+  \end{figure}
+
+\end{enumerate}
+
+\section*{Question 3: Consistency, Convergence, and Stability for an LMM}
 
 \begin{enumerate}[label=\alph*)]
 
-  \item       
+  \item 
+    
+  \begin{proof}
+    Proving consistency with order two is a mere matter of condidering the
+    Taylor Expansion for this LMM. We have by the definition of local truncation
+    error, 
+    \begin{align}
+       \bs{y}_{k+2} - 4\bs{y}_{k+1} + 3\bs{y}_k = -2\dt\bs{f}(\bs{u}_k, t_k) + \dt\tau_{k+2}
+    \end{align}
+    \begin{align*}
+       \bs{y}_{k+2} &= \bs{y}_k + 2\dt \bs{\dot{y}}_k +
+       \frac{4\dt^2}{2}\bs{\ddot{y}}_k + \frac{8\dt^3}{6}\bs{\dddot{y}}_k +  h.o.t.\\
+       \bs{y}_{k+1} &= \bs{y}_k + \dt \bs{\dot{y}}_k + \frac{\dt^2}{2}\bs{\ddot{y}}_k 
+       + \frac{\dt^3}{6}\bs{\dddot{y}}_k +h.o.t. \\
+       \dt\tau_{k+2} &=  \bs{y}_k + 2\dt \bs{\dot{y}}_k +
+       \frac{4\dt^2}{2}\bs{\ddot{y}}_k + \frac{8\dt^3}{6}\bs{\dddot{y}}_k +
+       h.o.t \\ &- 4\left(\bs{y}_k + \dt \bs{\dot{y}}_k + \frac{\dt^2}{2}\bs{\ddot{y}}_k 
+       + \frac{\dt^3}{6}\bs{\dddot{y}}_k +h.o.t. \right)\\ &+ 3\bs{y}_k +
+       2\dt\bs{f}(\bs{u}_k, t_k)\\
+       \tau_{k+2} &=  \frac{4\dt^2}{6}\bs{\dddot{y}}_k, \quad \implies \quad
+       |\tau_{k+2}| = \frac{4\dt^2}{6}|\bs{\dddot{y}}_k|
+    \end{align*}
+    Thus we obtain order 2 convergence for this LMM.
+  \end{proof}
+
+  \item 
+
+  \begin{proof}
+    Next in order to demonstrate the zero-stability for this LMM we consider the
+    root condition for the first characteristic polynomial. We have from this
+    LMM, a characteristic polynomial, 
+    \begin{align}
+        \rho(z) = z^2 - 4z + 3
+    \end{align}
+    This polynomial has roots $z = 1$ and $z = 3$, the second of which lies
+    outside of the unit disk. Therefore this LMM fails the root condition and is
+    necessarily zero-unstable. This also implies that this LMM is not convergent
+    since congergence is dependent on consistency and zero-stability. 
+  \end{proof}
+
+  \item 
+
+  \begin{proof}
+    Finally, we can cite the lemma from the notes which states that all
+    zero-unstable, consistent LMMs are necessarily unconditionally absolutely
+    unstable. We can also look at the region of absolute stability in the figure
+    3. This region of absolute stability has no intersection with $\C^-$
+    whatsoever. Thus, there is no condition which this LMM is absolutely stable.
+    Hence, this LMM is A-unstable. 
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.6\textwidth]{3cAbsStabRegion.png}
+        \caption{Region of Abs. Stab. is inside the boundary}
+    \end{figure}
+
+    Note that the region of absolute stability is obtained by plotting,
+    \begin{align*}
+        \lambda\dt = \frac{e^{i2\theta} - 4e^{i\theta} + 3}{2}
+    \end{align*}
+
+  \end{proof}
 
 \end{enumerate}
-\section*{Question 3: Consistency, Convergence, and Stability for an LMM}
 
 \section*{Question 4: Convergence and Stability for an RK Method}
+
+\begin{enumerate}[label=\alph*)]
+ 
+ \item
+
+ \begin{proof}
+    Proving an explcit RK3 method is convergent requires two things. First, we
+    must show that it is consistent, and then that it is zero-stable.
+    Zero-stability is implied since all explicit RK methods are necessarily
+    one-step methods, i.e. $\rho(z) = z - 1$ which has one simple root $\to$
+    satisfies the root condition. Consistency is much more difficult.
+    Referencing the notes, we see that there is a well defined criterion for
+    explicit RK3 methods to have consistency. We will employ that here. There
+    are 4 conditions, 
+    \begin{align*}
+        b_1 + b_2 + b_3 &= 1, \quad 
+        &\frac{2 + 4}{9} + \frac{1}{3} = 1\\
+        b_2c_2 + b_3c_3 &= \frac{1}{2}, \quad 
+        &\frac{1}{3}\cdot\frac{1}{2} + \frac{4}{9}\cdot\frac{3}{4} = \frac{1}{6} +
+        \frac{1}{3} = \frac{1}{2}\\
+        b_2c_2^2 + b_3c_3^2 &= \frac{1}{3}, \quad
+        &\frac{1}{3}\cdot\frac{1}{4} + \frac{4}{9}\cdot\frac{9}{16} = \frac{1}{12} +
+        \frac{1}{4} = \frac{1}{3}\\
+        b_3a_{32}c_2 &= \frac{1}{6}, \quad 
+        &\frac{4}{9}\cdot\frac{3}{4}\cdot\frac{1}{2} = \frac{1}{6}
+    \end{align*}
+    They are, so we conclude that since this RK3 method is zero-stable and
+    convergent that it is a convergent method. 
+ \end{proof}
+
+ \item
+
+ \begin{proof}
+    Finally with this RK3 method we will use the standard method for determining
+    absolute stability. We look for $|S(z)| < 1$, and for this method to be
+    A-stable, we require that this is satisfied for all $z \in \C^-$. To compute
+    this, we use the defintion of $S(z)$ from the notes, where $A$ and $b$ are
+    parts of the coefficient matrix for this RK3 method, and $h$ is a column
+    vector of ones. After plotting the contours of this function on the complex
+    plane, we see that the region of absolute stability is small and does not
+    contain $\C^-$. This is doubly confirmed by the fact that this method is an
+    explicit method, implying that it couldn't be A-stable. 
+    \begin{align}
+        S(z) = \det(\I - zA + zhb^T)
+    \end{align}
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.6\textwidth]{4cAbsStab.png}
+        \caption{Contour Plot of $|S(z)|$ (Region of Abs. Stab. inside
+        $|S(z)|$=1 contour)}
+    \end{figure}
+   
+ \end{proof}
+
+
+\end{enumerate}
 
 
 \end{document}
