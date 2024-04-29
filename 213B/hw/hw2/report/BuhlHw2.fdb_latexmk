@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1714360658.25077 "BuhlHw2.tex" "BuhlHw2.pdf" "BuhlHw2" 1714360658.45898 0
+["pdflatex"] 1714367540.82411 "BuhlHw2.tex" "BuhlHw2.pdf" "BuhlHw2" 1714367541.03165 0
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1713199481 1120 1e8878807317373affa7f7bba4cf2f6a ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy7.tfm" 1713199481 1120 7f9f170e8aa57527ad6c49feafd45d54 ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1713199481 1004 54797486969f23fa377b128694d548df ""
@@ -86,8 +86,8 @@
   "2bAbsStabReg.png" 1714350560.71046 11744 d3ba05ad5edae1ace2aaba2d8c34867e ""
   "3cAbsStabRegion.png" 1714350580.09028 9828 ef38bdebdad461b4963289279386fb61 ""
   "4cAbsStab.png" 1714349818.71738 15720 d7f4e18ea87e965b32e95a3154cf3ab0 ""
-  "BuhlHw2.aux" 1714360658.4333 927 c1a113c36dda69b82dcf224dcd0940b1 "pdflatex"
-  "BuhlHw2.tex" 1714360657.67665 12951 5a6dc9613652744c970bae48c5838d99 ""
+  "BuhlHw2.aux" 1714367541.00501 917 1f00793ba4de05bf9c560681407379c0 "pdflatex"
+  "BuhlHw2.tex" 1714367539.63501 15705 60d2271729dfe0796c69bdc5ea4cc78a ""
   (generated)
   "BuhlHw2.aux"
   "BuhlHw2.log"

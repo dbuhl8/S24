@@ -1,23 +1,15 @@
 Hi Luan,
 
-Here is a small explainer on how to run my code and see my results. In order to compile and execute the code and the post-processing, simply type "make" into the terminal within this directory. This will, 
+Some notes about my submission for HW2. So I did this assignment with part of it in Fortran and part of it in Matlab. 
 
- 1. compile the driver routine and the two modules needed to run the code. 
- 2. Run the executable which creates several output files.
- 3. A gnuplot script is then run in order to visualize the data. (This creates plots and saves them as png's in this directory)
+In order to produce most of the plots for hw2, please see the abs_stab_test.m matlab file. Running this will produce 4 absolute stability plots. 
 
-Note this for this to work, you will need "Make", "Gnuplot", and "gfortran" installed on your computer. Otherwise it will not compile properly. 
+For the AB3 trajectory plots please 'make' in this directory. It will compile, execute, and run a fortran driver and then make three plots with gnuplot with the trajectories for the three different dt's used. 
 
-If you have any questions about it please let me know! The plots are labeled by the title of the file, and it should be explanatory which one they describe. But of course, I'm finishing this late at night and sometimes my judgement gets the better of me. 
+The main reason I used two different languages, is because most of the assignment isn't about the numerical methods, but more about analyzing the numerical methods. So I only did code for the numerical method problem (performing AB3) in fortran. Let me know if it is too comfusing or if you need help running the code!
 
 Thank you!
 
 -Dante-
 
-P.S. Some notes about understanding the plots. 
 
-The final_error.png plot is a little confusing to look at since the lines are not labeled well. But 1:2 is the RK3 error, 1:3 is 1/N^3, 1:4 is the AM3 error, and 1:5 is 1/N^4.
-
-If you would like to zoom into the plots and interact with the picture, go into the plot.p file and copy the commands into the gnuplot terminal for each plot section in order to replicate the plots (the corresponding .dat files will be needed to run the commands). 
-
-To use gnuplot in general, in your terminal type "gnuplot" and then a gnuplot session will run and your terminal configuration will slightly change. Then type in a plot or axis manipulation command and it will bring up an interative window for you to play with. 

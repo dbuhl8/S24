@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Arch Linux) (preloaded format=pdflatex 2024.4.16)  28 APR 2024 20:17
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Arch Linux) (preloaded format=pdflatex 2024.4.16)  28 APR 2024 22:12
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -277,52 +277,40 @@ File: 1cdt>dt_crit.png Graphic file (type png)
 <use 1cdt>dt_crit.png>
 Package pdftex.def Info: 1cdt>dt_crit.png  used on input line 153.
 (pdftex.def)             Requested size: 281.85587pt x 158.53754pt.
- [2 <./1bAbsStabReg.png>]
-<2bAbsStabReg.png, id=31, 350.81062pt x 307.1475pt>
+ [2 <./1bAbsStabReg.png>] [3 <./1cdt=10-4.png (PNG copy)> <./1cdt<dt_crit.png (PNG copy)> <./1cdt>dt_crit.png (PNG copy)>]
+<2bAbsStabReg.png, id=34, 350.81062pt x 307.1475pt>
 File: 2bAbsStabReg.png Graphic file (type png)
 <use 2bAbsStabReg.png>
-Package pdftex.def Info: 2bAbsStabReg.png  used on input line 175.
-(pdftex.def)             Requested size: 281.85587pt x 246.79158pt.
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[3 <./1cdt=10-4.png (PNG copy)> <./1cdt<dt_crit.png (PNG copy)> <./1cdt>dt_crit.png (PNG copy)>]
-<3cAbsStabRegion.png, id=35, 350.81062pt x 307.1475pt>
+Package pdftex.def Info: 2bAbsStabReg.png  used on input line 226.
+(pdftex.def)             Requested size: 234.8775pt x 205.64714pt.
+ [4 <./2bAbsStabReg.png>]
+<3cAbsStabRegion.png, id=39, 350.81062pt x 307.1475pt>
 File: 3cAbsStabRegion.png Graphic file (type png)
 <use 3cAbsStabRegion.png>
-Package pdftex.def Info: 3cAbsStabRegion.png  used on input line 236.
-(pdftex.def)             Requested size: 281.85587pt x 246.79158pt.
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[4 <./2bAbsStabReg.png>]
-<4cAbsStab.png, id=40, 353.82187pt x 290.58563pt>
+Package pdftex.def Info: 3cAbsStabRegion.png  used on input line 287.
+(pdftex.def)             Requested size: 234.8775pt x 205.64714pt.
+ [5 <./3cAbsStabRegion.png>]
+<4cAbsStab.png, id=44, 353.82187pt x 290.58563pt>
 File: 4cAbsStab.png Graphic file (type png)
 <use 4cAbsStab.png>
-Package pdftex.def Info: 4cAbsStab.png  used on input line 297.
-(pdftex.def)             Requested size: 281.85587pt x 231.48447pt.
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[5 <./3cAbsStabRegion.png>] [6 <./4cAbsStab.png>] (./BuhlHw2.aux)
+Package pdftex.def Info: 4cAbsStab.png  used on input line 348.
+(pdftex.def)             Requested size: 234.8775pt x 192.90002pt.
+ [6 <./4cAbsStab.png>] (./BuhlHw2.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 4124 strings out of 476076
- 60195 string characters out of 5793775
- 1941187 words of memory out of 5000000
- 26190 multiletter control sequences out of 15000+600000
+ 4126 strings out of 476076
+ 60257 string characters out of 5793775
+ 1948187 words of memory out of 5000000
+ 26192 multiletter control sequences out of 15000+600000
  568420 words of font info for 75 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  57i,16n,65p,294b,443s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on BuhlHw2.pdf (6 pages, 341522 bytes).
+Output written on BuhlHw2.pdf (6 pages, 346033 bytes).
 PDF statistics:
  115 PDF objects out of 1000 (max. 8388607)
  63 compressed objects within 1 object stream
