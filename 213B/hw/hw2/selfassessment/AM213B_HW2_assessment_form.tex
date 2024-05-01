@@ -1,0 +1,75 @@
+\documentclass[10pt,english]{article}
+\usepackage{geometry}
+ \geometry{verbose,tmargin=2cm,bmargin=2cm,footskip=1cm}
+\usepackage{babel}
+\usepackage{bm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{setspace}
+\onehalfspacing
+
+\newcommand{\dt}{\Delta t}
+
+
+\def\vss{\vspace{1cm}}
+\def\vs{\vspace{0.2cm}}
+
+\begin{document}
+
+\noindent
+\centerline{
+\textbf{\large Numerical Methods for the Solution of Differential Equations (AM 213B)}}\\
+\centerline{{\bf Homework 2 - grading form}}
+%
+\centerline{\line(1,0){480}}\vspace{.cm}
+
+\vspace{0.2cm}
+\flushleft{\bf Name:} Dante Buhl
+\vs
+\flushleft{\bf Final score:} 97/100
+
+\vss\noindent
+\centerline{\bf Point allocation explanation}
+
+
+\vs
+{\bf Question 1 (30/30 points):} Student found the correct value of $\dt^*$ up to 8
+decimal places. The method described to obtain this value is conceptually
+correct. An accurate plot for the region of absolute stability is included in
+the PDF, and 3 different plots for the solutions of the ODE for varying values
+of $\dt$. Plots are accurate and portray the conditional absolute stability
+inherent to this method. 
+
+\vs   
+{\bf Question 2 (20/20 points):} Student references the Covergence Theorem and
+uses Taylor expansion to show consistency with order three. Zero-stability is
+also investigated correctly. Student correctly plots the Region of Absolute
+Stability and arrives at the conclusion that BDF3 is not A-Stable for the same reason mentioned in
+the solution. 
+
+\vs
+{\bf Question 3 (30/30 points):} Student correctly computes the consistency order
+for the LMM and shows it is consistent. Zero-unstability is also shown correctly
+and student arrives at the conclusion that the method is therefore not
+convergent. Student also uses theoretical and numerical evidence to show that
+this LMM is unconditionally absolutely unstable. 
+
+
+\vs
+{\bf Question 4 (17/20 points):} Student does not write out the RK3 scheme
+explicitly. Student shows consistency, zero-stability, and convergence for the
+RK3 method. The method of proving consistency given in the solution is contained
+in the students work. Student confirms that the RK3 method is in fact not
+A-stable, by showing that its region of absolute stability does not contain in
+whole $\mathbb{C}^{-1}$. Plot given for the region of absolute stability is
+messy, but its caption clarifies where the region of asbolute stablility is
+given and it is an accurate representation. 
+
+
+
+
+
+
+\end{document}
