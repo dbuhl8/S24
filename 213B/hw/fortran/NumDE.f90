@@ -45,24 +45,61 @@ module NumDE
     real, dimension(ma, 3) :: K
 
     do i = 1, num_points
+      K = 0.0
+  
+      ! update k vectors
+      do j = 1, 3
+          K(:, j:j) = matmul(F, Y(:, i:i) + dt*matmul(K, transpose(A(j:j,:))))
+      end do
 
-        K = 0.0
-    
-        ! update k vectors
-        do j = 1, 3
-            K(:, j:j) = matmul(F, Y(:, i:i) + dt*matmul(K, transpose(A(j:j,:))))
-        end do
+      ! update y
+      Y(:, i+1) = Y(:, i)
+      do j = 1, 3
+          Y(:, i+1) = Y(:, i+1) + dt*b(j)*K(:, j)
+      end do
 
-        ! update y
-        Y(:, i+1) = Y(:, i)
-        do j = 1, 3
-            Y(:, i+1) = Y(:, i+1) + dt*b(j)*K(:, j)
-        end do
-
-        T(i+1) = T(i) + dt
-
+      T(i+1) = T(i) + dt
     end do
   end subroutine RK3
+
+  subroutine MidtermRK3(F, Y, T, ma, num_points, dt)
+    implicit none
+ 
+    real :: Y(:, :), F(:, :), dt, T(:)
+    real, dimension(3) :: B
+    integer, intent(in) :: ma, num_points
+    integer :: i, j
+    real, dimension(ma, 3) :: K
+
+    !vars for LU solve
+    real, dimension(ma, ma) :: LU_A
+    real, dimension(ma, 1) :: LU_B
+    logical :: bool
+    integer, dimension(ma) :: P
+
+    B = (/ 1./6, 2./3, 1./6 /)
+ 
+    call ident(LU_A, ma)
+    LU_A = LU_A - 0.25*F
+    call LU(LU_A, ma, bool, P)
+    do i = 1, num_points
+      K = 0.0
+
+      ! update k vectors
+      K(:, 1) = matmul(F, Y(:,i))
+      LU_B = matmul(F, Y(:,i) + 0.25*K(:, i))
+      call LUsolve(LU_A, ma, LU_B, K(:, 2), 1, P)
+      K(:, 3) = matmul(F, Y(:, i) + K(:, 2))      
+
+      ! update y
+      Y(:, i+1) = Y(:, i)
+      do j = 1, 3
+          Y(:, i+1) = Y(:, i+1) + dt*b(j)*K(:, j)
+      end do
+
+      T(i+1) = T(i) + dt
+    end do
+  end subroutine
 
   subroutine AM3(F, Y, T, ma, num_points, dt)
     ! this subroutine can only handle linear ODE's as of right now

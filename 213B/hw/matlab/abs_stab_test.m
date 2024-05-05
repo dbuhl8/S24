@@ -87,6 +87,6 @@ s = (1 + b(1)*z).*(1 + b(2)*z).*(1 + b(3)*z) + (z.^3)*prod(b) ...
     - (b(3)*b(1)*z.^2).*(1+b(2)*z) - (b(2)*(b(1) - 1./2)*z.^2).*(1 + b(3)*z)...
     - (b(3)*(b(2) - 3./4)*z.^2).*(1 + b(1)*z);
 
-[C1,h1]=contour(xx, yy, abs(s));
-clabel(C1,h1);
+[C1,h1]=contour(xx, yy, abs(s), [1,1]);
+%clabel(C1,h1);
 title('Region of Abs Stability for Explicit RK3')
