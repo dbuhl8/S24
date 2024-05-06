@@ -6,8 +6,8 @@ figure(1);
 b = [1./6, 2./3, 1./6];
 %x = -5:0.01:5;
 %y = -5:0.01:5;
-x=-5.43:0.000001:-5.41;
-y=-1:0.1:1;
+x=-6:0.01:0.5;
+y=-5:0.1:5;
 [xx, yy] = meshgrid(x, y);
 z = complex(xx, yy);
 
@@ -20,6 +20,8 @@ s = ((1 + b(1)*z).*(1 + z*(b(2) - 0.25)).*(1 + b(3)*z) + (z.^3)*prod(b) ...
 [rw, cl] = find(abs(s) < 1.0);
 min_x = min(xx(rw, cl), [], "all")
 %clabel(C1, h1);
+xlabel("Re(\lambda)")
+ylabel("Im(\lambda)")
 title('Region of Abs Stability for Implicit RK3')
 hold on;
 
@@ -29,8 +31,8 @@ for i = 4:4
     lambda_A=D(i,i);
     xl = real(lambda_A);%/abs(lambda_A);
     yl = imag(lambda_A);%/abs(lambda_A);
-    plot(xl, yl, 'xr');
-    line([xl, 0], [yl, 0], 'Color', 'red', 'LineStyle', '--');
+    %plot(xl, yl, 'xr');
+    %line([xl, 0], [yl, 0], 'Color', 'red', 'LineStyle', '--');
 end
 
 figure(2);

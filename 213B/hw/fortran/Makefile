@@ -1,12 +1,16 @@
-OBJECTS = LinAl.o NumDE.o hw2_driver.o # hw1_driver.o
+OBJECTS = LinAl.o NumDE.o midterm_driver.o # hw1_driver.o
 	
 MODULES = LinAl.mod NumDE.mod
 
-OUTPUTS = *.png *.dat *.mod output.txt
+OUTPUTS = *.png rk3.dat *.mod output.txt
 
 FFLAGS = -fdefault-real-8 -fdefault-double-8 -fbounds-check -g
 
 .PHONY: clean
+
+midterm: driver.exe
+	./driver.exe > output.txt
+	gnuplot midterm_plot.p
 
 hw2: driver.exe
 	./driver.exe > output.txt

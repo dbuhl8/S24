@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1714949101.6554 "BuhlMidterm.tex" "BuhlMidterm.pdf" "BuhlMidterm" 1714949101.82719 0
+["pdflatex"] 1714954682.9139 "BuhlMidterm.tex" "BuhlMidterm.pdf" "BuhlMidterm" 1714954683.10189 0
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1713199481 1120 1e8878807317373affa7f7bba4cf2f6a ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy7.tfm" 1713199481 1120 7f9f170e8aa57527ad6c49feafd45d54 ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1713199481 1004 54797486969f23fa377b128694d548df ""
@@ -78,8 +78,8 @@
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1713316820 7112999 8213a138af340f377b6d17784aa6543f ""
   "2.b.AbsStab'.png" 1714946842.12549 11082 08e6b1c4a3ac8d5fb74512f26a8bb035 ""
   "3.b.AbsStab.png" 1714946329.70991 15543 241dbd5183985ec25ef2129d9c65f6b8 ""
-  "BuhlMidterm.aux" 1714949101.80404 311 a3f21ff4b92312ef3afe2eb901511e58 "pdflatex"
-  "BuhlMidterm.tex" 1714949101.41071 8297 7cc7298105509eb6de657b4d9882d4c1 ""
+  "BuhlMidterm.aux" 1714954683.07782 311 a3f21ff4b92312ef3afe2eb901511e58 "pdflatex"
+  "BuhlMidterm.tex" 1714954682.83448 8222 03519113b63df3de271818e69b1ac15d ""
   (generated)
   "BuhlMidterm.aux"
   "BuhlMidterm.log"

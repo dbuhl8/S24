@@ -42,20 +42,20 @@ module NumDE
     real :: Y(:, :), F(:, :), A(:, :), B(:), C(:), dt, T(:)
     integer, intent(in) :: ma, num_points
     integer :: i, j
-    real, dimension(ma, 3) :: K
+    real, dimension(3, ma) :: K
 
     do i = 1, num_points
       K = 0.0
   
       ! update k vectors
       do j = 1, 3
-          K(:, j:j) = matmul(F, Y(:, i:i) + dt*matmul(K, transpose(A(j:j,:))))
+          K(j:j ,:) = matmul(F, Y(i:i, :) + dt*matmul(K, transpose(A(j:j,:))))
       end do
 
       ! update y
-      Y(:, i+1) = Y(:, i)
+      Y(i+1, :) = Y(i, :)
       do j = 1, 3
-          Y(:, i+1) = Y(:, i+1) + dt*b(j)*K(:, j)
+          Y(i+1, :) = Y(i+1, :) + dt*b(j)*K(j, :)
       end do
 
       T(i+1) = T(i) + dt
@@ -86,15 +86,15 @@ module NumDE
       K = 0.0
 
       ! update k vectors
-      K(:, 1) = matmul(F, Y(:,i))
-      LU_B = matmul(F, Y(:,i) + 0.25*K(:, i))
-      call LUsolve(LU_A, ma, LU_B, K(:, 2), 1, P)
-      K(:, 3) = matmul(F, Y(:, i) + K(:, 2))      
+      K(:, 1:1) = matmul(F, transpose(Y(i:i,:)))
+      LU_B = matmul(F, transpose(Y(i:i,:)) + 0.25*K(:, 1:1))
+      call LUsolve(LU_A, ma, LU_B, K(:, 2:2), 1, P)
+      K(:, 3:3) = matmul(F, transpose(Y(i:i, :)) + K(:, 2:2))      
 
       ! update y
-      Y(:, i+1) = Y(:, i)
+      Y(i+1, :) = Y(i, :)
       do j = 1, 3
-          Y(:, i+1) = Y(:, i+1) + dt*b(j)*K(:, j)
+          Y(i+1:i+1, :) = Y(i+1:i+1, :) + dt*b(j)*transpose(K(:,j:j))
       end do
 
       T(i+1) = T(i) + dt
