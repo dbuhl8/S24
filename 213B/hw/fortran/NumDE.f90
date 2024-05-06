@@ -104,7 +104,7 @@ module NumDE
     implicit none
   
     real :: F(:, :), Y(:, :), T(:), dt
-    real, dimension(4, ma) :: K
+    real, dimension(ma, 4) :: K
     real, dimension(4) :: B, C
     integer :: ma, num_points, i
     
@@ -113,16 +113,16 @@ module NumDE
 
     do i = 1, num_points
       ! find k vecs
-      K(1, :) = matmul(F, Y(i, :)) + &
-                (/ 0.0,0.0,0.0,(T(i) + C(1)*dt)**2/)
-      K(2, :) = matmul(F, Y(i, :) + K(1,:)/2.) +&
-                (/ 0.0,0.0,0.0,(T(i) + C(2)*dt)**2/)
-      K(3, :) = matmul(F, Y(i, :) + K(2,:)/2.) +&
-                (/ 0.0,0.0,0.0,(T(i) + C(3)*dt)**2/)
-      K(4, :) = matmul(F, Y(i, :) + K(3,:)) +&
-                (/ 0.0,0.0,0.0,(T(i) + C(4)*dt)**2/)
+      K(:,1) = matmul(F, Y(:,i))
+      K(ma,1) = K(ma,1) + (T(i) + C(1)*dt)**2
+      K(:,2) = matmul(F, Y(:, i) + K(:,1)/2.)
+      K(ma,2) = K(ma,2) + (T(i) + C(2)*dt)**2
+      K(:,3) = matmul(F, Y(:, i) + K(:,2)/2.)
+      K(ma,3) = K(ma,3) + (T(i) + C(3)*dt)**2
+      K(:,4) = matmul(F, Y(:, i) + K(:,3))
+      K(ma,4) = K(ma,4) + (T(i) + C(4)*dt)**2
       !update Y  
-      Y(i+1,:) = Y(i,:) + dt*matmul(b, K) 
+      Y(:,i+1) = Y(:,i) + dt*matmul(K, b) 
       T(i+1) = T(i) + dt
     end do 
   end subroutine MidtermRK4

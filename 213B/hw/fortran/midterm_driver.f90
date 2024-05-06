@@ -11,7 +11,7 @@ program midterm_driver
 
   !Q1
   integer, parameter :: np_rk4=60000, m_rk4=4
-  real, dimension(np_rk4+1, m_rk4) :: Y_rk4, Y2_rk4 
+  real, dimension(m_rk4, np_rk4+1) :: Y_rk4, Y2_rk4 
   real, dimension(np_rk4+1) ::  Y_act_rk4, T_rk4, Err_rk4, DY_act_rk4
   real :: dt_rk4, tol = 10.d-10, error_tot, prev_err
   real, dimension(3) :: v1, v2
@@ -49,50 +49,62 @@ program midterm_driver
     F_rk4(3,:) = (/ 0.0, 0.0, 0.0, 1.0/)
     F_rk4(4,:) = (/ 0.0, 0.0, 0.0, 0.0/)
 
-    Y_rk4(1, :) = (/0.0, 0.0, 1.0, 1.0/)
-    Y2_rk4(1, :) = (/0.0, 0.0, 0.0, 0.0/)
+    Y_rk4(1, 1) = 0.0 !(/0.0, 0.0, 0.2361037, -0.391657/)
+    Y_rk4(2, 1) = 0.0
+    Y_rk4(3, 1) = 1.0
+    Y_rk4(4, 1) = 1.0
+    Y2_rk4(1, 1) = 0.0 !(/0.0, 0.0, 0.2361037, -0.391657/)
+    Y2_rk4(2, 1) = 0.0
+    Y2_rk4(3, 1) = 0.0
+    Y2_rk4(4, 1) = 0.0
 
-    call MidtermRK4(F_rk4, Y_rk4, T_rk4, m_rk4, np_rk4, dt_rk4)
+    !Y2_rk4(:, 1) = (/0.0, 0.0, 0.0, 0.0/)
+
+    !call MidtermRK4(F_rk4, Y_rk4, T_rk4, m_rk4, np_rk4, dt_rk4)
+    call AB3(F_rk4, Y_rk4, T_rk4, m_rk4, np_rk4, dt_rk4)
 
     ! compute analytical sol
     Y_act_rk4 = (T_rk4**6)/360. - (T_rk4**3)/90. + (T_rk4**2)/120.
     DY_act_rk4 = (T_rk4**5)/60. - (T_rk4**2)/30. + (T_rk4)/60.
-    y_error(2) = Y_act_rk4(np_rk4+1) - Y_rk4(np_rk4+1, 1) 
-    dy_error(2) = DY_act_rk4(np_rk4+1) - Y_rk4(np_rk4+1, 2) 
+    y_error(2) = Y_act_rk4(np_rk4+1) - Y_rk4(1, np_rk4+1) 
+    dy_error(2) = DY_act_rk4(np_rk4+1) - Y_rk4(2, np_rk4+1) 
     T_rk4 = 0
 
     call MidtermRK4(F_rk4, Y2_rk4, T_rk4, m_rk4, np_rk4, dt_rk4)
+    !call AB3(F_rk4, Y2_rk4, T_rk4, m_rk4, np_rk4, dt_rk4)
 
-    y_error(1) = Y_act_rk4(np_rk4+1) - Y2_rk4(np_rk4+1, 1) 
-    dy_error(1) = DY_act_rk4(np_rk4+1) - Y2_rk4(np_rk4+1, 2) 
+    y_error(1) = Y_act_rk4(np_rk4+1) - Y2_rk4(1, np_rk4+1) 
+    dy_error(1) = DY_act_rk4(np_rk4+1) - Y2_rk4(2, np_rk4+1) 
 
     error_tot = sqrt(dy_error(2)**2+y_error(2)**2) !+ abs(y_error(2))
     print *, error_tot, y_error(2), dy_error(2)
 
     do while (error_tot > tol)
-      ! update v 
+       !update v 
       dv1 = v1(2) - v1(1)
       dv2 = v2(2) - v2(1)
       de1 = y_error(2) - y_error(1)
       de2 = dy_error(2) - dy_error(1)
-      !jac = de2*de1/(dv2*dv1) - de2
-      ! v1 = v1 (- e1(de2/dv2)+ e2(de1/dv2))(
-      ! v2 = v2 + e1(de2/dv1)- e2(de1/dv1)
       v1(3) = v1(2) - y_error(2)*(dv1/de1) !- dy_error(2)*(dv1/de2)
       v2(3) = v2(2) - dy_error(2)*(dv2/de2) !- y_error(2)*(dv2/de1)
 
       ! perform rk4 again
       T_rk4 = 0
-      Y_rk4(1,:) = (/0.0,0.0,v2(3),v1(3)/)
+      !Y_rk4(:,1) = (/0.0,0.0,v2(3),v1(3)/)
+      Y_rk4(1, 1) = 0.0
+      Y_rk4(2, 1) = 0.0
+      Y_rk4(3, 1) = v2(3)
+      Y_rk4(4, 1) = v1(3)
       call MidtermRK4(F_rk4, Y_rk4, T_rk4, m_rk4, np_rk4, dt_rk4)
+      !call AB3(F_rk4, Y_rk4, T_rk4, m_rk4, np_rk4, dt_rk4)
       v1(1:2) = v1(2:3)
       v2(1:2) = v2(2:3)
 
       ! compute the error
       y_error(1) = y_error(2)
-      y_error(2) = Y_act_rk4(np_rk4+1) - Y_rk4(np_rk4+1, 1) 
+      y_error(2) = Y_act_rk4(np_rk4+1) - Y_rk4(1, np_rk4+1) 
       dy_error(1) = dy_error(2)
-      dy_error(2) = DY_act_rk4(np_rk4+1) - Y_rk4(np_rk4+1, 2)
+      dy_error(2) = DY_act_rk4(np_rk4+1) - Y_rk4(2, np_rk4+1)
 
       ! update error
       error_tot = sqrt(dy_error(2)**2+y_error(2)**2)

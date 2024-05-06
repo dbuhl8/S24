@@ -58,14 +58,17 @@
   The numerical solution obtained by the shooting method takes the following
   form,
   \begin{align*}
-    \frac{dy}{dx} &= z, \quad y(0) = 0\\
-    \frac{dz}{dx} &= 2x, \quad z(0) = v
+    \frac{dy_1}{dx} &= y_2, \quad y_1(0) = 0\\
+    \frac{dy_2}{dx} &= y_3, \quad y_2(0) = 0\\
+    \frac{dy_3}{dx} &= y_4, \quad y_3(0) = v_1\\
+    \frac{dy_4}{dx} &= x^2, \quad y_4(0) = v_2
   \end{align*}
   Thus we proceed by integrating this ODE with a standard numerical method and
-  at each iteration adjust $v$ so that we get closer and closer to the bouncary
-  condition at $x=1$. For this method, I will employ the secant method, which I
-  like to call "The Poor Man's Newton Method" because it uses $\frac{\Delta E}{\Delta
-  v}$ as an approximation for $E'$
+  at each iteration adjust $v_1, v_2$ so that we get closer and closer to the bouncary
+  condition at $x=1$. To this end, I will implement something similar to the
+  second method. We will update $v_1$ to minimize the error of $y_1$. Then we I
+  will update $v_2$ to minimize the error of $y_2$. After iterating several
+  times, we obtain accuracy of $10^{-10}$, $v_1 = $, $v_2 = $. 
 
 
   \item \colorbox{yellow}{Plot the numerical solution obtained with the shooting
