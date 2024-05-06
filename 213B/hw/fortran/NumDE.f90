@@ -69,11 +69,11 @@ module NumDE
     real, dimension(3) :: B
     integer, intent(in) :: ma, num_points
     integer :: i, j
-    real, dimension(ma, 3) :: K
+    real, dimension(3, ma) :: K
 
     !vars for LU solve
     real, dimension(ma, ma) :: LU_A
-    real, dimension(ma, 1) :: LU_B
+    real, dimension(ma, 1) :: LU_B, col
     logical :: bool
     integer, dimension(ma) :: P
 
@@ -85,21 +85,47 @@ module NumDE
     do i = 1, num_points
       K = 0.0
 
+      col=0.0
       ! update k vectors
-      K(:, 1:1) = matmul(F, transpose(Y(i:i,:)))
-      LU_B = matmul(F, transpose(Y(i:i,:)) + 0.25*K(:, 1:1))
-      call LUsolve(LU_A, ma, LU_B, K(:, 2:2), 1, P)
-      K(:, 3:3) = matmul(F, transpose(Y(i:i, :)) + K(:, 2:2))      
+      K(1:1,:) = transpose(matmul(F, transpose(Y(i:i,:))))
+      LU_B = transpose(matmul(F, transpose(Y(i:i,:) + 0.25*K(1:1, :))))
+      call LUsolve(LU_A, ma, LU_B, col, 1, P)
+      K(2:2,:) = transpose(col)
+      K(3:3,:) = transpose(matmul(F, transpose(Y(i:i, :) + K(2:2,:))))
 
       ! update y
-      Y(i+1, :) = Y(i, :)
-      do j = 1, 3
-          Y(i+1:i+1, :) = Y(i+1:i+1, :) + dt*b(j)*transpose(K(:,j:j))
-      end do
+      Y(i+1, :) = Y(i, :) + dt*matmul(b, K)
 
       T(i+1) = T(i) + dt
     end do
-  end subroutine
+  end subroutine MidtermRK3
+
+  subroutine MidtermRK4(F, Y, T, ma, num_points, dt)
+    implicit none
+  
+    real :: F(:, :), Y(:, :), T(:), dt
+    real, dimension(4, ma) :: K
+    real, dimension(4) :: B, C
+    integer :: ma, num_points, i
+    
+    B = (/1./6., 1./3., 1./3., 1./6. /)
+    C = (/ 0.0, 1./2., 1./2., 1.0 /)
+
+    do i = 1, num_points
+      ! find k vecs
+      K(1, :) = matmul(F, Y(i, :)) + &
+                (/ 0.0,0.0,0.0,(T(i) + C(1)*dt)**2/)
+      K(2, :) = matmul(F, Y(i, :) + K(1,:)/2.) +&
+                (/ 0.0,0.0,0.0,(T(i) + C(2)*dt)**2/)
+      K(3, :) = matmul(F, Y(i, :) + K(2,:)/2.) +&
+                (/ 0.0,0.0,0.0,(T(i) + C(3)*dt)**2/)
+      K(4, :) = matmul(F, Y(i, :) + K(3,:)) +&
+                (/ 0.0,0.0,0.0,(T(i) + C(4)*dt)**2/)
+      !update Y  
+      Y(i+1,:) = Y(i,:) + dt*matmul(b, K) 
+      T(i+1) = T(i) + dt
+    end do 
+  end subroutine MidtermRK4
 
   subroutine AM3(F, Y, T, ma, num_points, dt)
     ! this subroutine can only handle linear ODE's as of right now
