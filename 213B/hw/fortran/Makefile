@@ -1,8 +1,8 @@
-OBJECTS = LinAl.o NumDE.o midterm_driver.o # hw1_driver.o
+OBJECTS = LinAl.o NumDE.o midterm_driver.o # Make sure the correct driver is in the objects variable
 	
 MODULES = LinAl.mod NumDE.mod
 
-OUTPUTS = *.png rk3.dat *.mod output.txt
+OUTPUTS = *.png *.mod output.txt #you can optionally include *.dat, but this might accidentally delete data you want to keep if you aren't careful
 
 FFLAGS = -fdefault-real-8 -fdefault-double-8 -fbounds-check -g
 
