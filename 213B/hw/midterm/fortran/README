@@ -1,0 +1,15 @@
+Hi Luan,
+
+Some notes about my submission for HW2. So I did this assignment with part of it in Fortran and part of it in Matlab. 
+
+In order to produce most of the plots for hw2, please see the abs_stab_test.m matlab file. Running this will produce 4 absolute stability plots. 
+
+For the AB3 trajectory plots please 'make' in this directory. It will compile, execute, and run a fortran driver and then make three plots with gnuplot with the trajectories for the three different dt's used. 
+
+The main reason I used two different languages, is because most of the assignment isn't about the numerical methods, but more about analyzing the numerical methods. So I only did code for the numerical method problem (performing AB3) in fortran. Let me know if it is too comfusing or if you need help running the code!
+
+Thank you!
+
+-Dante-
+
+

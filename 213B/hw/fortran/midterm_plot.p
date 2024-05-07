@@ -26,6 +26,7 @@ set title "Shooting Method for Y"
 plot "rk4.dat" u 1:2 w l title 'Actual', "" u 1:4 w l title 'Numerical'
 
 # plot 4
+set log y
 set output "rk4_error.png"
 set title "Shooting Method Error"
 plot "rk4.dat" u 1:6 w l title 'Error'

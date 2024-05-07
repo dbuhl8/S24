@@ -8,6 +8,7 @@
 \usepackage{enumitem}
 \usepackage{verbatim}
 \usepackage{xcolor}
+\usepackage{caption}
 
 \title{Midterm: Report}
 \author{Dante Buhl}
@@ -40,8 +41,8 @@
   \item The system can be solved analytically by simply integrating 4 times and
   then solving for the boundary conditions. 
   \begin{align*}
-    EI\int\int\int\int \frac{d^4y}{dx^4} dx^4 &= \int\int\int\int x^2 dx^4\\
-    EIy(x) &= \frac{x^6}{360} + c_1x^3 + c_2x^2 + c_3x + c_4
+    \int\int\int\int \frac{d^4y}{dx^4} dx^4 &= \int\int\int\int x^2 dx^4\\
+    y(x) &= \frac{x^6}{360} + c_1x^3 + c_2x^2 + c_3x + c_4
   \end{align*}
   We can see very clearly from the boundary conditions at $x=0$ that $c_4=c_3=0$.
   We finish solving for $c_1$ and $c_2$.
@@ -50,32 +51,45 @@
     c_1 = -\frac{1}{90}, &\quad c_2 = \frac{1}{120}
   \end{align*}
   \begin{align*}
-    y(x) = \frac{1}{EI}\left(\frac{x^6}{360} - \frac{x^3}{90} +
+    y(x) = \left(\frac{x^6}{360} - \frac{x^3}{90} +
     \frac{x^2}{120}\right)
   \end{align*}
 
-  \item \colorbox{yellow}{Determine the Numerical Solution using the shooting method.}
+  \item 
   The numerical solution obtained by the shooting method takes the following
   form,
   \begin{align*}
     \frac{dy_1}{dx} &= y_2, \quad y_1(0) = 0\\
     \frac{dy_2}{dx} &= y_3, \quad y_2(0) = 0\\
-    \frac{dy_3}{dx} &= y_4, \quad y_3(0) = v_1\\
-    \frac{dy_4}{dx} &= x^2, \quad y_4(0) = v_2
+    \frac{dy_3}{dx} &= y_4, \quad y_3(0) = v_2\\
+    \frac{dy_4}{dx} &= x^2, \quad y_4(0) = v_1
   \end{align*}
   Thus we proceed by integrating this ODE with a standard numerical method and
   at each iteration adjust $v_1, v_2$ so that we get closer and closer to the bouncary
   condition at $x=1$. To this end, I will implement something similar to the
   second method. We will update $v_1$ to minimize the error of $y_1$. Then we I
   will update $v_2$ to minimize the error of $y_2$. After iterating several
-  times, we obtain accuracy of $10^{-10}$, $v_1 = $, $v_2 = $. 
+  times, we obtain accuracy with error at the boundaries less then $10^{-10}$.
+  The corresponding initial conditions are $v_1 = -0.066666\ldots$, $v_2 =
+  0.016666\ldots$. 
 
+  \item See Fig. 1
+    \begin{figure}[ht]
+        \centering 
+        \begin{minipage}{0.49\textwidth}
+            \centering 
+            \includegraphics[width=1\textwidth]{rk4_y.png}
+            \caption{Numerical Solution for Shooting Method}
+        \end{minipage}
+        \begin{minipage}{0.49\textwidth}
+            \centering 
+            \includegraphics[width=1\textwidth]{rk4_error.png}
+            \caption{Numerical Error for Shooting Method}
+        \end{minipage}
+    \end{figure}
 
-  \item \colorbox{yellow}{Plot the numerical solution obtained with the shooting
-  method}
-
-  \item \colorbox{yellow}{Plot the error}
-
+  \item See Fig. 2
+        
 \end{enumerate}
 
 
@@ -86,13 +100,35 @@ Method}
 
     \item Prove convergence for Implicit RK3.
     \begin{proof}
-        Showing convergence is a matter of sending zero-stability and
+        Showing convergence is a matter of showing zero-stability and
         consistency. This is a one-step method, so we have the first
         characteristic polynomial, $\rho(z) = z - 1$. This of course satisfies
-        the root condition and therefore is zero-stable. Showing consistency 
+        the root condition and therefore is zero-stable. Showing consistency is
+        a matter of using a taylor expansion. 
+        \begin{align*}
+            \bs{y}_{k+1}&=\bs{y}_k + \frac{\dt}{6}\left(\bs{K}_1 + 4\bs{K}_2 +
+            \bs{K}_3\right) + \dt\tau_{k+1}\\
+            \tau_{k+1}&=\frac{\bs{y}_{k+1}-\bs{y}_k}{\dt} -
+            \frac{1}{6}\left(B\bs{y}_k + 4B\left(\bs{y}_k +
+            \frac{\dt}{4}\left(\bs{K}_1 + \bs{K}_2\right)\right) 
+            +B\left(\bs{y}_k + \dt\bs{K}_2\right)\right)\\
+            \tau_{k+1}&=\frac{\bs{y}_{k+1}-\bs{y}_k}{\dt} - \dot{\bs{y}}_k -
+            \frac{\dt}{6}B\left(\bs{K}_1 + 2\bs{K}_2\right)
+        \end{align*}
+        \begin{align*}
+            \bs{y}_{k+1} &= \bs{y}_k + \dt\dot{\bs{y}}_k + \dt^2(h.o.t.)\\
+            \frac{\bs{y}_{k+1}-\bs{y}_k}{\dt} &=  \dot{\bs{y}}_k + \dt(h.o.t.)\\
+            \tau_{k+1}&= -\frac{\dt}{6}B\left(\bs{K}_1 + 2\bs{K}_2\right) +
+            \dt(h.o.t.)\\
+            |\tau_{k+1}|&= \frac{\dt}{6}\left|B\left(\bs{K}_1 + 2\bs{K}_2\right) +
+            \dt(h.o.t.)\right|\\
+        \end{align*}
+        Thus we have shown consistency with at least order 1, so we must have
+        that this Implicit RK3 method is convergent with at least order 1 since
+        it is both zero-stable and consistent. 
     \end{proof}
 
-    \item Plot Region of Absolute Statbility (See Fig. 1)
+    \item Plot Region of Absolute Statbility (See Fig. 3)
     \begin{figure}[ht]
         \centering 
         \includegraphics[width=0.5\textwidth]{2.b.AbsStab'.png}
@@ -107,10 +143,37 @@ Method}
     compare to see which eigenvalue is furthest from the region of absolute
     stability. It is evidently the eigenvalue, $\lambda = -16$. So we look at
     the closest point in our region of absolute stability. From the plot we can
-    see that the closest point is $\lambda\dt = -5.4199 + 0i$. Therefore we
-    have that the largest $\dt$ must be, $\dt \approx 0.338746\ldots$. 
+    see that the closest point is $\lambda\dt \approx -5.4199 + 0i$. Therefore we
+    have that the largest $\dt$ must be, $\dt \approx 0.3387\ldots$. 
 
-    \item \colorbox{yellow}{Show that this is validated numerically. }
+    \item As seen in Fig. 4, when $\dt > \dt^*$ we can see that the oscillations
+    in the system grow with time while the oscillations for $\dt < \dt^*$ decay
+    with time. Ultimately the stability of this method is questionable near
+    $\dt^*$, as we can see in the plot of the true solution, however this does
+    coincide with the result of absolute stability for this value of $\dt$. To
+    remind the reader, the only requirement is for $\bs{u}_k \to 0$ as $k \to
+    \infty$
+    \begin{figure}[ht]
+        \centering 
+        \begin{minipage}{0.48\textwidth}
+            \centering
+            \includegraphics[width=1\textwidth]{rk3_fail.png}
+            \caption*{$\dt$ above threshold}
+        \end{minipage}
+        \begin{minipage}{0.48\textwidth}
+            \centering
+            \includegraphics[width=1\textwidth]{rk3_pass.png}
+            \caption*{$\dt$ below threshold}
+        \end{minipage}
+        
+        \begin{minipage}{0.6\textwidth}
+            \centering
+            \includegraphics[width=1\textwidth]{rk3_act.png}
+            \caption*{True Solution}
+        \end{minipage}
+        \caption{Evolution of the IC with $\dt$ above and below the calculated
+        threshold.}
+    \end{figure}
 
 \end{enumerate}
 
@@ -155,36 +218,63 @@ Method}
             \frac{\dt}{12}[\dot{\bs{y}}_{k+2} - 2\dot{\bs{y}}_{k+1} + 3\dot{\bs{y}}_{k}] + \dt
             \tau_{k+3}
         \end{align*}
-        We look at the taylor expansions for several points in the LMM. 
-        \begin{align*}
-            \bs{y}_{k} &= \bs{y}_{k+3} - 3\dt \dot{\bs{y}}_{k} - \frac{9}{2}\dt^2\ddot{\bs{y}}_{k} -
-            \frac{27}{6}\dt^3\dddot{\bs{y}}_{k} - \frac{81}{24}\dt^4\ddddot{\bs{y}}_{k} +
+        In order to simplify this system an demonstrate convergence we will
+        convert this problem into terms of $\bs{q}_{k+2}$ using Taylor
+        Expansions.
+        \begin{align}
+            \bs{y}_{k+3} &= \bs{y}_{k+2} + \dt \dot{\bs{y}}_{k+2} +
+            \frac{\dt^2}{2}\ddot{\bs{y}}_{k+2} +
+            \frac{\dt^3}{6}\dddot{\bs{y}}_{k+2} +
+            \frac{\dt^4}{24}\ddddot{\bs{y}}_{k+2} +
             h.o.t.\\
-            \bs{y}_{k+1} &= \bs{y}_{k+3} - 2\dt \dot{\bs{y}}_{k+1} - \frac{4}{2}\dt^2\ddot{\bs{y}}_{k+1} -
-            \frac{8}{6}\dt^3\dddot{\bs{y}}_{k+1} - \frac{16}{24}\dt^4\ddddot{\bs{y}}_{k+1} +
+            \bs{y}_{k+1} &= \bs{y}_{k+2} - \dt \dot{\bs{y}}_{k+2} +
+            \frac{\dt^2}{2}\ddot{\bs{y}}_{k+2} -
+            \frac{\dt^3}{6}\dddot{\bs{y}}_{k+2} +
+            \frac{\dt^4}{24}\ddddot{\bs{y}}_{k+2} +
             h.o.t.\\
-            \bs{y}_{k+2} &= \bs{y}_{k+3} - \dt \dot{\bs{y}}_{k+2} - \frac{1}{2}\dt^2\ddot{\bs{y}}_{k+2} -
-            \frac{1}{6}\dt^3\dddot{\bs{y}}_{k+2} - \frac{1}{24}\dt^4\ddddot{\bs{y}}_{k+2}+
-            h.o.t.
-        \end{align*}
+            \bs{y}_{k+1} &= \bs{y}_{k+2} - 2\dt \dot{\bs{y}}_{k+2} +
+            \frac{4\dt^2}{2}\ddot{\bs{y}}_{k+2} -
+            \frac{8\dt^3}{6}\dddot{\bs{y}}_{k+2} +
+            \frac{16\dt^4}{24}\ddddot{\bs{y}}_{k+2} +
+            h.o.t.\\
+            \dot{\bs{y}}_{k+1} &= \dot{\bs{y}}_{k+2} - \dt \ddot{\bs{y}}_{k+2} + 
+            \frac{\dt^2}{2}\dddot{\bs{y}}_{k+2} -
+            \frac{\dt^3}{6}\ddddot{\bs{y}}_{k+2} + h.o.t\\
+            \dot{\bs{y}}_{k} &= \dot{\bs{y}}_{k+2} - 2\dt \ddot{\bs{y}}_{k+2} + 
+            \frac{4\dt^2}{2}\dddot{\bs{y}}_{k+2} -
+            \frac{8\dt^3}{6}\ddddot{\bs{y}}_{k+2} + h.o.t
+        \end{align}
+        Using this we can build a linear system to satisfy order 1 consistency,
+        then we can check to see if any of the other orders happen to be
+        satisfied by the solution. If the following system has a solution then we
+        have, 
         \begin{align*}
-            \tau_{k+3} &= \frac{\bs{y}_{k+3} - \frac{1}{3}(\bs{y}_{k+2} +
-            \bs{y}_{k+1} + \bs{y}_{k})}{\dt} - \frac{1}{12}[\dot{\bs{y}}_{k+2} 
-            - 2\dot{\bs{y}}_{k+1} + 3\dot{\bs{y}}_{k}]\\\\
-            \tau_{k+3} &= -\frac{\bs{y}_{k+3} - 3\dt \dot{\bs{y}}_{k} - \frac{9}{2}\dt^2\ddot{\bs{y}}_{k} -
-            \frac{27}{6}\dt^3\dddot{\bs{y}}_{k} - \frac{81}{24}\dt^4\ddddot{\bs{y}}_{k} +
-            h.o.t.}{3\dt}\\\\
-            &- \frac{\bs{y}_{k+3} - 2\dt \dot{\bs{y}}_{k+1} - \frac{4}{2}\dt^2\ddot{\bs{y}}_{k+1} -
-            \frac{8}{6}\dt^3\dddot{\bs{y}}_{k+1} - \frac{16}{24}\dt^4\ddddot{\bs{y}}_{k+1} +
-            h.o.t.}{3\dt}\\\\
-            &-\frac{\bs{y}_{k+3} - \dt \dot{\bs{y}}_{k+2} - \frac{1}{2}\dt^2\ddot{\bs{y}}_{k+2} -
-            \frac{1}{6}\dt^3\dddot{\bs{y}}_{k+2} - \frac{1}{24}\dt^4\ddddot{\bs{y}}_{k+2}+
-            h.o.t.}{3\dt} \\\\
-            &+ \frac{\bs{y}_{k+3}}{\dt} - \frac{1}{12}[23\dot{\bs{y}}_{k+2} -
-            2\dot{\bs{y}}_{k+1} + 3\dot{\bs{y}}_{k}] \\\\
-            \tau_{k+3} &= \frac{9\dot{\bs{y}}_k + 10\dot{\bs{y}}_{k+1}
-            -19\dot{\bs{y}}_{k+2}}{12} + h.o.t
+            \left[\begin{array}{c c c}1 & -1/3 & -1/3 \\ 1 & 1/3 & 2/3 \\ 1/2 &-1/6 &
+            -2/3\end{array}\right]
+            \left[\begin{array}{c}A\\B\\C \end{array}\right]
+            =
+            \left[\begin{array}{c}1/3\\2\\-1/3 \end{array}\right]
+            \implies \tau_{k+3} = C\dt^2
         \end{align*}
+        Furthermore, if we can show that these coefficients satisfy higher order
+        equations then we can demonstrate higher order convergence. As it
+        happens, the solution to this system is, $A = B = C = 1$. Thus we have
+        that this system is at least consistent with order 2, and thus at least
+        convergent with order 2 since zero-stability was already implied. So we look at
+        the higher orders of convergence/consistency. 
+        \begin{align*}
+            \left[\begin{array}{c c c}1/6 & 1/18 & 8/18 \\ 1/24 & -1/72 & -16/72 \end{array}\right]
+            \left[\begin{array}{c}A\\B\\C \end{array}\right]
+            i&\stackrel{?}{=}
+            \left[\begin{array}{c}5/12\\-2/9 \end{array}\right]\\
+            \left[\begin{array}{c c c}1/6 & 1/18 & 8/18 \\ 1/24 & -1/72 & -16/72 \end{array}\right]
+            \left[\begin{array}{c}A\\B\\C \end{array}\right]
+            - 
+            \left[\begin{array}{c}5/12\\-2/9 \end{array}\right] &= 
+            \left[\begin{array}{c}0.2499\ldots\\-5.40277\ldots \end{array}\right]
+        \end{align*}
+        Thus no higher order of convergence is obtained. Therefore this system
+        is convergence with order 2. 
     \end{proof}
 
     \item Absolute Stability and A-Stability

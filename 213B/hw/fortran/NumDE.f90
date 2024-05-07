@@ -69,32 +69,31 @@ module NumDE
     real, dimension(3) :: B
     integer, intent(in) :: ma, num_points
     integer :: i, j
-    real, dimension(3, ma) :: K
+    real, dimension(ma, 3) :: K
 
     !vars for LU solve
-    real, dimension(ma, ma) :: LU_A
+    real, dimension(ma, ma) :: LU_A, eye
     real, dimension(ma, 1) :: LU_B, col
     logical :: bool
     integer, dimension(ma) :: P
 
     B = (/ 1./6, 2./3, 1./6 /)
  
-    call ident(LU_A, ma)
-    LU_A = LU_A - 0.25*F
-    call LU(LU_A, ma, bool, P)
+    call ident(eye, ma)
     do i = 1, num_points
+      LU_A = eye - dt*F/4.0
+      call LU(LU_A, ma, bool, P)
       K = 0.0
 
       col=0.0
       ! update k vectors
-      K(1:1,:) = transpose(matmul(F, transpose(Y(i:i,:))))
-      LU_B = transpose(matmul(F, transpose(Y(i:i,:) + 0.25*K(1:1, :))))
-      call LUsolve(LU_A, ma, LU_B, col, 1, P)
-      K(2:2,:) = transpose(col)
-      K(3:3,:) = transpose(matmul(F, transpose(Y(i:i, :) + K(2:2,:))))
+      K(:,1) = matmul(F, Y(:,i))
+      LU_B = matmul(F, Y(:,i:i) + dt*0.25*K(:, 1:1))
+      call LUsolve(LU_A, ma, LU_B, K(:,2:2), 1, P)
+      K(:,3) = matmul(F, Y(:,i) + dt*K(:,2))
 
       ! update y
-      Y(i+1, :) = Y(i, :) + dt*matmul(b, K)
+      Y(:,i+1) = Y(:,i)+dt*(b(1)*k(:,1)+b(2)*k(:,2)+b(3)*k(:,3))
 
       T(i+1) = T(i) + dt
     end do
@@ -110,19 +109,33 @@ module NumDE
     
     B = (/1./6., 1./3., 1./3., 1./6. /)
     C = (/ 0.0, 1./2., 1./2., 1.0 /)
+    K = 0.
 
     do i = 1, num_points
-      ! find k vecs
+      ! find k vec
+      !if(i.eq.2) then
+        !print *, " "
+        !call printmat(K, ma, 4)
+        !print *, " "
+      !end if
       K(:,1) = matmul(F, Y(:,i))
       K(ma,1) = K(ma,1) + (T(i) + C(1)*dt)**2
-      K(:,2) = matmul(F, Y(:, i) + K(:,1)/2.)
+      K(:,2) = matmul(F, Y(:, i) + dt*K(:,1)/2.)
       K(ma,2) = K(ma,2) + (T(i) + C(2)*dt)**2
-      K(:,3) = matmul(F, Y(:, i) + K(:,2)/2.)
+      K(:,3) = matmul(F, Y(:, i) + dt*K(:,2)/2.)
       K(ma,3) = K(ma,3) + (T(i) + C(3)*dt)**2
-      K(:,4) = matmul(F, Y(:, i) + K(:,3))
+      K(:,4) = matmul(F, Y(:, i) + dt*K(:,3))
+      !print *, K(ma, 4)
       K(ma,4) = K(ma,4) + (T(i) + C(4)*dt)**2
+      !print *, K(ma, 4)
+      !if(i.eq.1) then
+        !print *, " "
+        !call printmat(K, ma, 4)
+        !print *, " "
+      !end if
       !update Y  
-      Y(:,i+1) = Y(:,i) + dt*matmul(K, b) 
+      Y(:,i+1) = Y(:,i) + dt*(b(1)*k(:,1) + b(2)*k(:,2) +&
+                              b(3)*k(:,3) + b(4)*k(:,4))
       T(i+1) = T(i) + dt
     end do 
   end subroutine MidtermRK4
