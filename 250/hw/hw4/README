@@ -1,0 +1,16 @@
+
+Hello Uli, 
+
+Here is a breakdown of my hw4 submission. each subdirectory will contain a Makefile, so all you will have to do is type "make" and the fortran file will be compiled with mpif90. Then to run the executable, either submit a slurm job with whatever slurm script is placed within that directory. 
+
+For example: inside the "hello" directory simply, 
+-> $ make
+-> $ sbatch hello.slurm
+
+This will submit a slurm job according to the details in the slurm script. If you have any questions about the Slurm scripts or Makefile please let me know. 
+
+Let me know if anything goes wrong or if something seems confusing. Thank you!
+
+-Dante-
+
+
