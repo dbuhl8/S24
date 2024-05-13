@@ -1,7 +1,7 @@
 function plot_LMM_stability_region()
 
-alpha_AB2= [1 -1/3 -1/3 -1/3 ];
-beta_AB2 = [0 23/12 -1/6 -3/12];
+alpha_AB2= [1 -1/3 -1/3 -1/3 ]
+beta_AB2 = [0 23/12 -1/6 3/12]
 
 roots(alpha_AB2)
 
@@ -13,12 +13,12 @@ figure(1)
 clf
 plot(real(z_AB2),imag(z_AB2),'b','Linewidth',1.5)
 hold 
-grid
+%grid
 xlabel('{Re}$(z)$','Interpreter','Latex')
 ylabel('{Im}$(z)$','Interpreter','Latex')
-set(gca,'Fontsize',22)
-axis equal
-axis([-1.5 0.5 -1 1])
+%set(gca,'Fontsize',22)
+%axis equal
+%axis([-1.5 0.5 -1 1])
 
 end
 
