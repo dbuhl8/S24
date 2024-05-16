@@ -235,6 +235,118 @@ module NumDE
     real :: F(:, :), Y(:, :)
   end subroutine FPI
 
+  subroutine D2FD2(D, nx, ny, dx, dy)
+    ! Computes D2 for an evenly spaced grid according to a second order finite
+    ! difference method
+
+    implicit none
+ 
+    ! D should be an (nx*ny) x (nx*ny) array
+    real :: D(:, :), dx, dy 
+    integer :: nx, ny, i, n, m
+    integer :: indx, indy
+  
+    D = 0.0
+
+    indx = 1
+    indy = nx
+    do m = 1, ny
+      do n = 1, nx
+        i = n + nx*(m-1) 
+        ! we require a lot of logic gates in order to make sure we are not
+        ! violating the array
+        D(i,i) = -2.0*(1/(dx**2) + 1/(dy**2))
+        if(1 < n) then
+          D(i, i-indx) = 1.0/(dx**2)
+        end if
+        if(n < nx) then
+          D(i, i+indx) = 1.0/(dx**2)
+        end if
+        if(1 < m) then
+          D(i, i-indy) = 1.0/(dy**2)
+        end if
+        if(m < ny) then
+          D(i, i+indy) = 1.0/(dy**2)
+        end if
+      end do 
+    end do 
+  end subroutine
+
+  subroutine vec_boundary(bound, nx, ny)
+    ! Returns a populaated bound array with the indices of the boudary for a
+    ! vectorized domain u
+    ! bound should be an array of length (2*nx + 2*ny - 4)
+    implicit none
+    integer :: bound(:), nx, ny, i, j, n, m
+    j = 1
+    do m = 1, ny
+      do n = 1, nx
+        i = n + nx*(m-1) 
+        if(((n.eq.1).or.(n.eq.nx)).or.((m.eq.1).or.(m.eq.ny))) then
+          bound(j) = i
+          j = j + 1
+        end if
+      end do 
+    end do 
+  end subroutine
+
+  subroutine vec_domain(X, Y, nx, ny, xrange, yrange)
+    !Returns a vectorized domain X, Y, similar to meshgrid but vectorized
+    ! Assumes an evenly spaced grid
+    ! X, Y should be arrays of length (nx*ny). 
+    implicit none
+
+    real :: X(:,:), Y(:,:), xrange(:), yrange(:)
+    real :: dx, dy
+    integer :: nx, ny, i, n, m
+
+    dx = (xrange(2) - xrange(1))/(nx-1)
+    dy = (yrange(2) - yrange(1))/(ny-1)
+
+    do m = 1, ny
+      do n = 1, nx
+        i = n + nx*(m-1) 
+        X(i,1) = xrange(1) + (n-1)*dx
+        Y(i,1) = yrange(1) + (m-1)*dy
+      end do 
+    end do 
+  end subroutine
+
+  subroutine vec_meshgrid(X, Y, nx, ny, sx, sy)
+    !Returns a vectorized domain X, Y, according to a meshgrid sx, sy
+    ! Assumes an evenly spaced grid
+    ! X, Y should be arrays of length (nx*ny). 
+    implicit none
+
+    real :: X(:), Y(:), sx(:), sy(:)
+    integer :: nx, ny, i, n, m
+
+    do m = 1, ny
+      do n = 1, nx
+        i = n + nx*(m-1) 
+        X(i) = sx(n)
+        Y(i) = sy(m)
+      end do 
+    end do 
+  end subroutine
+
+  subroutine devectorize(A, matA, nx, ny)
+    ! Returns a devectorized version of A in matA
+    ! A is an array of length nx*ny
+    ! matA is a matrix of size (nx) x (ny)
+
+    implicit none
+
+    real :: A(:,:), matA(:,:)
+    integer :: nx, ny, i, j
+
+    do j = 1, ny
+      do i = 1, nx
+        matA(i, j) = A(i + nx*(j-1),1)
+      end do 
+    end do 
+  end subroutine devectorize
+
 end module NumDE
 
 

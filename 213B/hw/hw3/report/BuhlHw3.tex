@@ -1,0 +1,82 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{enumitem}
+\usepackage{verbatim}
+\usepackage{xcolor}
+\usepackage{soul}
+
+\title{Homework 3: Report}
+\author{Dante Buhl}
+
+\DeclareMathOperator{\cond}{cond}
+\DeclareMathOperator{\vecspan}{span}
+
+\begin{document}
+
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+\newcommand{\bmp}[1]{\begin{minipage}{#1\textwidth}}
+\newcommand{\emp}{\end{minipage}}
+\newcommand{\R}{\mathbb{R}}
+%\newcommand{\Imag}{\mathbb{I}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\K}{\bs{\mathrm{K}}}
+\newcommand{\m}{\bs{\mu}_*}
+\newcommand{\s}{\bs{\Sigma}_*}
+\newcommand{\dt}{\Delta t}
+\newcommand{\tr}[1]{\text{Tr}(#1)}
+\newcommand{\Tr}[1]{\text{Tr}(#1)}
+
+\maketitle
+
+\section*{Question 1: BVP for 2D Poisson's Equation}
+\begin{enumerate}[label=\alph*)]
+
+    \item Write Code
+
+    \item \hl{Plot Numerical Solution for (N,M) = (81, 51)}
+
+    \item \hl{plot the solution at y = 0.2, and y = 0.5 as a function of x (put both
+    in the same figure)}
+
+\end{enumerate}
+
+
+\section*{Question 2: IBVP for 1D Heat Equation}
+
+\begin{enumerate}[label=\alph*)]
+
+    \item Determine the analytical solution 
+
+    \item \hl{Plot the analytical solution as a surface plot over [x, t]}
+
+    \item \hl{Write code and integrate using secodn-order finite differences and CN}
+
+    \item \hl{Wrote code and integrate using Gauss-Chebyshev-Lobatto coallocation
+    method}
+
+    \item \hl{plot maximum pointwise error on a log scale plot between analytical
+    and numerical solutions}
+
+\end{enumerate}
+
+\section*{Question 3: Extra Credit}
+
+\begin{enumerate}[label=\alph*)]
+
+    \item \hl{Write code to compute the nuemrical solution using secondorder finite
+    diff, and AB2.} 
+
+    \item \hl{plot the numerical solution as a surface plot}
+
+    \item \hl{plot the numerical sollution at t = 62 as a function of x.}
+
+\end{enumerate}
+
+\end{document}

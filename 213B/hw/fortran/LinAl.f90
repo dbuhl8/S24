@@ -8,7 +8,7 @@ contains
 
 !********************************************************
 
-subroutine readMat(filename)
+  subroutine readMat(filename)
 
     implicit none
     character(len=*) :: filename
@@ -65,7 +65,7 @@ subroutine readMat(filename)
 
     !print "(A, I3, A, I3)", "This is a ", m," by ", n," matrix."
     do i = 1, ma
-        print "("//trim(str(na))//"F20.10)", A(i, :)
+        print "("//trim(str(na))//"F10.4)", A(i, :)
     end do
 
   end subroutine printmat
@@ -331,11 +331,11 @@ subroutine readMat(filename)
         !make vector x = sign(x1)twonorm(x)ihat + x
         call twonorm(x(:, 1), norm)
 
-!        print *, "Norm: ", norm
-!        call printmat(x, ma-i+1, 1)
+    !        print *, "Norm: ", norm
+    !        call printmat(x, ma-i+1, 1)
 
         if(norm > 10.d-15) then
-!            print *, "entered if statement"
+    !            print *, "entered if statement"
             x(1, 1) = x(1, 1) + sign(norm, x(1, 1))
             !normalize x
             call twonorm(x(:, 1), norm)

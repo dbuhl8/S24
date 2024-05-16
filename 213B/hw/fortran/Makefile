@@ -1,4 +1,4 @@
-OBJECTS = LinAl.o NumDE.o midterm_driver.o # Make sure the correct driver is in the objects variable
+OBJECTS = LinAl.o NumDE.o hw3_driver.o # Make sure the correct driver is in the objects variable
 	
 MODULES = LinAl.mod NumDE.mod
 
@@ -7,6 +7,10 @@ OUTPUTS = *.png *.mod output.txt #you can optionally include *.dat, but this mig
 FFLAGS = -fdefault-real-8 -fdefault-double-8 -fbounds-check -g
 
 .PHONY: clean
+
+hw3: driver.exe
+	./driver.exe > output.txt
+	gnuplot hw3_plot.p
 
 midterm: driver.exe
 	./driver.exe > output.txt
