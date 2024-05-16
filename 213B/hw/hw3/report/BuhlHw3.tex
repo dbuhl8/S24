@@ -38,12 +38,27 @@
 \section*{Question 1: BVP for 2D Poisson's Equation}
 \begin{enumerate}[label=\alph*)]
 
-    \item Write Code
+    \item Write Code to solve (1)
+    \begin{align}
+        \begin{cases}
+            \nabla^2 U(x,y) = f(x,y) \quad &(x, y) \in \Omega\\
+            U(x,y) = g(x,y) \quad &(x,y) \in \partial\Omega,
+        \end{cases} 
+    \end{align}
 
-    \item \hl{Plot Numerical Solution for (N,M) = (81, 51)}
+    \item 
+    \begin{figure}[ht]
+        \centering
+        \includegraphics[width=.6\textwidth]{q1_num_sol.png}
+        \caption{Numerical Solution to (1) with $N=81, M=51$}
+    \end{figure}
 
-    \item \hl{plot the solution at y = 0.2, and y = 0.5 as a function of x (put both
-    in the same figure)}
+    \item 
+    \begin{figure}[ht]
+        \centering
+        \includegraphics[width=.6\textwidth]{q1_num_sol_yconst.png}
+        \caption{Numerical Solution to (1) at $Y=0.2, 0.5$}
+    \end{figure}
 
 \end{enumerate}
 

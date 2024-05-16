@@ -141,11 +141,9 @@ contains
         k = mu - i
         X(k, :) = (B(k, :) - matmul(U(k, k+1:mu), X(k+1:mu, :)))/U(k, k)
     end do
-
   end subroutine backsub
 
   subroutine LU(A, ma, bool, P)
-    
     implicit none
     
     integer, intent(in) :: ma
@@ -206,7 +204,6 @@ contains
   end subroutine LU
 
   subroutine LUsolve(LU, ma, B, X, mb, P)
-
     implicit none
 
     integer, intent(in) :: ma, mb, P(:)
@@ -246,7 +243,6 @@ contains
   end subroutine LUsolve
     
   subroutine forwardsub(L, B, Y, ma, mb) 
-
     implicit none
 
     integer, intent(in) :: ma, mb
@@ -262,7 +258,6 @@ contains
   end subroutine forwardsub
 
   subroutine cholesky(A, ma, isSingular, tol)
-
     implicit none
 
     integer, intent(in) :: ma
@@ -324,31 +319,26 @@ contains
     Rvec = 0.0
 
     do i = 1, na    
-        allocate(x(ma-i+1, 1))
-        x = 0
-        !take column below the diagonal 
-        x(:, 1) = A(i:ma, i)
-        !make vector x = sign(x1)twonorm(x)ihat + x
+      allocate(x(ma-i+1, 1))
+      x = 0
+      !take column below the diagonal 
+      x(:, 1) = A(i:ma, i)
+      !make vector x = sign(x1)twonorm(x)ihat + x
+      call twonorm(x(:, 1), norm)
+
+      if(norm > tol) then
+        x(1, 1) = x(1, 1) + sign(norm, x(1, 1))
+        !normalize x
         call twonorm(x(:, 1), norm)
-
-    !        print *, "Norm: ", norm
-    !        call printmat(x, ma-i+1, 1)
-
-        if(norm > 10.d-15) then
-    !            print *, "entered if statement"
-            x(1, 1) = x(1, 1) + sign(norm, x(1, 1))
-            !normalize x
-            call twonorm(x(:, 1), norm)
-            x = x/norm
-        end if
-        ! Multiply A by the householder reflector
-        A(i:ma, i:na) = A(i:ma, i:na) - 2*matmul(x, matmul(transpose(x),&
-                                                 A(i:ma, i:na)))
-        Rvec(i) = A(i, i)
-        A(i, i) = 0
-        A(i:ma, i) = x(:, 1)
-        deallocate(x)
-        
+        x = x/norm
+      end if
+      ! Multiply A by the householder reflector
+      A(i:ma, i:na) = A(i:ma, i:na) - 2*matmul(x, matmul(transpose(x),&
+                                               A(i:ma, i:na)))
+      Rvec(i) = A(i, i)
+      A(i, i) = 0
+      A(i:ma, i) = x(:, 1)
+      deallocate(x)
     end do
 
   end subroutine householderQR
@@ -366,9 +356,9 @@ contains
     do k = 1, ma
         I(k, k) = 1.0
     end do  
-
   end subroutine ident
 
+  !This is an improperly named subroutine but kept for other dependencies
   subroutine formQstar(A, Q, ma, na)
     ! takes A such that on/below diagonal the vectors vi that compose qi are in
     ! the ith column of A.  returns Q = Q1...QN
@@ -397,15 +387,51 @@ contains
     QTEMP = eye
 
     do j = 1, na
-        i = na - j + 1
-        Qi = eye
-        Qi(i:ma, i:ma) = Qi(i:ma, i:ma) - 2*matmul(A(i:ma, i:i), &
-                          transpose(A(i:ma, i:i))) ! H = I - 2vv^T
-        QTEMP = matmul(Qi, QTEMP)
+      i = na - j + 1
+      Qi = eye
+      Qi(i:ma, i:ma) = Qi(i:ma, i:ma) - 2*matmul(A(i:ma, i:i), &
+                        transpose(A(i:ma, i:i))) ! H = I - 2vv^T
+      QTEMP = matmul(Qi, QTEMP)
     end do
     Q = QTEMP(:, 1:na) 
-
   end subroutine formQstar
+
+  subroutine formQ(A, Q, ma, na)
+    ! takes A such that on/below diagonal the vectors vi that compose qi are in
+    ! the ith column of A.  returns Q = Q1...QN
+
+    implicit none
+
+    integer, intent(in) :: ma, na
+    integer :: i, j
+    real :: A(:, :),  Q(:, :)
+    real, dimension(ma, ma) :: eye, Qi, QTEMP
+    
+    ! Q = Q1...QN
+
+    ! Qi = | I 0 |
+    !      | 0 H |
+    
+    ! H = I - 2vv^T
+
+    ! QTEMP = 2
+    ! from i = n to 1
+    ! QTEMP = Qi QTEMP
+    
+    eye = 0.0
+    call ident(eye, ma)
+    
+    QTEMP = eye
+
+    do j = 1, na
+      i = na - j + 1
+      Qi = eye
+      Qi(i:ma, i:ma) = Qi(i:ma, i:ma) - 2*matmul(A(i:ma, i:i), &
+                        transpose(A(i:ma, i:i))) ! H = I - 2vv^T
+      QTEMP = matmul(Qi, QTEMP)
+    end do
+    Q = QTEMP(:, 1:na) 
+  end subroutine formQ
     
   subroutine formR(A, R, rvec, na)
     ! takes in A such that above the diagonal are the above diagonal entries of
@@ -420,15 +446,14 @@ contains
     R = 0.0 
 
     do i = 1, na
-        if(i .eq. 1) then
-            R(1, 1) = rvec(1)
-        else
-            !take A above the diagonal
-            R(1:i-1, i) = A(1:i-1, i)
-            R(i, i) = rvec(i)
-        end if
+      if(i .eq. 1) then
+        R(1, 1) = rvec(1)
+      else
+        !take A above the diagonal
+        R(1:i-1, i) = A(1:i-1, i)
+        R(i, i) = rvec(i)
+      end if
     end do
-
   end subroutine formR
 
   subroutine checksingular(A, ma, isSingular, tol)
@@ -441,7 +466,6 @@ contains
 
     !checks the diagonal elements to see if they are zero (this would influence 
     ! the backsub/forward sub a better way would be to 
-    
   end subroutine checksingular
 
   subroutine frobnorm(A, norm)
@@ -453,7 +477,7 @@ contains
   end subroutine frobnorm
 
   subroutine tridiagonal(A, ma)
-
+    ! computes the Tridiagonal Form of A
     implicit none
 
     integer, intent(in) :: ma
@@ -462,27 +486,24 @@ contains
     real :: norm
     integer :: i, j
 
-
     do i = 1, ma-2
-        allocate(x(ma-i, 1))
-        x = 0
-        x(:, 1) = A(i+1:ma, i)
-        call twonorm(x(:, 1), norm)
-        x(1, 1) = x(1, 1) + (x(1, 1)/abs(x(1, 1)))*norm
-        call twonorm(x(:, 1), norm)
-        x = x/norm
-        A(i+1:ma, i:ma) = A(i+1:ma, i:ma) - 2*matmul(x, matmul(transpose(x), &
-                          A(i+1:ma, i:ma)))
-        A(1:ma, i+1:ma) = A(1:ma, i+1:ma) - 2*(matmul(A(1:ma, i+1:ma), &
-                          matmul(x, transpose(x))))
-        deallocate(x)
-        
+      allocate(x(ma-i, 1))
+      x = 0
+      x(:, 1) = A(i+1:ma, i)
+      call twonorm(x(:, 1), norm)
+      x(1, 1) = x(1, 1) + (x(1, 1)/abs(x(1, 1)))*norm
+      call twonorm(x(:, 1), norm)
+      x = x/norm
+      A(i+1:ma, i:ma) = A(i+1:ma, i:ma) - 2*matmul(x, matmul(transpose(x), &
+                        A(i+1:ma, i:ma)))
+      A(1:ma, i+1:ma) = A(1:ma, i+1:ma) - 2*(matmul(A(1:ma, i+1:ma), &
+                        matmul(x, transpose(x))))
+      deallocate(x)
     end do
-
   end subroutine tridiagonal
 
   subroutine diag(A, ma, D)
-
+    ! returns a matrix D containing the diagonal elements of A
     implicit none
 
     integer :: i
@@ -492,9 +513,8 @@ contains
     D = 0.0
 
     do i = 1, ma
-        D(i, i) = A(i, i)
+      D(i, i) = A(i, i)
     end do
-
   end subroutine diag
   
   subroutine eigQR(A, ma, shift, tol)
@@ -569,12 +589,9 @@ contains
         end do
         print *, "Algorithm converged within "//trim(str(i))//" iterations"
     end if
-
   end subroutine eigQR
-
  
   subroutine inviter(A, eig, v, ma, tol)
-        
     implicit none
 
     integer, intent(in) :: ma
@@ -621,11 +638,9 @@ contains
         call twonorm(w(:, 1), error)
 
     end do
- 
   end subroutine inviter
 
   subroutine reducedrank(Sigma, Sigmak, k, ma, na)
-
     implicit none
 
     integer :: k, i, ma, na
@@ -636,11 +651,9 @@ contains
     do i = 1, k
         Sigmak(i, i) = Sigma(i, i)
     end do
-
   end subroutine reducedrank
 
   subroutine GJ(A, B, x, ma, nb, tol, w2f, l)
-
     implicit none
 
     integer :: ma, nb, i, j, l
@@ -691,11 +704,9 @@ contains
         close(10)
         close(11)
     end if
-
   end subroutine GJ
 
   subroutine GS(A, B, X, ma, nb, tol, w2f, k)
-
     implicit none
 
     integer :: ma, nb, i, j, k
@@ -762,11 +773,9 @@ contains
         close(10)
         close(11)
     end if
-
   end subroutine GS
 
   subroutine CG(A, B, X, ma, nb, tol, precond)
-
     implicit none
 
     real :: A(:, :), B(:, :), X(:, :), tol
@@ -837,11 +846,9 @@ contains
     print *, "CG Method Converged within "//trim(str(j))//" iterations."
     
     end if
-
   end subroutine CG
 
   subroutine innerproduct(u, v, mu, f)
-
     implicit none
 
     real :: u(:), v(:), f
@@ -852,11 +859,9 @@ contains
     do i = 1, mu
         f = f + u(i)*v(i)
     end do 
-
   end subroutine innerproduct
 
   subroutine isSym(A, ma, bool)
-
     implicit none
 
     real, intent(in) :: A(:, :)
@@ -874,11 +879,9 @@ contains
         end do
         if (.not. bool) exit
     end do 
-
   end subroutine isSym
 
   subroutine precondition(A, B, D, ma)
-
     implicit none
 
     real :: A(:, :), B(:, :)
@@ -896,11 +899,9 @@ contains
 
     A = matmul(D, matmul(A, transpose(D)))
     B = matmul(D, B)
-
   end subroutine precondition
 
   subroutine invdiag(D, D2, ma)
-
     implicit none
     
     real :: D(:,:), D2(:, :)
@@ -911,11 +912,9 @@ contains
     do i = 1, ma
         D2(i, i) = 1.0/D(i, i)   
     end do
-
   end subroutine invdiag
 
   subroutine vectwonorm(A, Norm, na)
-
     implicit none
     
     integer :: na, i
@@ -924,7 +923,6 @@ contains
     do i = 1, na
        call twonorm(A(:, i), norm(i)) 
     end do
-
   end subroutine vectwonorm
 
 end module LinAl

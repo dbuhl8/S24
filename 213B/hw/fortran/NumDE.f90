@@ -248,11 +248,11 @@ module NumDE
   
     D = 0.0
 
-    indx = 1
-    indy = nx
+    indx = ny
+    indy = 1
     do m = 1, ny
       do n = 1, nx
-        i = n + nx*(m-1) 
+        i = m + ny*(n-1) 
         ! we require a lot of logic gates in order to make sure we are not
         ! violating the array
         D(i,i) = -2.0*(1/(dx**2) + 1/(dy**2))
@@ -272,19 +272,23 @@ module NumDE
     end do 
   end subroutine
 
-  subroutine vec_boundary(bound, nx, ny)
+  subroutine vec_boundary(bound,interior, nx, ny)
     ! Returns a populaated bound array with the indices of the boudary for a
     ! vectorized domain u
     ! bound should be an array of length (2*nx + 2*ny - 4)
     implicit none
-    integer :: bound(:), nx, ny, i, j, n, m
+    integer :: bound(:), nx, ny, i, j, k,n, m, interior(:)
     j = 1
+    k = 1
     do m = 1, ny
       do n = 1, nx
-        i = n + nx*(m-1) 
+        i = m + ny*(n-1) 
         if(((n.eq.1).or.(n.eq.nx)).or.((m.eq.1).or.(m.eq.ny))) then
           bound(j) = i
           j = j + 1
+        else 
+          interior(k) = i
+          k = k + 1
         end if
       end do 
     end do 
@@ -305,17 +309,19 @@ module NumDE
 
     do m = 1, ny
       do n = 1, nx
-        i = n + nx*(m-1) 
+        i = m + ny*(n-1) 
         X(i,1) = xrange(1) + (n-1)*dx
-        Y(i,1) = yrange(1) + (m-1)*dy
+        Y(i,1) = yrange(2) - (m-1)*dy
       end do 
     end do 
   end subroutine
 
+  ! this subroutine needs to be tweaked
   subroutine vec_meshgrid(X, Y, nx, ny, sx, sy)
     !Returns a vectorized domain X, Y, according to a meshgrid sx, sy
     ! Assumes an evenly spaced grid
-    ! X, Y should be arrays of length (nx*ny). 
+    ! X, Y should be arrays of length (nx*ny) and ordered such that 
+    ! X(1) < x < X(nx), Y(1) < y < Y(ny)
     implicit none
 
     real :: X(:), Y(:), sx(:), sy(:)
@@ -323,9 +329,9 @@ module NumDE
 
     do m = 1, ny
       do n = 1, nx
-        i = n + nx*(m-1) 
+        i = m + ny*(n-1) 
         X(i) = sx(n)
-        Y(i) = sy(m)
+        Y(i) = sy(ny-m+1)
       end do 
     end do 
   end subroutine
@@ -338,11 +344,11 @@ module NumDE
     implicit none
 
     real :: A(:,:), matA(:,:)
-    integer :: nx, ny, i, j
+    integer :: nx, ny, n, m
 
-    do j = 1, ny
-      do i = 1, nx
-        matA(i, j) = A(i + nx*(j-1),1)
+    do n = 1, nx
+      do m = 1, ny
+        matA(m, n) = A(m + ny*(n-1),1)
       end do 
     end do 
   end subroutine devectorize
