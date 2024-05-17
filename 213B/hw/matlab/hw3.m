@@ -36,7 +36,12 @@ figure(3)
 
 U2 = readmatrix('../fortran/u2.dat');
 
-x = linspace(-1, 1, 1000);
+x = linspace(-1, 1, 100);
 t = linspace(0, 10, 10001);
 [X,T] = meshgrid(x, t);
-surf(X, T, U2)
+s = surf(X, T, U2, 'FaceColor','interp');
+s.EdgeColor = 'none';
+xlabel('X')
+ylabel('T')
+zlabel('U')
+title('Evolution of Heat Equation')

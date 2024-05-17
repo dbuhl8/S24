@@ -37,7 +37,7 @@ program hw3_driver
   integer :: lwork, info, RANK
 
   ! Question 2
-  integer, parameter :: nx2=1000, nt=10000
+  integer, parameter :: nx2=100, nt=10000
   real, dimension(nx2, nt+1) :: U2
   real, dimension(nx2, nx2) :: D
   real, dimension(nt) :: T
@@ -149,10 +149,12 @@ program hw3_driver
   
     call  IBVP_1DCN(U2, D, F2, T, nx2, nt, dt)
 
+    F2 = (3 + X2) + 5*(1 - X2**2)**2
+
     ! write to out file
     open(11, file="u2.dat")
       do i = 1, nt+1
-        write(11, "("//trim(str(nx2))//"F10.4)") U2(:,i)  
+        write(11, "("//trim(str(nx2))//"F10.4)") U2(:,i) - F2(:,1)
       end do 
     close(11)
 
