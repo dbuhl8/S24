@@ -42,7 +42,9 @@
     \begin{align}
         \begin{cases}
             \nabla^2 U(x,y) = f(x,y) \quad &(x, y) \in \Omega\\
-            U(x,y) = g(x,y) \quad &(x,y) \in \partial\Omega,
+            U(x,y) = g(x,y) \quad &(x,y) \in \partial\Omega,\\
+            f(x,y) = -20 +3x^2 + 4y^2\\
+            g(x,y) = 2 - x^2 + 2\sin(\pi y^2)
         \end{cases} 
     \end{align}
 
@@ -67,11 +69,35 @@
 
 \begin{enumerate}[label=\alph*)]
 
-    \item Determine the analytical solution 
-
+    \item Determine the analytical solution for (2)
+    \begin{align}
+        \begin{cases}
+            U_t = U_{xx}\quad \quad x \in [-1, 1],
+            \quad t \ge 0\\
+            U(x,0) = (3+x) + 5(1 - x^2)^2\\
+            U(-1,t) = 2, \quad U(1, t) = 4
+        \end{cases} 
+    \end{align}
+    \[
+        g(x) =  3 + x + 5 - 10x^2 + 5x^4
+    \]
+    \begin{proof}
+        To begin we look at the general solution for the Heat Equation with
+        Homogeneous BC.
+        \begin{align*}
+            \begin{cases}
+                \eta = U - g(x) = U - (3+x) + 5(1 - x^2)^2\\
+                \eta_t = \eta_{xx} - 20 + 60x^2 \quad \quad x \in [-1, 1],
+                \quad t \ge 0\\
+                \eta(x,0) = 0\\
+                \eta(-1,t) = 0, \quad \eta(1, t) = 0
+            \end{cases}
+        \end{align*}
+        
+    \end{proof}
     \item \hl{Plot the analytical solution as a surface plot over [x, t]}
 
-    \item \hl{Write code and integrate using secodn-order finite differences and CN}
+    \item \hl{Write code and integrate using second-order finite differences and CN}
 
     \item \hl{Wrote code and integrate using Gauss-Chebyshev-Lobatto coallocation
     method}

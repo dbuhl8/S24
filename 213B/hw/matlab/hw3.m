@@ -30,3 +30,13 @@ xlabel("X")
 ylabel("U")
 legend('Y=0.2', 'Y=0.5')
 title("Q1: Plot of U(x)")
+
+
+figure(3)
+
+U2 = readmatrix('../fortran/u2.dat');
+
+x = linspace(-1, 1, 1000);
+t = linspace(0, 10, 10001);
+[X,T] = meshgrid(x, t);
+surf(X, T, U2)

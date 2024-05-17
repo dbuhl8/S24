@@ -235,7 +235,7 @@ module NumDE
     real :: F(:, :), Y(:, :)
   end subroutine FPI
 
-  subroutine D2FD2(D, nx, ny, dx, dy)
+  subroutine D2FD2_2D(D, nx, ny, dx, dy)
     ! Computes D2 for an evenly spaced grid according to a second order finite
     ! difference method
 
@@ -269,6 +269,33 @@ module NumDE
           D(i, i+indy) = 1.0/(dy**2)
         end if
       end do 
+    end do 
+  end subroutine
+
+  subroutine D2FD2_1D(D, nx, dx)
+    ! Computes D2 for an evenly spaced grid according to a second order finite
+    ! difference method
+
+    implicit none
+ 
+    ! D should be an (nx*ny) x (nx*ny) array
+    real :: D(:, :), dx
+    integer :: nx, i, n
+    integer :: indx
+  
+    D = 0.0
+
+    indx = 1
+    do i = 1, nx
+      ! we require a lot of logic gates in order to make sure we are not
+      ! violating the array
+      D(i,i) = -2.0/(dx**2)
+      if(1 < i) then
+        D(i, i-indx) = 1.0/(dx**2)
+      end if
+      if(i < nx) then
+        D(i, i+indx) = 1.0/(dx**2)
+      end if
     end do 
   end subroutine
 
@@ -352,6 +379,40 @@ module NumDE
       end do 
     end do 
   end subroutine devectorize
+
+  subroutine IBVP_1DCN(U, D, F, T, nx, nt, dt)
+    !Solves the Initial Boundary Value Problem for some derivative operator D
+    !and Forcing F (time-independant) using CN
+    ! U should be an (nx) x (nt) 
+    ! D should be (nx) x (nx)
+    ! F should be (nx) x (1)
+    implicit none
+
+    real :: U(:, :), D(:, :), F(:, :), dt, T(:)
+    integer :: nx, nt, i, j, n
+    real, dimension(nx, nx) :: A, C
+    real, dimension(nx, 1) :: B
+    integer, dimension(nx) :: P
+    logical :: bool
+  
+    ! du/dt = perturbation from steady state
+    ! need to update the interior at each timestep. So we have, 
+    ! du/dt = D2u + f 
+    ! in this case D2 is going to be a wide matrix, i.e. (nx-2)x(nx)
+    ! In essence we truncate D2 using the two rows corresponding to the BC 
+    
+    ! CN scheme
+    ! initializing global vars
+    call ident(A, nx)
+    C = A + (dt/2.)*D
+    A = A - (dt/2.)*D
+    call LU(A, nx, bool, P)
+    do i = 1, nt
+      B = matmul(C, U(:, i:i)) + dt*F
+      call LUsolve(A, nx, B, U(:,i+1:i+1), 1, P)
+    end do 
+    ! debugging with AB3 
+  end subroutine IBVP_1DCN
 
 end module NumDE
 
