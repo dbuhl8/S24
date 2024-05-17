@@ -28,6 +28,7 @@ program hw3_driver
   integer, dimension(num_int) :: interior
   real :: dx = (xstop-xstart)/nx1
   real :: dy = (ystop-ystart)/ny1
+  real :: norm=0
   integer, dimension(num_dom) :: P
   
   ! Lapack variables
@@ -85,18 +86,18 @@ program hw3_driver
     ! DGELSS is an Lapack solver which computes the minimum norm solution to a
     ! least squares problem using SVD, QR iteration for an overdetermined system
     ! First call determines optimal size of work array 
-    !call dgelss(num_dom, num_int, 1, D2_int, num_dom, F, num_dom, S, RCOND, &
-                !RANK, work, lwork, info)
-    !lwork = work(1)
-    !deallocate(work)
-    !allocate(work(lwork))
-                 ! M         N    NRHS   A      LDA    B    LDB  
-    !call dgelss(num_dom, num_int, 1, D2_int, num_dom, F, num_dom, S, RCOND, &
-                !RANK, work, lwork, info)
+    call dgelss(num_dom, num_int, 1, D2_int, num_dom, F, num_dom, S, RCOND, &
+                RANK, work, lwork, info)
+    lwork = work(1)
+    deallocate(work)
+    allocate(work(lwork))
+                  !M         N    NRHS   A      LDA    B    LDB  
+    call dgelss(num_dom, num_int, 1, D2_int, num_dom, F, num_dom, S, RCOND, &
+                RANK, work, lwork, info)
 
-    !call CPU_TIME(finish)
+    call CPU_TIME(finish)
 
-    !print *, finish - start
+    print *, finish - start
 
     ! Note that this is an overdetermined system
     !call householderQR(D2_int, Rvec, num_dom, num_int, bool, tol)
@@ -106,21 +107,28 @@ program hw3_driver
     !F_int = matmul(transpose(Q_int), F)
     !call backsub(R_int, F_int, U_int, num_int, 1) 
 
-    !U = 0.0
-    !U(interior, :) = F(1:num_int, :)
+    U = 0.0
+    U(interior, :) = F(1:num_int, :)
 
-    !U = U + G
+    U = U + G
 
-    !call devectorize(U, matU, nx1, ny1)
-    !call devectorize(X, matX, nx1, ny1)
-    !call devectorize(Y, matY, nx1, ny1)
+    F = -20 + 3*x**2 + 4*y**2
+
+    call devectorize(U, matU, nx1, ny1)
+    call devectorize(X, matX, nx1, ny1)
+    call devectorize(Y, matY, nx1, ny1)
+
+    U = matmul(D2, U) - F
+    call twonorm(U(:,1), norm)
+
+    print *, "Error: ", norm
 
     ! write U to a dat file so matlab can read it and plot the solution
-    !open(10, file="u.dat") 
-      !do i = 1, ny1
-        !write(10, "("//trim(str(nx1))//"F30.15)") matU(i, :)
-      !end do 
-    !close(10)
+    open(10, file="u.dat") 
+      do i = 1, ny1
+        write(10, "("//trim(str(nx1))//"F30.15)") matU(i, :)
+      end do 
+    close(10)
     
     print *, " "
   print *, "-------------------------------------------------------------------"
