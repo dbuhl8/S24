@@ -18,7 +18,7 @@ program hw3_driver
   integer, parameter :: num_dom = nx1*ny1
   integer, parameter :: num_int = num_dom-num_bound
   real, dimension(num_dom, num_dom) :: D2
-  real, dimension(num_dom, 1) :: F, U, X, Y, G
+  real, dimension(num_dom, 1) :: F, U, X, Y, G, G2
   real, dimension(num_dom, num_int) :: Q_int, D2_int
   real, dimension(num_int, num_int) :: R_int
   real, dimension(num_int) :: Rvec ! used in QR solve
@@ -28,8 +28,10 @@ program hw3_driver
   integer, dimension(num_int) :: interior
   real :: dx = (xstop-xstart)/nx1
   real :: dy = (ystop-ystart)/ny1
-  real :: norm=0
+  real :: norm=0, norm_2=0
   integer, dimension(num_dom) :: P
+  integer,allocatable :: empty(:), notempty(:)
+  integer :: num_empty, num_notempty
   
   ! Lapack variables
   real, dimension(num_int) :: S
@@ -68,67 +70,87 @@ program hw3_driver
     call vec_domain(X, Y, nx1, ny1, (/xstart, xstop/), (/ystart, ystop/))
 
     ! initializing vectorized F 
-    F = -18.0 + 3.*X**2 + 4.*Y**2 - 8.*(pi**2)*(Y**2)*sin(pi*(Y**2)) + &
-      4.*pi*cos(pi*(Y**2))
-  
+    F = -20.0 + 3.*(X**2) + 4.*(Y**2)
+
     ! initializing Boundary Condition
-    G = 0.0
     G = 2. - X**2. - 2.*sin(pi*(Y**2.))
+    G2 = -2.0 + 8.*(pi**2)*(Y**2)*sin(pi*(y**2)) - 4.*pi*cos(pi*(y**2)) 
+
+    F = F - G2
 
     call CPU_TIME(start)
     U = 0.0
     D2_int = D2(:, interior)
+    call find_empty_row(D2_int,empty,notempty,num_dom,num_empty,num_notempty)
+    print *, "Num Empty : ", num_empty
     allocate(work(1)) 
     lwork = -1
     info = 0
+
     !Calling a LinAl Solver to compute U_int
+
+    ! D2_int * U_int = F
 
     ! DGELSS is an Lapack solver which computes the minimum norm solution to a
     ! least squares problem using SVD, QR iteration for an overdetermined system
+
     ! First call determines optimal size of work array 
-    call dgelss(num_dom, num_int, 1, D2_int, num_dom, F, num_dom, S, RCOND, &
-                RANK, work, lwork, info)
+                ! T         M             N    NRHS     A               LDA
+    call dgels('N', num_dom, num_int, 1, D2_int, num_dom,&
+              F, num_dom, work, lwork, info)
+                ! B            LDB 
     lwork = work(1)
     deallocate(work)
     allocate(work(lwork))
-                  !M         N    NRHS   A      LDA    B    LDB  
-    call dgelss(num_dom, num_int, 1, D2_int, num_dom, F, num_dom, S, RCOND, &
-                RANK, work, lwork, info)
+                ! T         M             N    NRHS     A               LDA
+    call dgels('N', num_dom, num_int, 1, D2_int, num_dom,&
+              F, num_dom, work, lwork, info)
+                ! B            LDB 
+
+    if (info .ne. 0) then
+      print *, "Error in Lapack Routine"
+    end if
 
     call CPU_TIME(finish)
 
-    print *, finish - start
-
-    ! Note that this is an overdetermined system
-    !call householderQR(D2_int, Rvec, num_dom, num_int, bool, tol)
-    !call formQ(D2_int, Q_int, num_dom, num_int) 
-    !call formR(D2_int, R_int, Rvec, num_int) 
-
-    !F_int = matmul(transpose(Q_int), F)
-    !call backsub(R_int, F_int, U_int, num_int, 1) 
-
+    print "(A, F10.4, A)", " Least Squares Solve finished in ", finish - start,&
+      " seconds"
     U = 0.0
-    U(interior, :) = F(1:num_int, :)
+    U(interior, :) = F(interior, :)
+    D2_int = D2(:, interior)
+
+    call twonorm(matmul(D2_int, U(interior, 1)), norm)
+    call twonorm(matmul(D2, U(:, 1)), norm_2)
+    !print *, "Error in indexing :", norm_2 - norm
+    !print *, "Error in indexing2 :", num_dom, num_int+num_bound
+    !print *, "F vec :", F(num_int+1:, 1)
+    print *, "Least Squares Error :", sum(F(num_int+1:, 1)**2)
+
+    F = -20.0 + 3.*X**2 + 4.*Y**2 
+
+    F = F - G2
+
+    F = matmul(D2, U) - F
+    call twonorm(F(:,1), norm)
 
     U = U + G
-
-    F = -20 + 3*x**2 + 4*y**2
 
     call devectorize(U, matU, nx1, ny1)
     call devectorize(X, matX, nx1, ny1)
     call devectorize(Y, matY, nx1, ny1)
+    
+    !call printmat(D2(:, interior), num_dom, num_int)
 
-    U = matmul(D2, U) - F
-    call twonorm(U(:,1), norm)
+    print *, "Solution Error: ", norm
 
-    print *, "Error: ", norm
-
-    ! write U to a dat file so matlab can read it and plot the solution
+     !write U to a dat file so matlab can read it and plot the solution
     open(10, file="u.dat") 
       do i = 1, ny1
         write(10, "("//trim(str(nx1))//"F30.15)") matU(i, :)
       end do 
     close(10)
+
+    deallocate(empty, notempty)
     
     print *, " "
   print *, "-------------------------------------------------------------------"

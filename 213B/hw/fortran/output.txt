@@ -3,8 +3,10 @@
   
   Question 1: BVP with 2D Poison's Equation
   
-   168.77793400000002     
- Error:    63327.495702385357     
+ Num Empty :            4
+ Least Squares Solve finished in    33.8003 seconds
+ Least Squares Error :   4400128.1186414668     
+ Solution Error:    19021087.760972105     
   
  -------------------------------------------------------------------
   

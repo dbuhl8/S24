@@ -307,8 +307,8 @@ module NumDE
     integer :: bound(:), nx, ny, i, j, k,n, m, interior(:)
     j = 1
     k = 1
-    do m = 1, ny
-      do n = 1, nx
+    do n = 1, nx
+      do m = 1, ny
         i = m + ny*(n-1) 
         if(((n.eq.1).or.(n.eq.nx)).or.((m.eq.1).or.(m.eq.ny))) then
           bound(j) = i
@@ -413,6 +413,42 @@ module NumDE
     end do 
     ! debugging with AB3 
   end subroutine IBVP_1DCN
+
+  subroutine find_empty_row(A, empty, notempty, ma, num_empty, num_notempty)
+    ! Returns an array of row indices specifiying which rows of A have all zero
+    ! entries. On entry empty and nonempty should be unallocated allocatable
+    ! arrays
+    implicit none 
+    real :: A(:, :), norm
+    integer :: ma, i, num_empty, num_notempty
+    integer, allocatable :: empty(:), notempty(:)
+
+    num_notempty = 0
+    do i = 1, ma
+      call twonorm(A(i, :), norm)
+      if (norm .gt. 10.d-15) then
+        num_notempty = num_notempty + 1  
+      end if
+    end do 
+    if (num_notempty .ne. ma) then
+      num_empty = ma - num_notempty
+      allocate(empty(num_empty), notempty(num_notempty))
+
+      num_empty = 0
+      num_notempty = 0
+      
+      do i = 1, ma
+        call twonorm(A(i, :), norm)
+        if (norm .gt. 10.d-15) then
+          num_notempty = num_notempty + 1
+          notempty(num_notempty) = i
+        else
+          num_empty = num_empty + 1
+          empty(num_empty) = i
+        end if
+      end do 
+    end if
+  end subroutine
 
 end module NumDE
 
