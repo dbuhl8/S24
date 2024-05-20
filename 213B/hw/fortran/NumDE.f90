@@ -543,10 +543,10 @@ module NumDE
     integer :: nx, nt, i, j
 
     do i = 1, nx+1
-      XX(i,:) = -cos((i-1)*pi/nx)
+      XX(nx-i+2,:) = -cos((i-1)*pi/nx)
     end do 
-    do i = 1, nt
-      TT(:,i) = tstart + i*dt
+    do i = 0, nt
+      TT(:,i+1) = tstart + i*dt
     end do 
   end subroutine GCLmeshgrid
 
@@ -618,7 +618,7 @@ module NumDE
     U = 0.
     call GCLpoints(X, nx) 
     do i = 1, nx+1
-      U = U + GCLpolynomial(X, i, nx)
+      U = U + C(i)*GCLpolynomial(X, i, nx)
     end do 
   end subroutine GCL_2_phys 
 
@@ -633,7 +633,7 @@ module NumDE
     call GCLdiffvec(d, nx)
 
     F = (-1.**(N+n+1))*sqrt(1. - X**2)*sin(nx*acos(X))/&
-      (d(n)*(nx**2)*(X-X(n)))
+    (d(n)*(nx**2)*(X-X(n)))
   end function GCLpolynomial
 
 end module NumDE

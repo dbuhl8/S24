@@ -177,7 +177,7 @@ program hw3_driver
     print *, " "
   print *, "-------------------------------------------------------------------"
   print *, " "
-  print *, " Question 2: IBVP with Heat Equation"
+  print *, " Question 2: IBVP with 1D Heat Equation"
     print *, " "
     !Do it yeah
 
@@ -221,6 +221,8 @@ program hw3_driver
     !call printmat(DS, nf+1, nf+1)
     DS(1,:) = 0.
     DS(nf+1,:) = 0.
+    DF(1,:) = 0.
+    DF(nf, :) = 0.
 
     ! Initializing domain for Finite Difference Methods
     dx = 2./(nf-1)
@@ -243,15 +245,13 @@ program hw3_driver
 
     ! Converging back into Physical Space
     ! There is a massive bug in this routine. I'll fix it tomorrow. 
-    do i = 1, nt
-      call GCL_2_phys(US(:, i+1), nf)
-    end do
+    !do i = 1, nt
+      !call GCL_2_phys(US(:, i+1), nf)
+    !end do
 
     ! Initializing Shift Vector
     FF = (3 + XF)
     FS = (3 + XS)
-
-    call printmat(FS, nf+1, 1)
 
     ! write to out file
     open(15, file="u2.dat")
@@ -272,7 +272,7 @@ program hw3_driver
     ! write to out file
     open(15, file="us.dat")
       do i = 1, nf+1
-        write(15, "("//trim(str(nt+1))//"F10.4)") US(i,:)
+        write(15, "("//trim(str(nt+1))//"F10.4)") US(i,:)+FS(i,1)
       end do 
     close(15)
     open(16, file="xs.dat")

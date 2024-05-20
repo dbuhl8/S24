@@ -9,11 +9,6 @@ Y = readmatrix('../fortran/y.dat');
 F = readmatrix('../fortran/f.dat');
 G = readmatrix('../fortran/g.dat');
 
-%x = linspace(0, 2, 5);
-%y = flip(linspace(0, 1, 5));
-
-%[X, Y] = meshgrid(x, y);
-
 figure(1);
 
 surf(X, Y, U)
@@ -59,11 +54,8 @@ U2 = readmatrix('../fortran/u2.dat');
 X2 = readmatrix('../fortran/x2.dat');
 T2 = readmatrix('../fortran/t2.dat');
 
-%x = linspace(-1, 1, 100);
-%t = linspace(0, 2, 100);
-%[X,T] = meshgrid(x, t);
-s = surf(X2, T2, U2, 'FaceColor','interp');
-s.EdgeColor = 'none';
+sa = surf(X2, T2, U2, 'FaceColor','interp');
+sa.EdgeColor = 'none';
 xlabel('X')
 ylabel('T')
 zlabel('U')
@@ -75,8 +67,8 @@ UF = readmatrix('../fortran/uf.dat');
 XF = readmatrix('../fortran/xf.dat');
 TF = readmatrix('../fortran/tf.dat');
 
-s = surf(XF, TF, UF, 'FaceColor','interp');
-s.EdgeColor = 'none';
+sf = surf(XF, TF, UF, 'FaceColor','interp');
+sf.EdgeColor = 'none';
 xlabel('X')
 ylabel('T')
 zlabel('U')
@@ -84,16 +76,12 @@ title('Finite Difference Evolution of Heat Equation')
 
 figure(7)
 
-[xt,D1t,D2t] = get_GCL_points_and_D_matrices(-1, 1, 10);
+UU = readmatrix('../fortran/us.dat');
+XX = readmatrix('../fortran/xs.dat');
+TT = readmatrix('../fortran/ts.dat');
 
-%help = D2t
-
-US = readmatrix('../fortran/us.dat');
-XS = readmatrix('../fortran/xs.dat');
-TS = readmatrix('../fortran/ts.dat');
-
-s = surf(XS, TS, US, 'FaceColor','interp');
-s.EdgeColor = 'none';
+ss = surf(XX, TT, UU, 'FaceColor','interp');
+ss.EdgeColor = 'none';
 xlabel('X')
 ylabel('T')
 zlabel('U')
