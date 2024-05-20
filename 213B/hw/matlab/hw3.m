@@ -2,6 +2,7 @@ clear;
 close all;
 clc;
 
+format long
 
 U = readmatrix('../fortran/u.dat');
 X = readmatrix('../fortran/x.dat');
@@ -50,11 +51,11 @@ title("Q1: Plot of U(x)")
 
 figure(5)
 
-U2 = readmatrix('../fortran/u2.dat');
-X2 = readmatrix('../fortran/x2.dat');
-T2 = readmatrix('../fortran/t2.dat');
+UA = readmatrix('../fortran/u2.dat');
+XA = readmatrix('../fortran/x2.dat');
+TA = readmatrix('../fortran/t2.dat');
 
-sa = surf(X2, T2, U2, 'FaceColor','interp');
+sa = surf(XA, TA, UA, 'FaceColor','interp');
 sa.EdgeColor = 'none';
 xlabel('X')
 ylabel('T')
@@ -76,14 +77,31 @@ title('Finite Difference Evolution of Heat Equation')
 
 figure(7)
 
-UU = readmatrix('../fortran/us.dat');
-XX = readmatrix('../fortran/xs.dat');
-TT = readmatrix('../fortran/ts.dat');
+US = readmatrix('../fortran/us.dat');
+XS = readmatrix('../fortran/xs.dat');
+TS = readmatrix('../fortran/ts.dat');
 
-ss = surf(XX, TT, UU, 'FaceColor','interp');
+ss = surf(XS, TS, US, 'FaceColor','interp');
 ss.EdgeColor = 'none';
 xlabel('X')
 ylabel('T')
 zlabel('U')
 title('Spectral Evolution of Heat Equation')
 
+figure(8)
+
+E = readmatrix('../fortran/q2error.dat')
+N = [5; 10; 15; 20; 25; 30; 50; 100; 150; 200];
+
+semilogy(N, E(:,1), 'x', N, E(:,2), 'x')
+xlabel('N')
+ylabel('Error')
+title('Error as a function of grid size')
+
+
+%[frow,fcol] = find(XF == 0);
+%[arow,acol] = find(XA == 0);
+
+%hold on;
+%plot(TA(arow,acol), UA(arow,acol), '--r')
+%plot(TF(frow,fcol), UF(frow,fcol), '--b')

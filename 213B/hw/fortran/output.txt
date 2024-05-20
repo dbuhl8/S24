@@ -3,13 +3,14 @@
   
   Question 1: BVP with 2D Poison's Equation
   
- Least Squares Solve finished in    20.1329 seconds
+ Least Squares Solve finished in    37.2610 seconds
  Solution Error:    63398.112626564638     
   
  -------------------------------------------------------------------
   
-  Question 2: IBVP with Heat Equation
+  Question 2: IBVP with 1D Heat Equation
   
+           6   17.797024913289807               30
   
  -------------------------------------------------------------------
   

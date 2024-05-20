@@ -40,11 +40,10 @@ program hw3_driver
   ! Question 2
   real, parameter :: dt=10.d-4
   real,parameter :: tstart=0, tstop=2
-  integer, parameter :: nx2=100, nt=int((tstop-tstart)/dt), na = 100
+  integer, parameter :: nx2=101, nt=int((tstop-tstart)/dt), na = nt
   integer, parameter :: num_modes=64
-  real, dimension(nx2, nx2) :: D
-  real, dimension(nx2*na, 1) :: UA, XA, TA
-  real, dimension(nx2, na) :: UA_mat, XA_mat, TA_mat
+  real, dimension(nx2*nt, 1) :: UA, XA, TA
+  real, dimension(nt, nx2) :: UA_mat, XA_mat, TA_mat
   real, dimension(nx2, 1) :: X2, F2
   real, dimension(num_modes) :: C
   real, allocatable :: UF(:,:), US(:,:)
@@ -52,13 +51,15 @@ program hw3_driver
   real, allocatable :: TF(:), TS(:)
   real, allocatable :: XF(:,:), FF(:,:), XS(:,:), FS(:,:)
   real, allocatable :: XXF(:,:), TTF(:,:), XXS(:,:), TTS(:,:)
+  real, allocatable :: UAS(:,:), UAF(:,:), XAS(:), TAS(:), XAF(:), TAF(:)
+  real, dimension(10) :: ES, EF
   integer :: nf, ns 
-
+  integer, dimension(10) :: n_val
 
   ! General Utility Vars
   real :: tol = 10.d-14
   logical :: bool
-  integer :: i, j, n, m
+  integer :: i, j, n, m, k
   real :: start, finish
 
   print *, " "
@@ -179,11 +180,11 @@ program hw3_driver
   print *, " "
   print *, " Question 2: IBVP with 1D Heat Equation"
     print *, " "
-    !Do it yeah
 
     ! Computing Analytical Solution
-    call vec_domain(XA, TA, nx2, na, (/-1.0, 1.0/), (/0.0, 2.0/))
+    call vec_domain(XA, TA, nx2, nt, (/-1.0, 1.0/), (/0.0, 2.0/))
 
+    ! Fourier Coefficients
     C(1) = 10.*(1 - 2./3. + 1./5.)/2.
     XA = XA + 1
     do i = 1, num_modes
@@ -191,120 +192,190 @@ program hw3_driver
       UA = UA + C(i)*sin((i*pi/2.)*XA)*exp(-TA*(i*pi/2.0)**2)
     end do 
     XA = XA - 1 
+    ! Adding g 
     UA = UA + 3. + XA
+
+    ! Moving back to matrix form
     call devectorize(UA, UA_mat, nx2, na)
     call devectorize(XA, XA_mat, nx2, na)
     call devectorize(TA, TA_mat, nx2, na)
 
-
-    !Computing Numerical Solution using Finite Differences and Crank Nicolson
-    nf = 100
-    !Allocating memory for the Finite Difference Method
-    allocate(UF(nf, nt+1), DF(nf, nf), XF(nf, 1), FF(nf, 1), TF(nt+1))
-
-    !Allocating memory for the GCL Spectral Method
-    allocate(US(nf+1, nt+1), DS(nf+1, nf+1), XS(nf+1, 1), FS(nf+1, 1), TS(nt+1))
-    
-    ! Allocating Memory for the Output
-    allocate(XXS(nf+1, nt+1), TTS(nf+1,nt+1))
-    allocate(XXF(nf, nt+1), TTF(nf,nt+1))
-
-    ! Initializing Domain for the spectral method
-    call GCLgrid_1D(XS, nf)
-    call GCLmeshgrid(XXS, TTS, nf, nt, dt, 0.)
-
-    ! Initializing differentiation matrices for each method
-    call D2FD2_1D(DF, nf, dx)
-    call D2GCL_1D(DS, nf)
-
-    ! Printing out D2 matrix to check it if is correct
-    !call printmat(DS, nf+1, nf+1)
-    DS(1,:) = 0.
-    DS(nf+1,:) = 0.
-    DF(1,:) = 0.
-    DF(nf, :) = 0.
-
-    ! Initializing domain for Finite Difference Methods
-    dx = 2./(nf-1)
-    do i = 1, nf
-      XF(i,1) = -1 + (i-1)*dx
-    end do 
-
-    ! Setting Initial Condition 
-    UF = 0.0
-    UF(:,1:1) = 5*(1 - XF**2)**2
-    US = 0.0
-    US(:,1:1) = 5*(1 - XS**2)**2
-
-    ! Integrating for each method 
-    call  IBVP_1DCN(UF, DF, TF, nf, nt, dt)
-    call  IBVP_1DCN(US, DS, TS, nf+1, nt, dt)
-
-    ! Initializing Meshgrid for the Finite Difference Output
-    call meshgrid(TTF, XXF, TF, XF(:,1), nt+1, nf)
-
-    ! Converging back into Physical Space
-    ! There is a massive bug in this routine. I'll fix it tomorrow. 
-    !do i = 1, nt
-      !call GCL_2_phys(US(:, i+1), nf)
-    !end do
-
-    ! Initializing Shift Vector
-    FF = (3 + XF)
-    FS = (3 + XS)
-
     ! write to out file
     open(15, file="u2.dat")
-      do i = 1, na
+      do i = 1, nt
         write(15, "("//trim(str(nx2))//"F10.4)") UA_mat(i,:)
       end do 
     close(15)
     open(16, file="x2.dat")
-      do i = 1, na
+      do i = 1, nt
         write(16, "("//trim(str(nx2))//"F10.4)") XA_mat(i,:)
       end do 
     close(16)
     open(17, file="t2.dat")
-      do i = 1, na
+      do i = 1, nt
         write(17, "("//trim(str(nx2))//"F10.4)") TA_mat(i,:)
       end do 
     close(17)
-    ! write to out file
-    open(15, file="us.dat")
-      do i = 1, nf+1
-        write(15, "("//trim(str(nt+1))//"F10.4)") US(i,:)+FS(i,1)
-      end do 
-    close(15)
-    open(16, file="xs.dat")
-      do i = 1, nf+1
-        write(16, "("//trim(str(nt+1))//"F10.4)") XXS(i,:)
-      end do 
-    close(16)
-    open(17, file="ts.dat")
-      do i = 1, nf+1 
-        write(17, "("//trim(str(nt+1))//"F10.4)") TTS(i,:)
-      end do 
-    close(17)
 
-    open(18, file="uf.dat")
-      do i = 1, nf
-        write(18, "("//trim(str(nt+1))//"F10.4)") UF(i,:)+FF(i,1)
-      end do 
-    close(18)
-    open(19, file="xf.dat")
-      do i = 1, nf
-        write(19, "("//trim(str(nt+1))//"F10.4)") XXF(i,:)
-      end do 
-    close(19)
-    open(20, file="tf.dat")
-      do i = 1, nf
-        write(20, "("//trim(str(nt+1))//"F10.4)") TTF(i,:)
-      end do 
-    close(20)
+    !Computing Numerical Solution using Finite Differences and GCL Spectral
+    !methods with Crank Nicolson Time Integration
+    n_val = (/5, 10, 15, 20, 25, 30, 50, 100, 150, 200/)
+    do k = 1, 10
+      nf = n_val(k)
+      !Allocating memory for the Finite Difference Method
+      allocate(UF(nf, nt+1), DF(nf, nf), XF(nf, 1), FF(nf, 1), TF(nt+1))
 
-    deallocate(UF, DF, FF, XF, TF)
-    deallocate(US, DS, FS, XS, TS)
-    deallocate(XXF, XXS, TTF, TTS) 
+      !Allocating memory for the GCL Spectral Method
+      allocate(US(nf+1, nt+1),DS(nf+1, nf+1),XS(nf+1, 1),FS(nf+1, 1),TS(nt+1))
+      
+      ! Allocating Memory for the Output
+      allocate(XXS(nf+1, nt+1), TTS(nf+1,nt+1))
+      allocate(XXF(nf, nt+1), TTF(nf,nt+1))
+      allocate(UAS(nf+1, nt+1), UAF(nf, nt+1))
+
+      ! Initializing Domain for the spectral method
+      call GCLgrid_1D(XS, nf)
+      call GCLmeshgrid(XXS, TTS, nf, nt, dt, 0.)
+
+      ! Initializing domain for Finite Difference Methods
+      dx = 2./(nf-1)
+      do i = 1, nf
+        XF(i,1) = -1 + (i-1)*dx
+      end do 
+
+      ! Initializing differentiation matrices for each method
+      call D2FD2_1D(DF, nf, dx)
+      call D2GCL_1D(DS, nf)
+      
+      ! Eliminating these rows preserves the BC
+      DS(1,:) = 0.
+      DS(nf+1,:) = 0.
+      DF(1,:) = 0.
+      DF(nf, :) = 0.
+
+      ! Setting Initial Condition 
+      UF = 0.0
+      UF(:,1:1) = 5*(1 - XF**2)**2
+      US = 0.0
+      US(:,1:1) = 5*(1 - XS**2)**2
+
+      ! Integrating for each method 
+      call  IBVP_1DCN(UF, DF, TF, nf, nt, dt)
+      call  IBVP_1DCN(US, DS, TS, nf+1, nt, dt)
+
+      ! Initializing Meshgrid for the Finite Difference Output
+      call meshgrid(TTF, XXF, TF, XF(:,1), nt+1, nf)
+
+      ! Converging back into Physical Space
+      ! There is a massive bug in this routine. I'll fix it tomorrow. 
+      !do i = 1, nt
+        !call GCL_2_phys(US(:, i+1), nf)
+      !end do
+      ! Analytical Solution on this domain for error comparison
+
+      ! Computing Analytical Solution
+      call vec_domain(XA, TA, nx2, nt, (/-1.0, 1.0/), (/0.0, 2.0/))
+
+      ! Fourier Coefficients
+      XAS = XAS + 1
+      do i = 1, num_modes
+        C(i) = 5*((-1.)**i-1.)*((64./((pi*i)**3))-(768./((pi*i)**5)))
+        UAS = UAS + C(i)*sin((i*pi/2.)*XAS)*exp(-TAS*(i*pi/2.0)**2)
+      end do 
+      XAS = XAS - 1 
+      ! Adding g 
+      UAS = UAS + 3. + XAS
+
+      ! Moving back to matrix form
+      call devectorize(UA_v, UAS, nf+1, nt+1)
+      XAF = XAF + 1
+      do i = 1, num_modes
+        C(i) = 5*((-1.)**i-1.)*((64./((pi*i)**3))-(768./((pi*i)**5)))
+        UAF = UAF + C(i)*sin((i*pi/2.)*XAF)*exp(-TAF*(i*pi/2.0)**2)
+      end do 
+      XAF = XAF - 1 
+      ! Adding g 
+      UAF = UAF + 3. + XAV
+
+      ! Moving back to matrix form
+      call devectorize(UA_v, UAS, nf+1, nt+1)
+
+      ! Spectral Method
+      XXS = XXS + 1
+      do i = 1, num_modes
+        C(i) = 5*((-1.)**i-1.)*((64./((pi*i)**3))-(768./((pi*i)**5)))
+        UAS = UAS + C(i)*sin((i*pi/2.)*XXS)*exp(-TTS*(i*pi/2.0)**2)
+      end do 
+      XXS = XXS - 1 
+      ! Adding g 
+      UAS = UAS + 3. + XXS
+      ! Finite Difference Method
+      XXF = XXF + 1
+      do i = 1, num_modes
+        C(i) = 5*((-1.)**i-1.)*((64./((pi*i)**3))-(768./((pi*i)**5)))
+        UAF = UAF + C(i)*sin((i*pi/2.)*XXF)*exp(-TTF*(i*pi/2.0)**2)
+      end do 
+      XXF = XXF - 1 
+      ! Adding g 
+      UAF = UAF + 3. + XXF
+
+      ! Initializing Shift Vector
+      FF = (3 + XF)
+      FS = (3 + XS)
+
+      if (nf .eq. 100) then
+        ! write to out file
+        open(15, file="us.dat")
+          do i = 1, nf+1
+            write(15, "("//trim(str(nt+1))//"F10.4)") UAS(i,:) !US(i,:)+FS(i,1)
+          end do 
+        close(15)
+        open(16, file="xs.dat")
+          do i = 1, nf+1
+            write(16, "("//trim(str(nt+1))//"F10.4)") XXS(i,:)
+          end do 
+        close(16)
+        open(17, file="ts.dat")
+          do i = 1, nf+1 
+            write(17, "("//trim(str(nt+1))//"F10.4)") TTS(i,:)
+          end do 
+        close(17)
+
+        open(18, file="uf.dat")
+          do i = 1, nf
+            write(18, "("//trim(str(nt+1))//"F10.4)") UF(i,:)+FF(i,1)
+          end do 
+        close(18)
+        open(19, file="xf.dat")
+          do i = 1, nf
+            write(19, "("//trim(str(nt+1))//"F10.4)") XXF(i,:)
+          end do 
+        close(19)
+        open(20, file="tf.dat")
+          do i = 1, nf
+            write(20, "("//trim(str(nt+1))//"F10.4)") TTF(i,:)
+          end do 
+        close(20)
+      end if
+
+      ! Computing error @ t = 2.0
+      call twonorm(UAS(:, nt+1)-US(:, nt+1)-FS(:,1), ES(k))
+      call twonorm(UAF(:, nt+1)-UF(:, nt+1)-FF(:,1), EF(k))
+
+      if (ES(k) .gt. 1) then
+        print *, k, ES(k), nf
+      end if
+
+      deallocate(UF, DF, FF, XF, TF)
+      deallocate(US, DS, FS, XS, TS)
+      deallocate(XXF, XXS, TTF, TTS) 
+      deallocate(UAS, UAF)
+    end do 
+    open(25, file="q2error.dat")
+      do i = 1, 10
+        write(25, "(2F20.16)") ES(i), EF(i)
+      end do 
+    close(25)
 
     print *, " "
   print *, "-------------------------------------------------------------------"
