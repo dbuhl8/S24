@@ -299,14 +299,17 @@ module NumDE
     end do 
   end subroutine
 
-  subroutine vec_boundary(bound,interior, nx, ny)
+  subroutine vec_boundary(bound,interior,corner,nc,nx, ny)
     ! Returns a populaated bound array with the indices of the boudary for a
     ! vectorized domain u
     ! bound should be an array of length (2*nx + 2*ny - 4)
     implicit none
     integer :: bound(:), nx, ny, i, j, k,n, m, interior(:)
+    integer :: corner(:), l, nc(:), h
     j = 1
     k = 1
+    l = 1
+    h = 1
     do n = 1, nx
       do m = 1, ny
         i = m + ny*(n-1) 
@@ -317,6 +320,14 @@ module NumDE
           interior(k) = i
           k = k + 1
         end if
+        if( ( (i.eq.1) .or. (i.eq.ny) ) .or. &
+              ( (i.eq.nx*ny) .or. (i .eq. (ny*(nx-1)+1)) ) ) then
+            corner(l) = i
+            l = l + 1
+          else 
+            nc(h) = i
+            h = h + 1
+          end if
       end do 
     end do 
   end subroutine
@@ -344,29 +355,29 @@ module NumDE
   end subroutine
 
   ! this subroutine needs to be tweaked
-  subroutine vec_meshgrid(X, Y, nx, ny, sx, sy)
-    !Returns a vectorized domain X, Y, according to a meshgrid sx, sy
-    ! Assumes an evenly spaced grid
-    ! X, Y should be arrays of length (nx*ny) and ordered such that 
-    ! X(1) < x < X(nx), Y(1) < y < Y(ny)
+  subroutine meshgrid(XX, YY, X, Y, nx, ny)
+    ! Returns a meshgrid of points in XX, YY 
+    ! XX, YY should be (ny) x (nx) in size
+    ! X should be an array of length nx
+    ! Y should be an array of length ny
     implicit none
 
-    real :: X(:), Y(:), sx(:), sy(:)
-    integer :: nx, ny, i, n, m
+    real :: X(:), Y(:), XX(:,:), YY(:,:)
+    integer :: nx, ny, i
 
-    do m = 1, ny
-      do n = 1, nx
-        i = m + ny*(n-1) 
-        X(i) = sx(n)
-        Y(i) = sy(ny-m+1)
-      end do 
+    do i = 1, ny
+      XX(i, :) = X
     end do 
-  end subroutine
+
+    do i = 1, nx
+      YY(:,i) = Y
+    end do 
+  end subroutine meshgrid
 
   subroutine devectorize(A, matA, nx, ny)
     ! Returns a devectorized version of A in matA
     ! A is an array of length nx*ny
-    ! matA is a matrix of size (nx) x (ny)
+    ! matA is a matrix of size (ny) x (nx)
 
     implicit none
 
@@ -380,7 +391,7 @@ module NumDE
     end do 
   end subroutine devectorize
 
-  subroutine IBVP_1DCN(U, D, F, T, nx, nt, dt)
+  subroutine IBVP_1DCN(U, D, T, nx, nt, dt)
     !Solves the Initial Boundary Value Problem for some derivative operator D
     !and Forcing F (time-independant) using CN
     ! U should be an (nx) x (nt) 
@@ -388,7 +399,7 @@ module NumDE
     ! F should be (nx) x (1)
     implicit none
 
-    real :: U(:, :), D(:, :), F(:, :), dt, T(:)
+    real :: U(:, :), D(:, :), dt, T(:)
     integer :: nx, nt, i, j, n
     real, dimension(nx, nx) :: A, C
     real, dimension(nx, 1) :: B
@@ -408,8 +419,9 @@ module NumDE
     A = A - (dt/2.)*D
     call LU(A, nx, bool, P)
     do i = 1, nt
-      B = matmul(C, U(:, i:i)) + dt*F
+      B = matmul(C, U(:, i:i))
       call LUsolve(A, nx, B, U(:,i+1:i+1), 1, P)
+      T(i+1) = T(i) + dt
     end do 
     ! debugging with AB3 
   end subroutine IBVP_1DCN
@@ -449,6 +461,180 @@ module NumDE
       end do 
     end if
   end subroutine
+
+  subroutine cosf(U, X, A, l, num_points, num_modes)
+    ! Returns a fourier cosine series 
+    ! On entry U should be empty and of the same size as X. 
+    ! X should be a matrix filled with domain values. 
+    ! Notice that A should be an array of size num_modes+1
+    ! U = sum(A * cos((n*pi*X)/l))
+    implicit none
+    
+    real :: U(:,:), X(:,:), A(:), l
+    integer :: num_modes, num_points, i
+
+    U = A(1)
+    do i = 1, num_modes
+      U = U + A(i+1)*cos((i*pi/l)*X)
+    end do 
+  end subroutine
+
+  subroutine sinf(U, X, A, l, num_points, num_modes)
+    ! Returns a fourier sin series 
+    ! On entry U should be empty and of the same size as X. 
+    ! X should be a matrix filled with domain values. 
+    ! Notice that A should be an array of size num_modes
+    ! U = sum(A * sin((n*pi*X)/l))
+    implicit none
+    
+    real :: U(:,:), X(:,:), A(:), l
+    integer :: num_modes, num_points, i
+
+    do i = 1, num_modes
+      U = U + A(i)*sin((i*pi/l)*X)
+    end do 
+  end subroutine
+
+  subroutine GCLgrid_1D(X, nx)
+    ! returns a grid of Gauss-Chebyshev-Lobatto points 
+    ! Note that X should be a column vector of size (nx+1) x 1
+    ! Also note that this grid is not vectorized in the same way that the other
+    ! vectorized arrays are in vec_domain. I have to look into how this grad
+    ! thing works. 
+
+    ! 2D is going to be a nightmare. 
+    
+    implicit none
+
+    real :: X(:, :)
+    integer :: nx, i
+
+    do i = 1, nx+1
+      X(i,1) = cos((i-1)*pi/nx)
+    end do 
+  end subroutine GCLgrid_1D
+
+  subroutine GCLpoints(X, nx)
+    ! returns a grid of Gauss-Chebyshev-Lobatto points 
+    ! Note that X should be a column vector of size (nx+1) x 1
+    ! Also note that this grid is not vectorized in the same way that the other
+    ! vectorized arrays are in vec_domain. I have to look into how this grad
+    ! thing works. 
+
+    ! 2D is going to be a nightmare. 
+    
+    implicit none
+
+    real :: X(:)
+    integer :: nx, i
+
+    do i = 1, nx+1
+      X(i) = cos((i-1)*pi/nx)
+    end do 
+  end subroutine GCLpoints
+
+  subroutine GCLmeshgrid(XX, TT, nx, nt, dt, tstart)
+    ! Returns a matrix XX, TT which are meshgrids of the domain
+    ! XX and TT must be size (nx+1) x (nt+1) arrays
+
+    implicit none
+
+    real :: XX(:,:), TT(:,:), dt, tstart
+    integer :: nx, nt, i, j
+
+    do i = 1, nx+1
+      XX(i,:) = -cos((i-1)*pi/nx)
+    end do 
+    do i = 1, nt
+      TT(:,i) = tstart + i*dt
+    end do 
+  end subroutine GCLmeshgrid
+
+  subroutine GCLdiffvec(d, nx)
+    ! returns d determined by GCL spectral method
+    ! d(1) = d(nx+1) = 2, d(:) = 1
+    implicit none
+    real :: d(:)
+    integer :: nx, i
+    d = 1.0
+    d(1) = 2.0
+    d(nx+1) = 2.0
+  end subroutine GCLdiffvec
+
+  subroutine D2GCL_1D(D2, nx)
+    ! Returns the 'second derivative' matrix for the Gauss-Chebyshev-Lobatto
+    ! coallocation method
+
+    ! To all who wander here, this method is cursed. Look how awful this
+    ! differentiation matrix is. Its so convoluted that you would have to derive
+    ! it in order to understand it. 
+
+    implicit none
+
+    real :: D2(:,:)
+    integer :: nx, i, j
+    real, dimension(nx+1) :: d, x
+
+    call GCLdiffvec(d, nx)
+    call GCLpoints(x, nx)
+
+    D2(1,1) = (real(nx)**4 -1.)/15.
+    D2(nx+1,nx+1) = D2(1,1)
+
+    do j = 2, nx+1
+      D2(1,j)=(2.*((-1.)**(j-1))/(3.*d(j)))*&
+        ((2*real(nx)**2+1)*(1.-x(j))-6)/&
+        ((1.-x(j))**2)
+    end do 
+    do j = 1, nx
+      D2(nx+1,j)=(2*((-1.)**(nx+j-1))/(3.*d(j)))*&
+        ((2*real(nx)**2+1)*(1+x(j))-6)/&
+        ((1+x(j))**2)
+    end do 
+
+    do j = 1, nx+1
+      do i = 2, nx
+        if(i.eq.j) then
+          D2(i, j) = -((real(nx)**2 -1)*(1-x(i)**2) + 3)/&
+            (3.*(1-x(i)**2)**2)
+        else 
+          D2(i, j) = ((-1.)**(i+j-2))*(x(i)**2+x(i)*x(j)-2)/&
+            (d(i)*(1-x(i)**2)*(x(i) - x(j))**2)
+        end if
+      end do 
+    end do 
+  end subroutine D2GCL_1D
+
+  subroutine GCL_2_phys(U, nx)
+    ! converts U from GCL coefficients to Physical Values
+    ! on entry U should be an array of length (nx+1)
+    implicit none
+    
+    real :: U(:)
+    integer :: nx, i
+    real, dimension(nx+1) :: X, C
+  
+    C = U 
+    U = 0.
+    call GCLpoints(X, nx) 
+    do i = 1, nx+1
+      U = U + GCLpolynomial(X, i, nx)
+    end do 
+  end subroutine GCL_2_phys 
+
+  function GCLpolynomial(X, n, nx) result (F)
+    ! returns the value of the m_th Gauss-Chebyshev-Lobatto Interopolating
+    ! Polynomial
+    implicit none
+    
+    integer :: n, nx, i
+    real, dimension(nx+1) :: x, f, d
+
+    call GCLdiffvec(d, nx)
+
+    F = (-1.**(N+n+1))*sqrt(1. - X**2)*sin(nx*acos(X))/&
+      (d(n)*(nx**2)*(X-X(n)))
+  end function GCLpolynomial
 
 end module NumDE
 
