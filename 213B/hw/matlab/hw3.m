@@ -90,14 +90,16 @@ title('Spectral Evolution of Heat Equation')
 
 figure(8)
 
-E = readmatrix('../fortran/q2error.dat')
+E = readmatrix('../fortran/q2error.dat');
 N = [5; 10; 15; 20; 25; 30; 50; 100; 150; 200];
 
 semilogy(N, E(:,1), 'x', N, E(:,2), 'x')
 xlabel('N')
 ylabel('Error')
 title('Error as a function of grid size')
+legend('Spectral', 'Finite Difference')
 
+[xt, D1, D2] = get_GCL_points_and_D_matrices(-1, 1, 10);
 
 %[frow,fcol] = find(XF == 0);
 %[arow,acol] = find(XA == 0);

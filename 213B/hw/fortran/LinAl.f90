@@ -65,7 +65,7 @@ contains
 
     !print "(A, I3, A, I3)", "This is a ", m," by ", n," matrix."
     do i = 1, ma
-        print "("//trim(str(na))//"F10.4)", A(i, :)
+        print "("//trim(str(na))//"F20.12)", A(i, :)
     end do
 
   end subroutine printmat

@@ -1,5 +1,6 @@
 !File: Numerical Differential Equations Module
 !Author: Dante Buhl
+!Dependencies: IBVP_1DCN uses a LAPACK routine for a linear solve
 !Purpose: To store numerical methods for Differential Equations
 
 module NumDE
@@ -401,29 +402,29 @@ module NumDE
 
     real :: U(:, :), D(:, :), dt, T(:)
     integer :: nx, nt, i, j, n
-    real, dimension(nx, nx) :: A, C
-    real, dimension(nx, 1) :: B
+    real, dimension(nx, nx) :: A, C, A_temp
     integer, dimension(nx) :: P
     logical :: bool
-  
+    integer :: info
+
     ! du/dt = perturbation from steady state
     ! need to update the interior at each timestep. So we have, 
     ! du/dt = D2u + f 
-    ! in this case D2 is going to be a wide matrix, i.e. (nx-2)x(nx)
-    ! In essence we truncate D2 using the two rows corresponding to the BC 
     
     ! CN scheme
     ! initializing global vars
+    ! call some System Solver from LAPACK
     call ident(A, nx)
     C = A + (dt/2.)*D
     A = A - (dt/2.)*D
-    call LU(A, nx, bool, P)
+    !call LU(A, nx, bool, P)
     do i = 1, nt
-      B = matmul(C, U(:, i:i))
-      call LUsolve(A, nx, B, U(:,i+1:i+1), 1, P)
+      A_temp = A
+      U(:,i+1:i+1) = matmul(C, U(:, i:i))
+      !call LUsolve(A, nx, B, U(:,i+1:i+1), 1, P)
+      call dgesv(nx, 1, A_temp, nx, P, U(:,i+1:i+1), nx, info)
       T(i+1) = T(i) + dt
     end do 
-    ! debugging with AB3 
   end subroutine IBVP_1DCN
 
   subroutine find_empty_row(A, empty, notempty, ma, num_empty, num_notempty)
@@ -510,7 +511,7 @@ module NumDE
     integer :: nx, i
 
     do i = 1, nx+1
-      X(i,1) = cos((i-1)*pi/nx)
+      X(i,1) = -cos((i-1)*pi/nx)
     end do 
   end subroutine GCLgrid_1D
 
@@ -529,7 +530,7 @@ module NumDE
     integer :: nx, i
 
     do i = 1, nx+1
-      X(i) = cos((i-1)*pi/nx)
+      X(i) = -cos((i-1)*pi/nx)
     end do 
   end subroutine GCLpoints
 
@@ -543,7 +544,7 @@ module NumDE
     integer :: nx, nt, i, j
 
     do i = 1, nx+1
-      XX(nx-i+2,:) = -cos((i-1)*pi/nx)
+      XX(i,:) = -cos((i-1)*pi/nx)
     end do 
     do i = 0, nt
       TT(:,i+1) = tstart + i*dt
@@ -577,6 +578,7 @@ module NumDE
 
     call GCLdiffvec(d, nx)
     call GCLpoints(x, nx)
+    x = -x
 
     D2(1,1) = (real(nx)**4 -1.)/15.
     D2(nx+1,nx+1) = D2(1,1)
@@ -599,7 +601,7 @@ module NumDE
             (3.*(1-x(i)**2)**2)
         else 
           D2(i, j) = ((-1.)**(i+j-2))*(x(i)**2+x(i)*x(j)-2)/&
-            (d(i)*(1-x(i)**2)*(x(i) - x(j))**2)
+            (d(j)*(1-x(i)**2)*(x(i) - x(j))**2)
         end if
       end do 
     end do 
@@ -635,6 +637,27 @@ module NumDE
     F = (-1.**(N+n+1))*sqrt(1. - X**2)*sin(nx*acos(X))/&
     (d(n)*(nx**2)*(X-X(n)))
   end function GCLpolynomial
+
+  subroutine GCLvecdomain(X, Y, nx, ny, yrange)
+    !Returns a vectorized domain X, T for the Gauss-Chebyshev-Lobatto grid
+    !points
+    ! X, Y should be arrays of length ((nx+1)*ny). 
+    implicit none
+
+    real :: X(:,:), Y(:,:), yrange(:)
+    real :: dx, dy
+    integer :: nx, ny, i, n, m
+
+    dy = (yrange(2) - yrange(1))/(ny-1)
+
+    do m = 1, ny
+      do n = 1, nx+1
+        i = m + ny*(n-1) 
+        X(i,1) = -cos((n-1)*pi/nx) 
+        Y(i,1) = yrange(2) - (m-1)*dy
+      end do 
+    end do 
+  end subroutine GCLvecdomain
 
 end module NumDE
 

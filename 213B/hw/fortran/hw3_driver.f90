@@ -14,9 +14,9 @@ program hw3_driver
   integer, parameter :: nx1=81, ny1=51
   real, parameter :: xstart=0., xstop=2.
   real, parameter :: ystart=0., ystop=1.
-  integer, parameter :: num_bound = 2*nx1 + 2*ny1 - 4
-  integer, parameter :: num_dom = nx1*ny1
-  integer, parameter :: num_int = num_dom-num_bound
+  integer, parameter :: num_bound = 2*nx1 + 2*ny1 - 4 
+  integer, parameter :: num_dom = nx1*ny1 
+  integer, parameter :: num_int = num_dom-num_bound 
   real, dimension(num_dom, num_dom) :: D2
   real, dimension(num_dom, 1) :: F, U, X, Y, G, G2
   real, dimension(num_dom-4, num_int) :: D2_int
@@ -41,7 +41,7 @@ program hw3_driver
   real, parameter :: dt=10.d-4
   real,parameter :: tstart=0, tstop=2
   integer, parameter :: nx2=101, nt=int((tstop-tstart)/dt), na = nt
-  integer, parameter :: num_modes=64
+  integer, parameter :: num_modes=10
   real, dimension(nx2*nt, 1) :: UA, XA, TA
   real, dimension(nt, nx2) :: UA_mat, XA_mat, TA_mat
   real, dimension(nx2, 1) :: X2, F2
@@ -51,10 +51,12 @@ program hw3_driver
   real, allocatable :: TF(:), TS(:)
   real, allocatable :: XF(:,:), FF(:,:), XS(:,:), FS(:,:)
   real, allocatable :: XXF(:,:), TTF(:,:), XXS(:,:), TTS(:,:)
-  real, allocatable :: UAS(:,:), UAF(:,:), XAS(:), TAS(:), XAF(:), TAF(:)
-  real, dimension(10) :: ES, EF
+  real, allocatable :: UAS(:,:), UAF(:,:),XAS(:,:),TAS(:,:),XAF(:,:),TAF(:,:)
+  real, allocatable :: UASm(:,:), UAFm(:,:)
   integer :: nf, ns 
-  integer, dimension(10) :: n_val
+  integer, parameter :: ne=64
+  real, dimension(ne) :: ES, EF
+  integer, dimension(ne) :: n_val
 
   ! General Utility Vars
   real :: tol = 10.d-14
@@ -220,7 +222,7 @@ program hw3_driver
     !Computing Numerical Solution using Finite Differences and GCL Spectral
     !methods with Crank Nicolson Time Integration
     n_val = (/5, 10, 15, 20, 25, 30, 50, 100, 150, 200/)
-    do k = 1, 10
+    do k = 1, ne
       nf = n_val(k)
       !Allocating memory for the Finite Difference Method
       allocate(UF(nf, nt+1), DF(nf, nf), XF(nf, 1), FF(nf, 1), TF(nt+1))
@@ -231,7 +233,6 @@ program hw3_driver
       ! Allocating Memory for the Output
       allocate(XXS(nf+1, nt+1), TTS(nf+1,nt+1))
       allocate(XXF(nf, nt+1), TTF(nf,nt+1))
-      allocate(UAS(nf+1, nt+1), UAF(nf, nt+1))
 
       ! Initializing Domain for the spectral method
       call GCLgrid_1D(XS, nf)
@@ -246,6 +247,12 @@ program hw3_driver
       ! Initializing differentiation matrices for each method
       call D2FD2_1D(DF, nf, dx)
       call D2GCL_1D(DS, nf)
+
+      ! This is here for debugging
+      !if (nf .eq. 10) then
+        !call printmat(DS, nf+1, nf+1)
+        !call printmat(XS, nf+1, 1)
+      !end if
       
       ! Eliminating these rows preserves the BC
       DS(1,:) = 0.
@@ -259,6 +266,9 @@ program hw3_driver
       US = 0.0
       US(:,1:1) = 5*(1 - XS**2)**2
 
+      TS = 0.0
+      TF = 0.0
+
       ! Integrating for each method 
       call  IBVP_1DCN(UF, DF, TF, nf, nt, dt)
       call  IBVP_1DCN(US, DS, TS, nf+1, nt, dt)
@@ -266,58 +276,22 @@ program hw3_driver
       ! Initializing Meshgrid for the Finite Difference Output
       call meshgrid(TTF, XXF, TF, XF(:,1), nt+1, nf)
 
-      ! Converging back into Physical Space
-      ! There is a massive bug in this routine. I'll fix it tomorrow. 
-      !do i = 1, nt
-        !call GCL_2_phys(US(:, i+1), nf)
-      !end do
       ! Analytical Solution on this domain for error comparison
+      allocate(UAS(nf+1, 1), UAF(nf, 1))
 
-      ! Computing Analytical Solution
-      call vec_domain(XA, TA, nx2, nt, (/-1.0, 1.0/), (/0.0, 2.0/))
-
-      ! Fourier Coefficients
-      XAS = XAS + 1
+      UAS = 0.0
+      UAF = 0.0
       do i = 1, num_modes
         C(i) = 5*((-1.)**i-1.)*((64./((pi*i)**3))-(768./((pi*i)**5)))
-        UAS = UAS + C(i)*sin((i*pi/2.)*XAS)*exp(-TAS*(i*pi/2.0)**2)
+        UAS(:,1:1) = UAS(:,1:1) + C(i)*sin((i*pi/2.)*(XS+1.))*&
+          exp(-TS(nt+1)*(i*pi/2.0)**2)
+        UAF(:,1:1) = UAF(:,1:1) + C(i)*sin((i*pi/2.)*(XF+1.))*&
+          exp(-TF(nt+1)*(i*pi/2.0)**2)
       end do 
-      XAS = XAS - 1 
-      ! Adding g 
-      UAS = UAS + 3. + XAS
 
-      ! Moving back to matrix form
-      call devectorize(UA_v, UAS, nf+1, nt+1)
-      XAF = XAF + 1
-      do i = 1, num_modes
-        C(i) = 5*((-1.)**i-1.)*((64./((pi*i)**3))-(768./((pi*i)**5)))
-        UAF = UAF + C(i)*sin((i*pi/2.)*XAF)*exp(-TAF*(i*pi/2.0)**2)
-      end do 
-      XAF = XAF - 1 
-      ! Adding g 
-      UAF = UAF + 3. + XAV
-
-      ! Moving back to matrix form
-      call devectorize(UA_v, UAS, nf+1, nt+1)
-
-      ! Spectral Method
-      XXS = XXS + 1
-      do i = 1, num_modes
-        C(i) = 5*((-1.)**i-1.)*((64./((pi*i)**3))-(768./((pi*i)**5)))
-        UAS = UAS + C(i)*sin((i*pi/2.)*XXS)*exp(-TTS*(i*pi/2.0)**2)
-      end do 
-      XXS = XXS - 1 
-      ! Adding g 
-      UAS = UAS + 3. + XXS
-      ! Finite Difference Method
-      XXF = XXF + 1
-      do i = 1, num_modes
-        C(i) = 5*((-1.)**i-1.)*((64./((pi*i)**3))-(768./((pi*i)**5)))
-        UAF = UAF + C(i)*sin((i*pi/2.)*XXF)*exp(-TTF*(i*pi/2.0)**2)
-      end do 
-      XXF = XXF - 1 
-      ! Adding g 
-      UAF = UAF + 3. + XXF
+      ! Computing error @ t = 2.0
+      ES(k) = maxval(abs(UAS(:, 1)-US(:, nt+1)))
+      EF(k) = maxval(abs(UAF(:, 1)-UF(:, nt+1)))
 
       ! Initializing Shift Vector
       FF = (3 + XF)
@@ -327,20 +301,19 @@ program hw3_driver
         ! write to out file
         open(15, file="us.dat")
           do i = 1, nf+1
-            write(15, "("//trim(str(nt+1))//"F10.4)") UAS(i,:) !US(i,:)+FS(i,1)
+            write(15, "("//trim(str(nt+1))//"F10.4)") US(i,:)+FS(i,1)
           end do 
         close(15)
         open(16, file="xs.dat")
           do i = 1, nf+1
             write(16, "("//trim(str(nt+1))//"F10.4)") XXS(i,:)
-          end do 
+          end do
         close(16)
         open(17, file="ts.dat")
           do i = 1, nf+1 
             write(17, "("//trim(str(nt+1))//"F10.4)") TTS(i,:)
           end do 
         close(17)
-
         open(18, file="uf.dat")
           do i = 1, nf
             write(18, "("//trim(str(nt+1))//"F10.4)") UF(i,:)+FF(i,1)
@@ -358,21 +331,14 @@ program hw3_driver
         close(20)
       end if
 
-      ! Computing error @ t = 2.0
-      call twonorm(UAS(:, nt+1)-US(:, nt+1)-FS(:,1), ES(k))
-      call twonorm(UAF(:, nt+1)-UF(:, nt+1)-FF(:,1), EF(k))
-
-      if (ES(k) .gt. 1) then
-        print *, k, ES(k), nf
-      end if
-
+      ! Deallocating Matrices to be resized next loop
       deallocate(UF, DF, FF, XF, TF)
       deallocate(US, DS, FS, XS, TS)
       deallocate(XXF, XXS, TTF, TTS) 
-      deallocate(UAS, UAF)
+      deallocate(UAS, UAF)!, UASm, UAFm)
     end do 
     open(25, file="q2error.dat")
-      do i = 1, 10
+      do i = 1, ne
         write(25, "(2F20.16)") ES(i), EF(i)
       end do 
     close(25)
