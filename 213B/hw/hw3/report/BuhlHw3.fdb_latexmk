@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1716441261.19528 "BuhlHw3.tex" "BuhlHw3.pdf" "BuhlHw3" 1716441261.46521 0
+["pdflatex"] 1716499046.77387 "BuhlHw3.tex" "BuhlHw3.pdf" "BuhlHw3" 1716499047.07645 0
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1713199481 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/jknappen/ec/ectt1000.tfm" 1713199481 1536 06717a2b50de47d4087ac0e6cd759455 ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1713199481 1004 54797486969f23fa377b128694d548df ""
@@ -73,14 +73,16 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1713199481 41588 b43d3e860a4f94167ee1e725ff526a72 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1716225480.17773 325518 3dff2bac5bde75cd7e600320ce8a00d6 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1716225470 7112991 dad564c397a4b79975e8be29c2f7ee4e ""
-  "BuhlHw3.aux" 1716441261.43962 854 524e8488b3a7729d4a4e67b2a8069640 "pdflatex"
-  "BuhlHw3.tex" 1716441259.85963 7979 8cc28ef0e71d64c19fd8cb030489839a ""
+  "BuhlHw3.aux" 1716499047.0488 1152 cc51dded66543d1906c63a7e1451be92 "pdflatex"
+  "BuhlHw3.tex" 1716499046.07548 8535 e7bcd1ef85a18adb771dc09e4047c98b ""
   "q1_num_sol2.png" 1716436164.66923 67640 82e953669c581797d0cbc942cf6f69a1 ""
   "q1_num_sol_yconst2.png" 1716436180.91272 11841 75ec575354d8f9a2bea3ec9e5c5cc435 ""
   "q2_anal_sol.png" 1716436192.9495 32348 9b6bae1fff2f5bf9b58c69e92f577247 ""
   "q2_error.png" 1716436249.53661 14757 261a62165ba11ed3afd0fc6e3da81c64 ""
   "q2_fd_sol.png" 1716436209.08631 33031 13b7eb454dc04dba343844af46df7e2a ""
   "q2_gcl_sol.png" 1716436225.63311 33018 69e18378fc98bb31cea43e1b449e0037 ""
+  "q3_colormap.png" 1716498237.21854 198190 00d04a5bc6a854c7e070bad538f53c5a ""
+  "q3t62.png" 1716498755.25539 9382 0b5318b90d6d1eaae6e79f2ddb41c27b ""
   (generated)
   "BuhlHw3.aux"
   "BuhlHw3.log"

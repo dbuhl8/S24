@@ -230,21 +230,6 @@ module NumDE
     end do 
   end subroutine 
   
-  subroutine NHuen(N, D, F, U, T, ma, num_points, dt)
-    implicit none
-    real :: N(:,:),D(:,:),F(:,:),U(:,:),T(:),dt
-    integer :: ma, num_points, i
-
-    do i = 1, num_points
-      U(:,i+1) = U(:,i) + dt*&
-        (U(:,i)*matmul(N, U(:,i)) + matmul(D, U(:,i)) + F(:,1))
-      U(:,i+1) = U(:,i) + (dt/2.)*&
-        ((U(:,i)*matmul(N, U(:,i)) + matmul(D, U(:,i)) + F(:,1)) +&
-         (U(:,i+1)*matmul(N, U(:,i+1)) + matmul(D, U(:,i+1)) + F(:,1)))
-      T(i+1) = T(i) + dt
-    end do 
-  end subroutine 
-
   subroutine FPI(F, Y)
     ! Fixed Point Interation, for a nonlinear system
     ! need to update the jacobian at each iteration (hard in fortran)
@@ -376,21 +361,108 @@ module NumDE
   subroutine D1FD2_1D(D, nx, dx)
     ! Computes D1 for an evenly spaced grid according to a second order finite
     ! difference method
+    implicit none
+ 
+    real :: D(:, :), dx
+    integer :: nx, i
+    D = 0.0
+    do i = 1, nx
+      if(1 < i) then
+        D(i, i-1) = -1./2.
+      end if
+      if(i < nx) then
+        D(i, i+1) = 1./2.
+      end if
+    end do 
+    D = D/dx
+  end subroutine
+
+  subroutine PD4FD2_1D(D, nx, dx)
+    ! Computes D4 for an evenly spaced grid according to a second order finite
+    ! difference method
+    implicit none
+ 
+    ! D should be an (nx) x (nx)array
+    real :: D(:, :), dx
+    integer :: nx, i, n
+  
+    D = 0.0
+    do i = 1, nx
+      ! we require a lot of logic gates in order to make sure we are not
+      ! violating the array
+      D(i,i) = 6.0
+      if(1 < i) then
+        D(i, i-1) = -4.0
+      else 
+        D(i, nx) = -4.0
+      end if
+      if(2 < i) then
+        D(i, i-2) = 1.0
+      else 
+        D(i, nx-2+i) = 1.0
+      end if
+      if(i < nx) then
+        D(i, i+1) = -4.0
+      else 
+        D(i, 1) = -4.0
+      end if
+      if(i < nx-1) then
+        D(i, i+2) = 1.0
+      else 
+        D(i, 2+i-nx) = 1.0
+      end if
+    end do 
+    D = D/(dx**4)
+  end subroutine
+
+  subroutine PD2FD2_1D(D, nx, dx)
+    ! Computes D2 for an evenly spaced grid according to a second order finite
+    ! difference method
 
     implicit none
  
     ! D should be an (nx*ny) x (nx*ny) array
     real :: D(:, :), dx
-    integer :: nx, i
+    integer :: nx, i, n
+  
     D = 0.0
+
     do i = 1, nx
       ! we require a lot of logic gates in order to make sure we are not
       ! violating the array
+      D(i,i) = -2.0
       if(1 < i) then
-        D(i, i-1) = 1./2.
+        D(i, i-1) = 1.0
+      else 
+        D(i, nx) = 1.0
       end if
       if(i < nx) then
-        D(i, i+1) = -1./2.
+        D(i, i+1) = 1.0
+      else 
+        D(i, 1) = 1.0
+      end if
+    end do 
+    D = D/(dx**2)
+  end subroutine
+
+  subroutine PD1FD2_1D(D, nx, dx)
+    ! Computes D1 for an evenly spaced grid according to a second order finite
+    ! difference method
+    implicit none
+ 
+    real :: D(:, :), dx
+    integer :: nx, i
+    D = 0.0
+    do i = 1, nx
+      if(1 < i) then
+        D(i, i-1) = -1./2.
+      else 
+        D(i, nx) = -1./2.
+      end if
+      if(i < nx) then
+        D(i, i+1) = 1./2.
+      else 
+        D(i, 1) = 1./2.
       end if
     end do 
     D = D/dx
@@ -525,7 +597,7 @@ module NumDE
     end do 
   end subroutine IBVP_1DCN
 
-  subroutine N_IC_1D_AB3(U, D, N, F, T, nx, nt, dt)
+  subroutine NAB2(U, D, N, T, nx, nt, dt)
     ! Performs AB2 for a generally Nonlinear PDE. Has only order one nonlinear
     ! terms. That is the problem can be represented in the form. 
     ! dU/dt = U*(NU) + DU + F
@@ -533,18 +605,33 @@ module NumDE
     ! DU and F are linear terms.  
     implicit none
 
-    real :: U(:,:), D(:,:), N(:,:), F(:,:), T(:), dt
+    real :: U(:,:), D(:,:), N(:,:), T(:), dt
     integer :: nx, nt,i
 
-    call NHuen(N, D, F, U, T, nx, nt, dt)
+    call NHuen(U, D, N, T, nx, 1, dt)
 
     do i = 1, nt-1
-      U(:,i+2) = U(:,i+1)+(dt/2.)*&
-        (3*(U(:,i+1)*matmul(N, U(:,i+1)) + matmul(D,U(:,i+1)) + F(:,1))-&
-        (U(:,i)*matmul(N, U(:,i)) + matmul(D,U(:,i)) + F(:,1)))
+      U(:,i+2) = 3*(U(:,i+1)*matmul(N,U(:,i+1)) + matmul(D,U(:,i+1)))
+      U(:,i+2) = U(:,i+2)-(U(:,i)*matmul(N,U(:,i)) + matmul(D,U(:,i)))
+      U(:,i+2) = U(:,i+1)+(dt/2.)*(U(:,i+2))
       T(i+2) = T(i+1) + dt
     end do
-  end subroutine N_IC_1D_AB3
+  end subroutine NAB2
+
+  subroutine NHuen(U, D, N, T, ma, num_points, dt)
+    implicit none
+    real :: N(:,:),D(:,:),U(:,:),T(:),dt
+    real, dimension(ma, 2) :: K
+    integer :: ma, num_points, i
+
+    do i = 1, num_points
+      K(:,1) = U(:,i)*matmul(N, U(:,i)) + matmul(D, U(:,i))
+      K(:,2) = U(:,i)+dt*K(:,1)
+      K(:,2) = K(:,2)*matmul(N,K(:,2)) + matmul(D, K(:,2))
+      U(:,i+1) = U(:,i) + (dt/2.)*(K(:,1) + K(:,2))
+      T(i+1) = T(i) + dt
+    end do 
+  end subroutine 
 
   subroutine find_empty_row(A, empty, notempty, ma, num_empty, num_notempty)
     ! Returns an array of row indices specifiying which rows of A have all zero

@@ -41,7 +41,7 @@ program hw3_driver
   integer :: lwork, info, RANK
 
   ! Question 2
-  real(kind=kr), parameter :: dt=10.d-4
+  real(kind=kr), parameter :: dt=10.**(-4)
   real(kind=kr),parameter :: tstart=0, tstop=2
   integer, parameter :: nx2=101, nt=int((tstop-tstart)/dt), na = nt
   integer, parameter :: num_modes=64
@@ -62,21 +62,29 @@ program hw3_driver
   integer, dimension(ne) :: n_val
 
   !Question 3 Vars
-  real(kind=kr), parameter :: q3start=-25., q3stop=25., q3dt=10.d-4
-  integer, parameter :: q3nx=200, q3nt1=100, q3nt2=1000
+  real(kind=kr), parameter :: q3start=-25., q3stop=25., q3dt=10.**(-4)
+  integer, parameter :: q3nx=200, q3nt1=1000000, nt_print=1001
   real(kind=kr), parameter :: q3dx = (q3stop-q3start)/(q3nx-1)
-  real(kind=kr), dimension(q3nx, q3nx) :: q3D4, q3D2, q3D1
-  real(kind=kr), dimension(q3nx, q3nt1+1) :: q3U1, q3X1, q3T1m
-  real(kind=kr), dimension(q3nt1+1) :: q3T1
-  real(kind=kr), dimension(q3nx, q3nt2+1) :: q3U2, q3X2, q3T2m
-  real(kind=kr), dimension(q3nt2+1) :: q3T2
-  real(kind=kr), dimension(q3nx, 1) :: q3F = 0.0
+  real(kind=kr), allocatable :: q3D4(:,:), q3D2(:,:), q3D1(:,:)
+  real(kind=kr), allocatable :: q3U1(:,:), q3X1(:,:), q3T1m(:,:)
+  real(kind=kr), allocatable :: q3T1(:)
+  integer, dimension(nt_print) :: tind 
 
   ! General Utility Vars
   real(kind=kr) :: tol = 10.d-14
   logical :: bool
   integer :: i, j, n, m, k
   real(kind=kr) :: start, finish
+
+  ! Some vars for q3
+  allocate(q3D4(q3nx-1,q3nx-1), q3D2(q3nx-1,q3nx-1), q3D1(q3nx-1,q3nx-1))
+  allocate(q3U1(q3nx,q3nt1+1), q3X1(q3nx,q3nt1+1),q3T1m(q3nx,q3nt1+1),&
+    q3T1(q3nt1+1))
+
+  tind(1) = 1
+  do i = 2, nt_print
+    tind(i) = (i-1)*(q3nt1/(nt_print-1))
+  end do 
 
   print *, " "
   print *, "-------------------------------------------------------------------"
@@ -117,22 +125,21 @@ program hw3_driver
     !call dgels('N', num_dom-4, num_int, 1, D2_int, num_dom, F_int, num_dom-4,&
       !work, lwork, info)
                 ! T     M         N    NRHS   A       LDA,   B,      LDB
-    call dgels('N', num_dom, num_dom, 1, D2, num_dom, F, num_dom,&
-      work, lwork, info)
-
+    !call dgels('N', num_dom, num_dom, 1, D2, num_dom, F, num_dom,&
+      !work, lwork, info)
     ! Work is now the optimal size
-    lwork = work(1)
-    deallocate(work)
-    allocate(work(lwork))
+    !lwork = work(1)
+    !deallocate(work)
+    !allocate(work(lwork))
     ! Seeing how efficient this solve is
-    call CPU_TIME(start)
+    !call CPU_TIME(start)
 
                 !! T     M         N    NRHS   A       LDA,   B,      LDB
     !call dgels('N', num_dom-4, num_int, 1, D2_int, num_dom, F_int, num_dom-4,&
       !work, lwork, info)
                  ! T     M         N    NRHS   A       LDA,   B,      LDB
-    call dgels('N', num_dom, num_dom, 1, D2, num_dom, F, num_dom,&
-      work, lwork, info)
+    !call dgels('N', num_dom, num_dom, 1, D2, num_dom, F, num_dom,&
+      !work, lwork, info)
    
     call CPU_TIME(finish)
     if (info .ne. 0) then
@@ -144,9 +151,9 @@ program hw3_driver
       " seconds"
 
     ! Computing the 2-norm of the error
-    !U = 0.0
-    !F(nc, :) = F_int
-    !U(interior, :) = F(interior, :)
+    U = 0.0
+    F(nc, :) = F_int
+    U(interior, :) = F(interior, :)
     U = F
     U = U + G
     F = -20.0 + 3.*X**2 + 4.*Y**2 
@@ -360,67 +367,61 @@ program hw3_driver
   print *, " "
   print *, " Question 3: Extra Credit"
     print *, " "
-
+    
     ! Defining the domain
     do i = 1, q3nx
       q3X1(i,1) = q3start + (i-1)*q3dx
     end do 
     ! Seeding the Initial Condition
     q3U1(:,1) = sin(q3X1(:,1))*exp((-(q3X1(:,1)-10.)**2)/2.)
-    q3U2(:,1) = sin(q3X1(:,1))*exp((-(q3X1(:,1)-10.)**2)/2.)
 
-    call printmat(q3U1(:, 1:1), q3nx, 1)
-   
     ! Definiing Differntiation Matrices  
-    call D4FD2_1D(q3D4, q3nx, q3dx)
-    call D2FD2_1D(q3D2, q3nx, q3dx)
-    call D1FD2_1D(q3D1, q3nx, q3dx)
+    call PD4FD2_1D(q3D4, q3nx-1, q3dx)
+    call PD2FD2_1D(q3D2, q3nx-1, q3dx)
+    call PD1FD2_1D(q3D1, q3nx-1, q3dx)
+    q3d4 = -q3d4-q3d2
+    q3D1 = -q3D1
    
     ! Calling a Nonlinear AB2 Routine in order to time integrate 
-    call N_IC_1D_AB3(q3U1, -q3D4+q3D2, -q3D1, q3F, q3T1, q3nx, q3nt1, dt) 
-    call N_IC_1D_AB3(q3U2, -q3D4+q3D2, -q3D1, q3F, q3T2, q3nx, q3nt2, dt) 
+    call NAB2(q3U1(1:q3nx-1,:), q3D4, q3D1, q3T1, q3nx-1, q3nt1, q3dt) 
+    !call NHuen(q3U1(1:q3nx-1,:), q3D4, q3D1, q3T1, q3nx-1, 1, q3dt)
+    !!$OMP PARALLEL DEFAULT(SHARED)
+    !do i = 1, q3nt1-1
+      !!$OMP WORKSHARE
+      !q3U1(1:q3nx-1,i+2)=3*(q3U1(1:q3nx-1,i+1)*&
+        !matmul(q3D1,q3U1(1:q3nx-1,i+1))+matmul(q3D4,q3U1(1:q3nx-1,i+1)))
+      !q3U1(1:q3nx-1,i+2)=q3U1(1:q3nx-1,i+2)-(q3U1(1:q3nx-1,i)*&
+        !matmul(q3D1,q3U1(1:q3nx-1,i))+matmul(q3D4,q3U1(1:q3nx-1,i)))
+      !q3U1(1:q3nx-1,i+2)=q3U1(1:q3nx-1,i+1)+(q3dt/2.)*(q3U1(1:q3nx-1,i+2))
+      !!$OMP END WORKSHARE
+      !!$OMP SINGLE
+        !q3T1(i+2) = q3T1(i+1) + q3dt
+      !!$OMP END SINGLE
+    !end do
+    !!$OMP END PARALLEL
+    q3U1(q3nx,:) = q3U1(1,:)
 
-    call printmat(q3U1(:, 1:1), q3nx, 1)
     ! Creating a Time Value Matrix
-    do i = 1, q3nt1
+    do i = 1, q3nt1+1
       q3X1(:,i) = q3X1(:,1)
       q3T1m(:,i) = q3T1(i)
-    end do 
-    do i = 1, q3nt2
-      q3X2(:,i) = q3X1(:,1)
-      q3T2m(:,i) = q3T2(i)
     end do 
 
     open(30, file="nu1.dat")
       do i = 1, q3nx
-        write(30, "("//trim(str(q3nt1+1))//"F16.8)") q3U1(i,:)
+        write(30, "("//trim(str(nt_print))//"F16.8)") q3U1(i,tind)
       end do 
     close(30)
     open(31, file="nx1.dat")
-       do i = 1, q3nx
-        write(31, "("//trim(str(q3nt1+1))//"F16.8)") q3X1(i,:)
+      do i = 1, q3nx
+        write(31, "("//trim(str(nt_print))//"F16.8)") q3X1(i,tind)
       end do 
     close(31)
     open(32, file="nt1.dat")
-       do i = 1, q3nx
-        write(32, "("//trim(str(q3nt1+1))//"F16.8)") q3T1m(i,:)
+      do i = 1, q3nx
+        write(32, "("//trim(str(nt_print))//"F16.8)") q3T1m(i,tind)
       end do 
     close(32)
-    open(33, file="nu2.dat")
-       do i = 1, q3nx
-        write(33, "("//trim(str(q3nt2+1))//"F16.8)") q3U2(i,:)
-      end do 
-    close(33)
-    open(33, file="nx2.dat")
-       do i = 1, q3nx
-        write(34, "("//trim(str(q3nt2+1))//"F16.8)") q3X2(i,:)
-      end do 
-    close(34)
-    open(35, file="nt2.dat")
-       do i = 1, q3nx
-        write(35, "("//trim(str(q3nt2+1))//"F16.8)") q3T2m(i,:)
-      end do 
-    close(35)
 
     print *, " "
   print *, "-------------------------------------------------------------------"

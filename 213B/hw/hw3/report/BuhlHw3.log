@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Arch Linux) (preloaded format=pdflatex 2024.5.20)  22 MAY 2024 22:14
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024/Arch Linux) (preloaded format=pdflatex 2024.5.20)  23 MAY 2024 14:17
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -325,25 +325,36 @@ File: q2_error.png Graphic file (type png)
 <use q2_error.png>
 Package pdftex.def Info: q2_error.png  used on input line 199.
 (pdftex.def)             Requested size: 234.8775pt x 186.7088pt.
-[3] [4 <./q2_anal_sol.png> <./q2_fd_sol.png>] [5 <./q2_gcl_sol.png> <./q2_error.png>] (./BuhlHw3.aux)
+[3]
+<q3_colormap.png, id=34, 379.4175pt x 312.41719pt>
+File: q3_colormap.png Graphic file (type png)
+<use q3_colormap.png>
+Package pdftex.def Info: q3_colormap.png  used on input line 224.
+(pdftex.def)             Requested size: 234.8775pt x 193.40585pt.
+<q3t62.png, id=35, 378.66469pt x 310.15875pt>
+File: q3t62.png Graphic file (type png)
+<use q3t62.png>
+Package pdftex.def Info: q3t62.png  used on input line 231.
+(pdftex.def)             Requested size: 234.8775pt x 192.38635pt.
+ [4 <./q2_anal_sol.png> <./q2_fd_sol.png>] [5 <./q2_gcl_sol.png> <./q2_error.png>] [6 <./q3_colormap.png> <./q3t62.png>] (./BuhlHw3.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 4391 strings out of 476076
- 64729 string characters out of 5793775
- 1955187 words of memory out of 5000000
- 26450 multiletter control sequences out of 15000+600000
+ 4405 strings out of 476076
+ 64993 string characters out of 5793775
+ 1956187 words of memory out of 5000000
+ 26464 multiletter control sequences out of 15000+600000
  565976 words of font info for 67 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  57i,14n,65p,222b,387s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on BuhlHw3.pdf (5 pages, 259732 bytes).
+Output written on BuhlHw3.pdf (6 pages, 377663 bytes).
 PDF statistics:
- 98 PDF objects out of 1000 (max. 8388607)
- 52 compressed objects within 1 object stream
+ 105 PDF objects out of 1000 (max. 8388607)
+ 54 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 31 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 41 words of extra memory for PDF output out of 10000 (max. 10000000)
 

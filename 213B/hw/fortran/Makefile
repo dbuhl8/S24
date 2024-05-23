@@ -4,7 +4,7 @@ MODULES = LinAl.mod NumDE.mod
 
 OUTPUTS = *.png *.mod output.txt #you can optionally include *.dat, but this might accidentally delete data you want to keep if you aren't careful
 
-FFLAGS = -fdefault-real-8 -fdefault-double-8 -fbounds-check -g -llapack -lblas
+FFLAGS = -fdefault-real-8 -fdefault-double-8 -fbounds-check -g -llapack -lblas -fopenmp
 
 .PHONY: clean
 

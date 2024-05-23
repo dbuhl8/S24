@@ -148,6 +148,16 @@ INPUT ./q2_error.png
 INPUT ./q2_error.png
 INPUT ./q2_error.png
 INPUT ./q2_error.png
+INPUT ./q3_colormap.png
+INPUT ./q3_colormap.png
+INPUT ./q3_colormap.png
+INPUT ./q3_colormap.png
+INPUT ./q3_colormap.png
+INPUT ./q3t62.png
+INPUT ./q3t62.png
+INPUT ./q3t62.png
+INPUT ./q3t62.png
+INPUT ./q3t62.png
 INPUT BuhlHw3.aux
 INPUT /usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb
 INPUT /usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb

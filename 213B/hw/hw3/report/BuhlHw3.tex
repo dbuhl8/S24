@@ -204,10 +204,34 @@
 
 \section*{Question 3: Extra Credit}
 
+    \begin{align}
+        \begin{cases}
+            U_t +UU_{x} + U_{xx} + U_{xxxx}=0 \quad \quad x \in [-25, 25],
+            \quad t \ge 0\\
+            U(x,0) = \sin(x)e^{-(x-10)^2/2}\\
+            U(-25,t) = U(25,t)
+        \end{cases} 
+    \end{align}
+
+
 \begin{enumerate}[label=\alph*)]
 
-    \item     I tried, didn't make anything that looked pretty. But if you look
-    at my fortran code a lot of the routines it needs are there. 
+    \item See fortran code
+
+    \item See figure 6.
+    \begin{figure}[ht]
+        \centering
+        \includegraphics[width=.5\textwidth]{q3_colormap.png}
+        \caption{2D Colormap of Numerical Solution to (3)}
+    \end{figure}
+
+    \item See figure 7
+    \begin{figure}[ht]
+        \centering
+        \includegraphics[width=.5\textwidth]{q3t62.png}
+        \caption{Cross Section of Numerical Solution to (3) at T = 62}
+    \end{figure}
+
 \end{enumerate}
 
 \end{document}

@@ -105,6 +105,9 @@ NU1 = readmatrix('../fortran/nu1.dat');
 NX1 = readmatrix('../fortran/nx1.dat');
 NT1 = readmatrix('../fortran/nt1.dat');
 
+%[nur, nuc] = find(NT1 < 0.04);
+
+%s = surf(NX1(nur,nuc), NT1(nur,nuc), NU1(nur,nuc), 'FaceColor','interp');
 s = surf(NX1, NT1, NU1, 'FaceColor','interp');
 ss.EdgeColor = 'none';
 xlabel('X')
@@ -112,17 +115,4 @@ ylabel('T')
 zlabel('U')
 title('Finite Difference Evolution of KS IBVP')
 
-
-figure(10)
-
-NU2 = readmatrix('../fortran/nu2.dat');
-NX2 = readmatrix('../fortran/nx2.dat');
-NT2 = readmatrix('../fortran/nt2.dat');
-
-s = surf(NX2, NT2, NU2, 'FaceColor','interp');
-ss.EdgeColor = 'none';
-xlabel('X')
-ylabel('T')
-zlabel('U')
-title('Finite Difference Evolution of KS IBVP')
 
