@@ -48,17 +48,17 @@
         \end{cases} 
     \end{align}
 
-    \item 
+    \item See figure 1
     \begin{figure}[ht]
         \centering
-        \includegraphics[width=.6\textwidth]{q1_num_sol.png}
+        \includegraphics[width=.6\textwidth]{q1_num_sol2.png}
         \caption{Numerical Solution to (1) with $N=81, M=51$}
     \end{figure}
 
-    \item 
+    \item See figure 2
     \begin{figure}[ht]
         \centering
-        \includegraphics[width=.6\textwidth]{q1_num_sol_yconst.png}
+        \includegraphics[width=.6\textwidth]{q1_num_sol_yconst2.png}
         \caption{Numerical Solution to (1) at $Y=0.2, 0.5$}
     \end{figure}
 
@@ -85,25 +85,120 @@
         To begin we look at the general solution for the Heat Equation with
         Homogeneous BC.
         \begin{align*}
-            \begin{cases}
-                \eta = U - g(x) = U - (3+x) + 5(1 - x^2)^2\\
-                \eta_t = \eta_{xx} - 20 + 60x^2 \quad \quad x \in [-1, 1],
+            &\eta = U - 3 - x \\
+            &\begin{cases}
+                \eta_t = \eta_{xx} \quad \quad x \in [-1, 1],
                 \quad t \ge 0\\
-                \eta(x,0) = 0\\
+                \eta(x,0) = 5(1-x^2)^2\\
                 \eta(-1,t) = 0, \quad \eta(1, t) = 0
             \end{cases}
         \end{align*}
-        
+        This system can be solved with the general form. 
+        \begin{align*}
+            \eta = \sum_n c_n\sin\left(\frac{n\pi}{2}(x+1)\right)
+            e^{-\frac{n^2\pi^2}{4}t}\\
+            \sum_n c_n\sin\left(\frac{n\pi}{2}(x+1)\right) = 5(1-x^2)^2\\
+            c_n = \frac{2}{2}\int_{-1}^1 5(1-x^2)^2 
+            \sin\left(\frac{n\pi}{2}(x+1)\right)dx \\
+            c_n = 5\int_{-1}^1 (1 - 2x^2 + x^4)
+            \sin\left(\frac{n\pi}{2}(x+1)\right)dx \\
+        \end{align*}
+        We will solve this term by term. 
+        \begin{align*}
+            \int_{-1}^1\sin\left(\frac{n\pi}{2}(x+1)\right)dx &= -\frac{2}{n\pi}
+            \cos\left(\frac{n\pi}{2}(x+1)\right)\\
+        \end{align*}
+        \begin{align*}
+            \int_{-1}^1x^2\sin\left(\frac{n\pi}{2}(x+1)\right)dx &= -\frac{2x^2}{n\pi}
+            \cos\left(\frac{n\pi}{2}(x+1)\right) + \frac{4}{n\pi}\int_{-1}^1x\cos\left(
+            \frac{n\pi}{2}(x+1)\right)dx\\
+            &= -\frac{2x^2}{n\pi} \cos\left(\frac{n\pi}{2}(x+1)\right) + 
+            \frac{8x}{n^2\pi^2}\sin\left(\frac{n\pi}{2}(x+1)\right) -
+            \frac{8}{n^2\pi^2}\int_{-1}^1\sin\left(\frac{n\pi}{2}(x+1)\right)dx\\
+            &= -\frac{2x^2}{n\pi} \cos\left(\frac{n\pi}{2}(x+1)\right) + 
+            \frac{8x}{n^2\pi^2}\sin\left(\frac{n\pi}{2}(x+1)\right)
+            +\frac{16}{n^3\pi^3}
+            \cos\left(\frac{n\pi}{2}(x+1)\right)\\
+        \end{align*}
+        \begin{align*}
+            \int_{-1}^1x^4\sin\left(\frac{n\pi}{2}(x+1)\right)dx &= -\frac{2x^4}{n\pi}
+            \cos\left(\frac{n\pi}{2}(x+1)\right) + \frac{8}{n\pi}\int_{-1}^1x^3\cos\left(
+            \frac{n\pi}{2}(x+1)\right)dx\\
+            &= -\frac{2x^4}{n\pi}
+            \cos\left(\frac{n\pi}{2}(x+1)\right) + \frac{16}{n^2\pi^2}x^3\sin\left(
+            \frac{n\pi}{2}(x+1)\right) - \frac{48}{n^3\pi^3}\int_{-1}^1x^2\sin\left(
+            \frac{n\pi}{2}(x+1)\right)dx\\
+            &= -\frac{2x^4}{n\pi}
+            \cos\left(\frac{n\pi}{2}(x+1)\right) + \frac{16}{n^2\pi^2}x^3\sin\left(
+            \frac{n\pi}{2}(x+1)\right) \\&- \frac{48}{n^2\pi^2}\left(-\frac{2x^2}{n\pi}
+            \cos\left(\frac{n\pi}{2}(x+1)\right) + 
+            \frac{8x}{n^2\pi^2}\sin\left(\frac{n\pi}{2}(x+1)\right)
+            +\frac{16}{n^3\pi^3}
+            \cos\left(\frac{n\pi}{2}(x+1)\right)\right)\\
+            &=-\frac{2x^4}{n\pi}
+            \cos\left(\frac{n\pi}{2}(x+1)\right) + \frac{16}{n^2\pi^2}x^3\sin\left(
+            \frac{n\pi}{2}(x+1)\right) \\
+             &+\frac{96x^2}{n^3\pi^3}
+            \cos\left(\frac{n\pi}{2}(x+1)\right) - 
+            \frac{384x}{n^4\pi^4}\sin\left(\frac{n\pi}{2}(x+1)\right)
+            +\frac{768}{n^5\pi^5}
+            \cos\left(\frac{n\pi}{2}(x+1)\right)
+        \end{align*}
+        Obviously, terms attached to $\sin(\theta)$ will evaluate to zero, and
+        terms with $\cos(\theta)$ which are multiplied by $x^k$ will be
+        proportional to $\left((-1)^n -1\right)$. We have then,
+        \begin{align*}
+            c_n &= 5\int_{-1}^1 (1 - 2x^2 + x^4)
+            \sin\left(\frac{n\pi}{2}(x+1)\right)dx \\
+                &= 5\left((-1)^n -1\right)\left(-\frac{2}{n\pi} -
+                2\left(-\frac{2}{n\pi} + \frac{16}{n^3\pi^3}\right)
+                -\frac{2}{n\pi} +\frac{96}{n^3\pi^3}
+                -\frac{768}{n^5\pi^5}\right)\\
+                &= 5\left((-1)^n -1\right)\left(\frac{64}{n^3\pi^3}
+                -\frac{768}{n^5\pi^5}\right)
+        \end{align*}
+        Thus we have found the solution to our PDE. 
+        \begin{align*}
+            U(x,t) = 3 + x + \sum_n 5\left((-1)^n -1\right)\left(\frac{64}{n^3\pi^3}
+                -\frac{768}{n^5\pi^5}\right)\sin\left(\frac{n\pi}{2}(x+1)\right)
+                e^{-\frac{n^2\pi^2}{4}t}
+        \end{align*}
+
     \end{proof}
-    \item \hl{Plot the analytical solution as a surface plot over [x, t]}
+    \item See figure 3
+    \begin{figure}[ht]
+        \centering
+        \includegraphics[width=.5\textwidth]{q2_anal_sol.png}
+        \caption{Analytical Solution to (2)}
+    \end{figure}
 
-    \item \hl{Write code and integrate using second-order finite differences and CN}
+    \item See figure 4
+    \begin{figure}[ht]
+        \centering
+        \includegraphics[width=.5\textwidth]{q2_fd_sol.png}
+        \caption{Finite Solution to (2)}
+    \end{figure}
 
-    \item \hl{Wrote code and integrate using Gauss-Chebyshev-Lobatto coallocation
-    method}
+    \item See figure 5
+    \begin{figure}[ht]
+        \centering
+        \includegraphics[width=.5\textwidth]{q2_gcl_sol.png}
+        \caption{Spectral Solution to (2)}
+    \end{figure}
 
-    \item \hl{plot maximum pointwise error on a log scale plot between analytical
-    and numerical solutions}
+    \item See figure 6. From the figure shown. One can deduce that initially the
+    spectral method converges much more quickly. However whether due to a bug in
+    my code (or seemingly every student's code) the error does not decrease
+    nicely with N. In fact for larger N the error seems to rise. According to
+    other students, a similar phenomenon is shown except with different orders
+    of accuracy. In my figure, it seems that the Finite Diffence method
+    converges with order 2, while the spectral method doesn't seem to follow any
+    convergence scaling order. 
+    \begin{figure}[ht]
+        \centering
+        \includegraphics[width=.5\textwidth]{q2_error.png}
+        \caption{Numerical Error for the FD2 and Spectral methods}
+    \end{figure}
 
 \end{enumerate}
 
@@ -111,13 +206,8 @@
 
 \begin{enumerate}[label=\alph*)]
 
-    \item \hl{Write code to compute the nuemrical solution using secondorder finite
-    diff, and AB2.} 
-
-    \item \hl{plot the numerical solution as a surface plot}
-
-    \item \hl{plot the numerical sollution at t = 62 as a function of x.}
-
+    \item     I tried, didn't make anything that looked pretty. But if you look
+    at my fortran code a lot of the routines it needs are there. 
 \end{enumerate}
 
 \end{document}
