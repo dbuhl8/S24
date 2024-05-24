@@ -865,6 +865,37 @@ module NumDE
     end do 
   end subroutine GCLvecdomain
 
+  subroutine volint1d(U, vol, nx, dx)
+    !returns the volume integrat according to the following grid
+    ! int U dx = sum_i U(i)*dx
+    ! also uses the trapezoidal rule for approximating integrals
+    implicit none
+    real :: U(:), dx, vol
+    integer :: nx
+    vol = sum(U(1:nx-1)*dx)/2.0 + sum(U(2:nx)*dx)/2.0
+  end subroutine volint1d 
+
+  subroutine volint2d(U, vol, dx, dy)
+    !returns the volume integrat according to the following grid
+    ! int U dx = sum_i U(i)*dx
+    ! also uses the trapezoidal rule for approximating integrals
+    implicit none
+
+    real :: U(:,:), dx, vol, dy
+    vol = sum(U)*dx*dy
+  end subroutine volint2d 
+
+  subroutine volint3d(U, vol, dx, dy, dz)
+    implicit none
+
+    real :: U(:,:,:), dx, vol, dy, dz
+
+    vol = sum(U)*dx*dy*dz
+  end subroutine volint3d 
+
+  
+
+
 end module NumDE
 
 
