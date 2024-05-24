@@ -17,7 +17,6 @@ program driver
   ! int vars
   real(kind=kr) :: xstop, xstart, dx, temp_sum, min_ws, error_sum
   integer :: n
-  integer :: num_threads = 8
  
   allocate(MA(nd,nd), MB(nd,nd), MC(nd,nd),MC2(nd,nd))
   call ident(MA, nd)
@@ -48,24 +47,20 @@ program driver
     print "(A, I3, A, I3)","Hello from processor #",id," out of ", np
 
     ! Question 2
-    if (id.eq.2) then
-      call cpu_time(start)
-    end if
+    call cpu_time(start)
     !$OMP DO REDUCTION(+:temp_sum)
       do i = 1, n
         temp_sum = temp_sum + dx*((xstart+dx*(i-1))**2+((xstart + dx*i)**2))/2
       end do
     !$OMP END DO
     call cpu_time(finish)
-    if (id .eq. 2) then
+    if (id .eq. 0) then
       print *, "Integration parallelized took ", (finish-start), " seconds"
       print *, "Speed Up of ", ratio1/(finish-start)
     end if
   
     ! Question 3
-    if (id.eq.3) then
-      call cpu_time(start)
-    end if
+    call cpu_time(start)
     !$OMP DO 
       do j = 1, nd
         do i = 1, nd
@@ -74,22 +69,17 @@ program driver
       end do 
     !$OMP END DO
     call cpu_time(finish)
-    if (id.eq.3) then
-      print *, "Do loop took ", (finish-start)/np, " seconds"
+    if (id.eq.0) then
+      print *, "Do loop took ", finish-start, " seconds"
     end if
-    if (id.eq.4) then
-      call cpu_time(start)
-    end if
+    call cpu_time(start)
     !$OMP WORKSHARE 
       MC = matmul(MA, MB)
-    !$OMP END WORKSHARE
-    call cpu_time(finish)
-    !$OMP WORKSHARE
       min_v = minval(MC)
     !$OMP END WORKSHARE
-    if (id .eq. 4) then
+    call cpu_time(finish)
+    if (id .eq. 0) then
       print *, "Matmul Workshare took ", finish-start, " seconds"
-      print *, "Minval :", min_v
     end if
     !$OMP DO REDUCTION(+:error_sum)
       do j = 1, nd

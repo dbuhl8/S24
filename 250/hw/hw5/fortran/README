@@ -1,0 +1,13 @@
+
+Hi Uli, 
+
+Here is a quick response which shows a little bit about how to navigate through my submission. 
+
+So all three questions are coded through a driver routine called hw5.f90. In order to compile this simply type make into the terminal inside this directory and then if you would like to run it on your own pc make sure you have a version of openmp installed and set the threadcount to whatever you would like and run. If you would like to run it on hummingbird or lux, please feel free to look inside the hb or lux directories and you will find the appropriate slurm files inside. 
+
+You will also notice sample outputs as the assignment asks for. 
+
+Finally, the assignment asks for an analysis for question 2. For what I've tested, it seems in most cases that the sequential version of the code performs the integral best. I'm not sure if this is a fault of my own or if this is really the phenonmenon that I should see. I will say that for specific processor counts and for specific numbers of gridpoints used in the integral, the parallel version is faster and sometimes it even demonstrates a large speedup. In general however, I would say that the task of distributing the load and doing a seperate summation (using the reduce feature for the OMP Do directive) seems to counteract the speed up of doing different parts of the loop separately. 
+
+Let me know if you have any questions or need anything from me. 
+-Dante-

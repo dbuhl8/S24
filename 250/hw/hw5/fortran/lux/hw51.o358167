@@ -1,0 +1,18 @@
+Hello from processor #  5 out of   8
+Hello from processor #  4 out of   8
+Hello from processor #  0 out of   8
+Hello from processor #  3 out of   8
+Hello from processor #  7 out of   8
+Hello from processor #  2 out of   8
+Hello from processor #  1 out of   8
+Hello from processor #  6 out of   8
+ Integration parallelized took   0.14831299999999992       seconds
+ Speed Up of   0.97740589159412905     
+ Do loop took    141.03523325000000       seconds
+ Matmul Workshare took    288.00871999999981       seconds
+ Minval :   2.0000000000000000     
+  
+Parallel Sum :    2.66667, Sequential Sum :    2.66667
+  
+ Error in matmul mathods   6.9533558070018120E-310
+  
