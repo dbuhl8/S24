@@ -21,7 +21,7 @@ module pgameoflife
       read(*,"(2I6)") m, n
     end subroutine getprobsize
 
-    subroutine readmat(A)
+    subroutine readmat(A, m, n)
       ! Returns an allocated array A, of size m x n with data read in from the
       ! default input file.
       implicit none
@@ -36,6 +36,16 @@ module pgameoflife
         read(*, "("//trim(str(m))//"I1)") A(:,i)
       end do 
     end subroutine
+
+    subroutine printmat(A, m, n)
+      implicit none
+
+      integer :: A(:,:), m, n, i
+
+      do i = 1, m
+        print "("//trim(str(n))//"(I1, ' '))", A(i,:)
+      end do 
+    end subroutine printmat
 
     subroutine writemat(A, m, n, fn) 
       !writes to file number, fn
@@ -94,27 +104,47 @@ module pgameoflife
 
     ! This routine might never be used. I like the idea of a MPI_BCast instead
     ! of parallel IO
-    subroutine preadmat(A, n, np)
+    subroutine preadmat(A, m, id)
       ! Performs some sort of parallelized reading of the matrices
       implicit none
-      integer :: A(:,:), np, i, j, n, ie
+      integer :: A(:,:), i, j, m, ie, id
 
-      do i = 1, np
-        do j = 1, num_tasks
-          read(*, "("//trim(str(n))//"I1)") A(:,j)
-        end do 
+      do i = 0, num_procs-1
+        if (id.eq.i) then
+          do j = 1, num_tasks
+            print *, i, j
+            read(*, "("//trim(str(m))//"I1)") A(:,j)
+            print *, A(:,j)
+          end do 
+        end if
         call MPI_BARRIER(MPI_COMM_WORLD,ie) 
       end do 
     end subroutine preadmat
 
-    subroutine pwritemat(A, n, id, fn)
+    subroutine pprintmat(A, m, id)
       ! Performs some sort of parallelized write of the matrices
       implicit none
-      integer :: A(:,:), id, n, fn, i, j, np, ie
-      do i = 1, num_procs
+      integer :: A(:,:), id, m, i, j, ie
+      do i = 0, num_procs-1
+        if (id.eq.i) then
+          
+          do j = 1, num_tasks
+            print "("//trim(str(m))//"(I1, ' '))", A(:,j)
+          end do 
+        end if
+        call MPI_BARRIER(MPI_COMM_WORLD, ie) 
+      end do 
+    end subroutine pprintmat
+
+    subroutine pwritemat(A, m, id, fn, stat)
+      ! Performs some sort of parallelized write of the matrices
+      implicit none
+      integer :: A(:,:), id, m, fn, i, j, np, ie, stat(:)
+      do i = 0, num_procs-1
         if (id.eq.i) then
           do j = 1, num_tasks
-            write(fn, "("//trim(str(n))//"I1)") A(:,j)
+            !write(fn, "("//trim(str(m))//"(I1, ' '))") A(:,j)
+            call MPI_FILE_WRITE(fn, A(:,j), m, MPI_INT, stat, ie)
           end do 
         end if
         call MPI_BARRIER(MPI_COMM_WORLD, ie) 
@@ -128,21 +158,28 @@ module pgameoflife
       integer :: A(:,:), id, np, n, tg, stat, ie
 
       if (id.eq.0) then
-        CALL MPI_ISEND(A(:,2),n,MPI_INTEGER,np-1,tg,MPI_COMM_WORLD,stat,ie)
-        CALL MPI_ISEND(A(:,num_tasks+1),n,MPI_INTEGER,1,tg,MPI_COMM_WORLD,stat,ie)
-        CALL MPI_IRECV(A(:,1), n, MPI_INTEGER,np-1,tg,MPI_COMM_WORLD,stat,ie)
-        CALL MPI_IRECV(A(:,num_tasks+2),n,MPI_INTEGER,1,tg,MPI_COMM_WORLD,stat,ie)
+        ! Prev
+        CALL MPI_ISENDRECV(A(:,2),n,MPI_INTEGER,np-1,tg+2*id+1,A(:,1),n,&
+          MPI_INTEGER,np-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        ! Next 
+        CALL MPI_ISENDRECV(A(:,num_tasks+1),n,MPI_INTEGER,1,tg+2*id+4,&
+          A(:,num_tasks+2),n, MPI_INTEGER,1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
       else if (id.eq.np-1) then
-        CALL MPI_ISEND(A(:,2),n,MPI_INTEGER,np-2,tg,MPI_COMM_WORLD,stat,ie)
-        CALL MPI_ISEND(A(:,num_tasks+1),n,MPI_INTEGER,0,tg,MPI_COMM_WORLD,stat,ie)
-        CALL MPI_IRECV(A(:,1), n, MPI_INTEGER,np-2,tg, MPI_COMM_WORLD,stat,ie)
-        CALL MPI_IRECV(A(:,num_tasks+2),n,MPI_INTEGER,0,tg,MPI_COMM_WORLD,stat,ie)
+        ! Prev
+        CALL MPI_ISENDRECV(A(:,2),n,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),n,&
+          MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        ! Next
+        CALL MPI_ISENDRECV(A(:,num_tasks+1),n,MPI_INTEGER,0,tg+2,&
+          A(:,num_tasks+2),n, MPI_INTEGER,0,tg+1,MPI_COMM_WORLD,stat,ie)
       else 
-        CALL MPI_ISEND(A(:,2),n,MPI_INTEGER,id-1,tg,MPI_COMM_WORLD,stat,ie)
-        CALL MPI_ISEND(A(:,num_tasks+1),n,MPI_INTEGER,id+1,tg,MPI_COMM_WORLD,stat,ie)
-        CALL MPI_IRECV(A(:,1),n,MPI_INTEGER,id-1,tg,MPI_COMM_WORLD,stat,ie)
-        CALL MPI_IRECV(A(:,num_tasks+2),n,MPI_INTEGER,id+1,tg,MPI_COMM_WORLD,stat,ie)
+        ! Prev
+        CALL MPI_ISENDRECV(A(:,2),n,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),n,&
+          MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        ! Next
+        CALL MPI_ISENDRECV(A(:,num_tasks+1),n,MPI_INTEGER,id+1,tg+2*id+4,&
+          A(:,num_tasks+2),n, MPI_INTEGER,id+1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
       end if
+      call MPI_BARRIER(MPI_COMM_WORLD, ie)
     end subroutine pupdate_bound_1d
 
     subroutine mpi_decomp_1d(id, np, n, counts)
@@ -160,7 +197,7 @@ module pgameoflife
           if(id.eq.np-i) then
             num_tasks = num_tasks+1 
           end if
-          counts(np-i) = num_tasks+1
+          counts(np-i+1) = num_tasks+1
         end do
       end if
     end subroutine mpi_decomp_1d
