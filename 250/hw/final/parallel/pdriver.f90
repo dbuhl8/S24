@@ -8,9 +8,10 @@
 program pdriver
   ! Parallelized Version
   use pgameoflife
-  use MPI
+  !use MPI
   
   implicit none
+  
 
   ! General Util Vars
   integer, parameter :: ki=selected_int_kind(15)
@@ -21,7 +22,10 @@ program pdriver
   integer :: m, n, nt
   
   ! MPI Variable
-  integer :: ie, id, np
+  integer :: ie, id, np, info
+  integer(kind=MPI_OFFSET_KIND) :: offset
+  !type(MPI_INFO) :: info
+  !type(MPI_FILE) :: fn
   integer, allocatable :: counts(:), stat(:), disp_vec(:)
  
   ! MPI Initialization
@@ -30,11 +34,10 @@ program pdriver
   call MPI_COMM_SIZE(MPI_COMM_WORLD, np, ie)  
 
   allocate(counts(np),disp_vec(np),stat(np))
-  
+
   ! simulate the game of life
   if (id.eq.0) then
     call readmat(A, m, n) 
-    !call getprobsize(m, n)
   end if
   
   call MPI_BCAST(m, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ie)
@@ -57,74 +60,38 @@ program pdriver
     num_tasks*m, MPI_INTEGER, 0, MPI_COMM_WORLD, ie)
 
   ! Attempting MPI Parallel IO
-    !do i = 0, np-1
-      !if(id.eq.i) then
-        !call printmat(G(:,2:num_tasks+1), m, num_tasks)
-        !print *, " "
-      !end if
-      !call MPI_BARRIER(MPI_COMM_WORLD, ie)
-    !end do 
-
-    ! Branched Logic so this works while still debugging 
-    !open(fn, file='gof.dat') 
-    !checkid = 2
-    !call MPI_FILE_OPEN(MPI_COMM_WORLD,"gof.dat",MPI_MODE_CREATE+MPI_MODE_WRONLY,& 
-      !MPI_INFO_NULL,fn,ie)
-    !if(id.eq.checkid) then
-      !print *, trim(str(id))//": Got here "
-    !end if
-    !call MPI_TYPE_CREATE_SUBARRAY(2, (/m, n/), (/m, num_tasks/),&
-      !(/0,disp_vec(id+1)/m/), MPI_ORDER_FORTRAN, MPI_INTEGER, viewtype, ie)
-    !if(id.eq.checkid) then
-      !print *, trim(str(id))//": Got here "
-    !end if
-    !call MPI_TYPE_COMMIT(viewtype, ie)
-    !if(id.eq.checkid) then
-      !print *, trim(str(id))//": Got here "
-    !end if
-    !call MPI_TYPE_CREATE_SUBARRAY(2,(/m,num_tasks+2/),(/m,num_tasks/),(/0,1/),&
-      !MPI_ORDER_FORTRAN,MPI_INTEGER,writetype, ie)
-    !if(id.eq.checkid) then
-      !print *, trim(str(id))//": Got here "
-    !end if
-    !call MPI_TYPE_COMMIT(writetype, ie)
-    !if(id.eq.checkid) then
-      !print *, trim(str(id))//": Got here "
-    !end if
-    !call MPI_BARRIER(MPI_COMM_WORLD, ie)
-    !if(id.eq.checkid) then
-      !print *, trim(str(id))//": Got here "
-    !end if
-    !call MPI_FILE_SET_VIEW(fn,int(0,ki),MPI_INTEGER,viewtype,"native",&
-      !MPI_INFO_NULL,ie)
-    !if(id.eq.checkid) then
-      !print *, trim(str(id))//": Got here "
-    !end if
-    !call MPI_FILE_WRITE_ALL(fn,G,num_tasks*m,writetype,stat,ie)
+  call MPI_FILE_OPEN(MPI_COMM_WORLD,'help.dat',MPI_MODE_CREATE+MPI_MODE_WRONLY,&
+    MPI_INFO_NULL, fn, ie)
+  offset = 0
+  call MPI_FILE_SET_VIEW(fn,offset,MPI_INT,MPI_INT,"native",MPI_INFO_NULL,ie)
+  if (id.eq.0) then
+    call MPI_FILE_WRITE(fn, id, 1, MPI_INTEGER,MPI_STATUS_IGNORE,ie)
+  end if
+  !call MPI_FILE_WRITE_ALL(fn,id,1,MPI_BYTE,MPI_STATUS_IGNORE,ie)
   ! END MPI Paralle IO
 
-  call MPI_BARRIER(MPI_COMM_WORLD, ie)
+  !call MPI_BARRIER(MPI_COMM_WORLD, ie)
   ! ------------------------- Sequential Component
-  call pprintmat(G(:,2:num_tasks+1), m, id)
-  nt = 200
-  do i = 1, nt
-    call pupdate_bound_1d(G, n, id, np, i*100)
-    call update(G, m, num_tasks+2)
-    call pprintmat(G(:,2:num_tasks+1), m, id)
-  end do 
+  !call pprintmat(G(:,2:num_tasks+1), m, id)
+  !nt = 200
+  !do i = 1, nt
+    !call pupdate_bound_1d(G, n, id, np, i*100)
+    !call update(G, m, num_tasks+2)
+    !call pprintmat(G(:,2:num_tasks+1), m, id)
+  !end do 
   ! ------------------------- END Sequential Component
-
+  call MPI_FILE_CLOSE(fn, ie)
   ! Stop MPI
   call MPI_FINALIZE(ie)
   deallocate(counts, disp_vec, G)
 
   ! Branched Logic so this works while still debugging 
-  if (id.eq.0) then 
-    deallocate(A)
-    open(fn+1, file='params.dat')
-      write(fn+1, "(3I6)") m, n,nt+1
-    close(fn+1)
-  end if
+  !if (id.eq.0) then 
+    !deallocate(A)
+    !open(fn+1, file='params.dat')
+      !write(fn+1, "(3I6)") m, n,nt+1
+    !close(fn+1)
+  !end if
 end program pdriver
 
 

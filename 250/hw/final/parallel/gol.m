@@ -19,5 +19,5 @@ for i = 1:frames;
     M(i) = getframe; 
 end
 h.Visible = 'on';
-movie(M,2,30);
+movie(M,1,10);
 

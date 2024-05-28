@@ -19,22 +19,6 @@ program driver
   integer :: m, n, nt
   
  
-  ! Initial Condition 
-    !m = 10
-    !n = 10 
-    !allocate(A(m, n))
-
-
-    !open(fn, file='IC.dat')
-
-    !do j = 1, n
-      !do i = 1, m
-        !A(i, j) = anint(rand(0))
-      !end do
-    !end do
-
-    !write(fn, "('# ', I6, I6)") m, n
-      
   ! simulate the game of life
   call readmat(A, m, n)
    
@@ -52,7 +36,7 @@ program driver
   close(fn)
 
   open(fn+1, file='params.dat')
-    write(fn+1, "(3I6)") n, m, nt+1
+    write(fn+1, "(3I6)") m, n, nt+1
   close(fn+1)
 
   deallocate(A)

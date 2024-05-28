@@ -5,9 +5,11 @@
 
 module pgameoflife
   ! Divided into serial and parallel versions
+
   use MPI
 
   implicit none
+
 
   ! General Utility Vars
   integer :: sx, ex, sy, ey, num_tasks, num_procs
@@ -127,7 +129,6 @@ module pgameoflife
       integer :: A(:,:), id, m, i, j, ie
       do i = 0, num_procs-1
         if (id.eq.i) then
-          
           do j = 1, num_tasks
             print "("//trim(str(m))//"(I1, ' '))", A(:,j)
           end do 
