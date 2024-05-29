@@ -197,7 +197,7 @@ module NumDE
     call Huen(F, Y, T, ma, 1, dt)
 
     do i = 1, num_points-1
-      Y(i+2,:) = Y(i+1,:)+(dt/2.)*(3*matmul(F,Y(i+1,:))-matmul(F,Y(i,:)))
+      Y(:,i+2) = Y(:,i+1)+(dt/2.)*(3*matmul(F,Y(:,i+1))-matmul(F,Y(:,i)))
       T(i+2) = T(i+1) + dt
     end do
   end subroutine AB2
@@ -212,8 +212,8 @@ module NumDE
      
     !starting the AB3 Scheme
     do i = 1, num_points-2
-      Y(i+3,:) = Y(i+2,:)+(dt/12.)*(23*matmul(F,Y(i+2,:))-16*matmul(F,Y(i+1,:))&
-                                      +5*matmul(F,Y(i,:)))
+      Y(:,i+3) = Y(:,i+2)+(dt/12.)*(23*matmul(F,Y(:,i+2))-16*matmul(F,Y(:,i+1))&
+                                      +5*matmul(F,Y(:,i)))
       T(i+3) = T(i+2) + dt
     end do 
   end subroutine AB3
@@ -224,8 +224,8 @@ module NumDE
     integer :: ma, num_points, i
 
     do i = 1, num_points
-      Y(i+1,:) = Y(i,:) + dt*matmul(F, Y(i,:))
-      Y(i+1,:) = Y(i,:) + (dt/2.)*(matmul(F, Y(i,:)) + matmul(F, Y(i+1,:)))
+      Y(:,i+1) = Y(:,i) + dt*matmul(F, Y(:,i))
+      Y(:,i+1) = Y(:,i) + (dt/2.)*(matmul(F, Y(:,i)) + matmul(F, Y(:,i+1)))
       T(i+1) = T(i) + dt
     end do 
   end subroutine 
@@ -893,9 +893,161 @@ module NumDE
     vol = sum(U)*dx*dy*dz
   end subroutine volint3d 
 
+  subroutine ft1d(u, uhat, x, k, nx, dx)
+    ! this retuns an array uhat which is the fourier transform of u
+    implicit none
+    real :: u(:), x(:), k(:), l, dx
+    complex :: uhat(:)
+    complex, dimension(nx) :: exp_vec
+    integer :: nx, i, j
+
+    l = x(nx) - x(1)
+    do i = 1, nx
+      k(i) = (i*pi)/l
+      do j = 1, nx
+        exp_vec(j) = u(j)*exp(complex(0, x(j)*k(i)))
+      end do 
+      uhat(i) = dx*(sum(exp_vec(1:nx-1)) + sum(exp_vec(2:nx)))/l
+      !print *, "exp_vec :", sum(exp_vec)
+    end  do
+  end subroutine
+
+  subroutine ift1d(u, uhat, x, k, nx)
+    ! performs an inverse fourier transform
+    implicit none
+    real :: u(:), x(:), k(:)
+    complex :: uhat(:)
+    complex, dimension(nx) :: exp_vec
+    integer :: nx, i, j
+
+    u = 0.0
+    do i = 1, nx
+      do j = 1, nx
+        exp_vec(j) = exp(complex(0, x(j)*k(i)))
+      end do 
+      u = u + real(uhat(i)*exp_vec)
+    end  do
+  end subroutine
+
+  subroutine D4fourier(D4, k, nk) 
+    ! Returns D2 matrix
+    implicit none
+    complex :: D4(:,:)
+    real :: k(:)
+    integer :: nk, i
+    do i = 1, nk
+      D4(i,i) = complex((k(i)**4),0)
+    end do 
+  end subroutine
+
+  subroutine D3fourier(D3, k, nk) 
+    ! Returns D2 matrix
+    implicit none
+    complex :: D3(:,:)
+    real :: k(:)
+    integer :: nk, i
+    do i = 1, nk
+      D3(i,i) = complex(0, -(k(i)**3))
+    end do 
+  end subroutine
+
+  subroutine D2fourier(D2, k, nk) 
+    ! Returns D2 matrix
+    implicit none
+    complex :: D2(:,:)
+    real :: k(:)
+    integer :: nk, i
+    do i = 1, nk
+      D2(i,i) = complex(-(k(i)**2), 0)
+    end do 
+  end subroutine
+
+  subroutine D1fourier(D1, k, nk) 
+    ! Returns D1 matrix
+    implicit none
+    complex :: D1(:,:)
+    real :: k(:)
+    integer :: nk, i
+
+    do i = 1, nk
+      D1(i,i) = complex(0, k(i))
+    end do 
+  end subroutine
+
+  subroutine CAB2(F, Y, T, ma, num_points, dt)
+    implicit none
+    complex :: F(:,:), Y(:,:)
+    real :: T(:),dt
+    integer :: ma, num_points, i
+    !calling Huen Method in order to get 2nd point
+    call CHuen(F, Y, T, ma, 1, dt)
+
+    do i = 1, num_points-1
+      Y(:,i+2) = Y(:,i+1)+(dt/2.)*(3*matmul(F,Y(:,i+1))-matmul(F,Y(:,i)))
+      T(i+2) = T(i+1) + dt
+    end do
+  end subroutine CAB2
+
+  subroutine CAB3(F, Y, T, ma, num_points, dt)
+    implicit none
+    complex :: F(:,:), Y(:,:)
+    real :: T(:),dt
+    integer :: ma, num_points, i
+   
+    !calling AB2 to get first 3 points
+    call CAB2(F, Y, T, ma, 2, dt)
+     
+    !starting the AB3 Scheme
+    do i = 1, num_points-2
+      Y(:,i+3) = Y(:,i+2)+(dt/12.)*(23*matmul(F,Y(:,i+2))-16*matmul(F,Y(:,i+1))&
+                                      +5*matmul(F,Y(:,i)))
+      T(i+3) = T(i+2) + dt
+    end do 
+  end subroutine CAB3
+
+  subroutine CHuen(F, Y, T, ma, num_points, dt)
+    implicit none
+    complex :: F(:,:), Y(:,:)
+    real :: T(:),dt
+    integer :: ma, num_points, i
+
+    do i = 1, num_points
+      Y(:,i+1) = Y(:,i) + dt*matmul(F, Y(:,i))
+      Y(:,i+1) = Y(:,i) + (dt/2.)*(matmul(F, Y(:,i)) + matmul(F, Y(:,i+1)))
+      T(i+1) = T(i) + dt
+    end do 
+  end subroutine CHuen
+
+  subroutine CRK4(F, Y, T, ma, num_points, dt)
+    implicit none
   
+    complex :: F(:, :), Y(:, :)
+    real :: T(:), dt
+    complex, dimension(ma, 4) :: K
+    real, dimension(4) :: B, C
+    integer :: ma, num_points, i
+    
+    B = (/1./6., 1./3., 1./3., 1./6. /)
+    C = (/ 0.0, 1./2., 1./2., 1.0 /)
+    K = 0.
 
+    do i = 1, num_points
+      K(:,1) = matmul(F, Y(:,i))
+      K(ma,1) = K(ma,1) + (T(i) + C(1)*dt)**2
+      K(:,2) = matmul(F, Y(:, i) + dt*K(:,1)/2.)
+      K(ma,2) = K(ma,2) + (T(i) + C(2)*dt)**2
+      K(:,3) = matmul(F, Y(:, i) + dt*K(:,2)/2.)
+      K(ma,3) = K(ma,3) + (T(i) + C(3)*dt)**2
+      K(:,4) = matmul(F, Y(:, i) + dt*K(:,3))
+      K(ma,4) = K(ma,4) + (T(i) + C(4)*dt)**2
+      !update Y  
+      Y(:,i+1) = Y(:,i) + dt*(b(1)*k(:,1) + b(2)*k(:,2) +&
+                              b(3)*k(:,3) + b(4)*k(:,4))
+      T(i+1) = T(i) + dt
+    end do 
+  end subroutine CRK4
 
+  
 end module NumDE
 
 
