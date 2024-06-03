@@ -68,8 +68,48 @@
         scheme is consistent with order 1 in time and order 2 in space. 
     \end{proof}
 
-    \item \hl{Compute the Von-Neumann Stability Analysis of (2). Is the scheme
-    convergent?}
+    \item Compute the Von-Neumann Stability Analysis of (2). Is the scheme
+    convergent?
+    \begin{proof}
+        There are two methods to show that this method is stable. We can show
+        this wih Lax-Richtmyer stability or with Von Neumann stability theory.
+        First, we can show rather easily, 
+        \begin{align*}
+            u^{k+1} (\I + \dt D1_{PFD2}) = u^{k}\\
+            u^{k+1} =  (\I + \dt D1_{PFD2})^{-1} u^{k}\\
+            B = (\I + \dt D1_{PFD2})^{-1}
+        \end{align*}
+        We can consider the eigenvalues of $B^{-1}$ which are not difficult to
+        compute and show rather easily that the spectral radius of B has an
+        upper bound of 1. Note that $D1_{PFD2}$ is the periodic first differentiation
+        matrix for second ordered finite differences. This looks like the following logic,
+        \begin{align*}
+            \det(\I(1-\lambda) + \dt D1_{PFD2}) = (1 -\lambda)^N +
+            \frac{\dt}{2\dx}((-1)^N + 1)\\
+            \lambda = 1 \mp \sqrt[N]{-\frac{\dt}{2\dx}((-1)^N + 1)}
+        \end{align*}
+        Obviously this produces eigenvalues all of which are larger than 1 in
+        magnitude. Thus we can use some logic from linear algebra finding that
+        the eigenvalues of an inverse matrices are the multiplicative inverses
+        of the eigenvalues of the original matrix. That is, we have bounded the
+        eigenvalues of the transformation with a spectral radius of less than 1
+        and have proved stability. However, the von neumann method is analogous.
+
+        We use the substitution $u_j^k = c_p^ke^{ijp\xi}$. 
+        \begin{align*}
+            c_p^{k+1}(1 + \frac{\dt}{2\dx}(e^{ip\xi} - e^{-ip\xi})) = c_p^k\\
+            c_p^{k+1}(1 + i\frac{\dt}{\dx}\sin(p\xi)) = c_p^k\\
+            c_p^{k+1} = \frac{1}{1 + i\frac{\dt}{\dx}\sin(p\xi)}c_p^k\\
+            \frac{1}{1 + i\frac{\dt}{\dx}\sin(p\xi)} = \frac{1 - i\frac{\dt}{\dx}\sin(p\xi)}{1 +
+            \frac{\dt^2}{\dx^2}\sin^2(p\xi)}\\
+            \left|\frac{1}{1 + i\frac{\dt}{\dx}\sin(p\xi)}\right| = \frac{\sqrt{1 +
+            \frac{\dt^2}{\dx^2}\sin^2(p\xi)}}{1 +
+            \frac{\dt^2}{\dx^2}\sin^2(p\xi)} \le 1
+        \end{align*}
+        Therefore we have shown using Von Neumann stability theory that the
+        scheme is stable. Since we have coupled stability and consistency we
+        have convergence with order 1 in $\dt$ and order 2 in $\dx$. 
+    \end{proof}
 \end{enumerate}
 
 \section*{Question 2: Method of Characteristics for Advection}\
@@ -117,7 +157,7 @@
             \pd{}{t}\int_{\mathbb{T}} U dA &= \int_0^{2\pi} fU|_{x=0} dy
             - \int_0^{2\pi} gU|_{y=2\pi} dx 
             - \int_0^{2\pi} fU|_{x=2\pi} dy
-            + \int_{2\pi}^0 gU|_{y=0} dx \\
+            + \int_0^{2\pi} gU|_{y=0} dx \\
         \end{align*}
         \begin{align*}
             \int_0^{2\pi} gU|_{y=0} dx &= \int_0^{2\pi} gU|_{y=2\pi} dx\\
@@ -140,7 +180,22 @@
         Thus we have that U will satisfy this integral at every timestep.
     \end{proof}
     
-    \item \hl{Contour Plots}
+    \item See figure 1.
+    \begin{figure}
+        \centering
+        \bmp{1}
+            \includegraphics[width=0.32\textwidth]{t0charcontour.png}
+            \includegraphics[width=0.32\textwidth]{t25charcontour.png}
+            \includegraphics[width=0.32\textwidth]{t5charcontour.png}
+        \emp
+
+        \bmp{1}
+            \includegraphics[width=0.32\textwidth]{t75charcontour.png}
+            \includegraphics[width=0.32\textwidth]{t1charcontour.png}
+            \includegraphics[width=0.32\textwidth]{t125charcontour.png}
+        \emp
+        \caption{Contour Plots of Solution using Method of Characteristics}
+    \end{figure}
 
 \end{enumerate}
 
@@ -148,10 +203,43 @@
 
 \begin{enumerate}[label=\alph*)]
 
-    \item \hl{Contour Plots}
-    \item \hl{Integral of FD Scheme}
-    \item \hl{Max Pointwise Error}
-    \item \hl{Mean Squared Error}
+    \item See figure 2.
+    \begin{figure}
+        \centering
+        \bmp{1}
+            \includegraphics[width=0.32\textwidth]{t0fdcontour.png}
+            \includegraphics[width=0.32\textwidth]{t25fdcontour.png}
+            \includegraphics[width=0.32\textwidth]{t5fdcontour.png}
+        \emp
+
+        \bmp{1}
+            \includegraphics[width=0.32\textwidth]{t75fdcontour.png}
+            \includegraphics[width=0.32\textwidth]{t1fdcontour.png}
+            \includegraphics[width=0.32\textwidth]{t125fdcontour.png}
+        \emp
+        \caption{Contour Plots of Solution using Finite Differences}
+    \end{figure}
+    \item See figure 3.
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.9\textwidth]{fdi.png}
+        \caption{Area Integral of Solution over Time}
+    \end{figure}
+   
+    \item See figure 4.
+     \begin{figure}
+        \centering
+        \includegraphics[width=0.9\textwidth]{mpe.png}
+        \caption{Plot of Max Pointwise Error as a function of time}
+    \end{figure}
+       
+    \item See figure 5.
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.9\textwidth]{mse.png}
+        \caption{Plot of Mean Square Error as a function of gridsize}
+    \end{figure}
+
 
 
 \end{enumerate}
