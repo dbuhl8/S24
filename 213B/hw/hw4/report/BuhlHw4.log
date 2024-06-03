@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.4.17)  2 JUN 2024 23:22
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.4.17)  3 JUN 2024 00:58
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -319,17 +319,17 @@ Package pdftex.def Info: t125fdcontour.png  used on input line 218.
 <fdi.png, id=42, 1204.5pt x 677.53125pt>
 File: fdi.png Graphic file (type png)
 <use fdi.png>
-Package pdftex.def Info: fdi.png  used on input line 225.
+Package pdftex.def Info: fdi.png  used on input line 227.
 (pdftex.def)             Requested size: 422.77664pt x 237.81148pt.
 <mpe.png, id=43, 1204.5pt x 677.53125pt>
 File: mpe.png Graphic file (type png)
 <use mpe.png>
-Package pdftex.def Info: mpe.png  used on input line 232.
+Package pdftex.def Info: mpe.png  used on input line 234.
 (pdftex.def)             Requested size: 422.77664pt x 237.81148pt.
 <mse.png, id=44, 1204.5pt x 677.53125pt>
 File: mse.png Graphic file (type png)
 <use mse.png>
-Package pdftex.def Info: mse.png  used on input line 239.
+Package pdftex.def Info: mse.png  used on input line 246.
 (pdftex.def)             Requested size: 422.77664pt x 237.81148pt.
  [3] [4 <./t0charcontour.png> <./t25charcontour.png> <./t5charcontour.png> <./t75charcontour.png> <./t1charcontour.png> <./t125charcontour.png> <./t0fdcontour.png> <./t25fdcontour.png> <./t5fdcontour.png> <./t75fdcontour.png> <./t1fdcontour.png> <./t125fdcontour.png>] [5 <./fdi.png> <./mpe.png>] [6 <./mse.png>] (./BuhlHw4.aux) ) 
 Here is how much of TeX's memory you used:
@@ -341,7 +341,7 @@ Here is how much of TeX's memory you used:
  14 hyphenation exceptions out of 8191
  55i,16n,62p,222b,423s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb>
-Output written on BuhlHw4.pdf (6 pages, 536243 bytes).
+Output written on BuhlHw4.pdf (6 pages, 536808 bytes).
 PDF statistics:
  154 PDF objects out of 1000 (max. 8388607)
  75 compressed objects within 1 object stream

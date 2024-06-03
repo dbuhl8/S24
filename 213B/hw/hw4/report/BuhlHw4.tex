@@ -219,7 +219,9 @@
         \emp
         \caption{Contour Plots of Solution using Finite Differences}
     \end{figure}
-    \item See figure 3.
+    \item Yes! The discrete integral is constant up to numerical precision as we
+    would expect (this is hard to see in the plot but if you look at fdint.dat
+    after running the code it is clear that this is true). 
     \begin{figure}
         \centering
         \includegraphics[width=0.9\textwidth]{fdi.png}
@@ -233,7 +235,12 @@
         \caption{Plot of Max Pointwise Error as a function of time}
     \end{figure}
        
-    \item See figure 5.
+    \item See figure 5. The MSE descreases with $N$. The order of decay seems to
+    be quadratic after comparing the slope to that of a quadratic decay. This
+    seems good! It is also important to consider that this plot is only as
+    accurate as the combined accuracy of the method of Characteristics and
+    finite differences combined. After fitting a line to the plot, a line of
+    best fit seems to yield and order 2 decay!
     \begin{figure}
         \centering
         \includegraphics[width=0.9\textwidth]{mse.png}
