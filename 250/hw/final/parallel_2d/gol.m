@@ -1,6 +1,6 @@
 clear; close all; clc;
 
-G = readmatrix('gof.dat');
+G = readmatrix('gol.dat', 'Delimiter', ' ');
 p = readmatrix('params.dat');
 p = rmmissing(p);
 

@@ -11,6 +11,18 @@ module NumDE
 
   contains 
 
+  subroutine writemat(A, ma, na, fn)
+    !writes matrix A out to a file using a format
+    implicit none
+
+    real :: A(:,:)
+    integer :: ma, na, fn, i
+
+    do i = 1, na
+      write(fn, "("//trim(str(ma))//"F15.7)") A(:,i)
+    end do 
+  end subroutine writemat
+
   subroutine BDF3(F, num_points, dx)
     ! assumes an evenly spaced grid
     
@@ -100,7 +112,7 @@ module NumDE
     end do
   end subroutine MidtermRK3
 
-  subroutine MidtermRK4(F, Y, T, ma, num_points, dt)
+  subroutine RK4(F, Y, T, ma, num_points, dt)
     implicit none
   
     real :: F(:, :), Y(:, :), T(:), dt
@@ -114,32 +126,16 @@ module NumDE
 
     do i = 1, num_points
       ! find k vec
-      !if(i.eq.2) then
-        !print *, " "
-        !call printmat(K, ma, 4)
-        !print *, " "
-      !end if
       K(:,1) = matmul(F, Y(:,i))
-      K(ma,1) = K(ma,1) + (T(i) + C(1)*dt)**2
       K(:,2) = matmul(F, Y(:, i) + dt*K(:,1)/2.)
-      K(ma,2) = K(ma,2) + (T(i) + C(2)*dt)**2
       K(:,3) = matmul(F, Y(:, i) + dt*K(:,2)/2.)
-      K(ma,3) = K(ma,3) + (T(i) + C(3)*dt)**2
       K(:,4) = matmul(F, Y(:, i) + dt*K(:,3))
-      !print *, K(ma, 4)
-      K(ma,4) = K(ma,4) + (T(i) + C(4)*dt)**2
-      !print *, K(ma, 4)
-      !if(i.eq.1) then
-        !print *, " "
-        !call printmat(K, ma, 4)
-        !print *, " "
-      !end if
       !update Y  
       Y(:,i+1) = Y(:,i) + dt*(b(1)*k(:,1) + b(2)*k(:,2) +&
                               b(3)*k(:,3) + b(4)*k(:,4))
       T(i+1) = T(i) + dt
     end do 
-  end subroutine MidtermRK4
+  end subroutine RK4
 
   subroutine AM3(F, Y, T, ma, num_points, dt)
     ! this subroutine can only handle linear ODE's as of right now
@@ -330,7 +326,6 @@ module NumDE
       end if
     end do 
   end subroutine
-
   subroutine D2FD2_1D(D, nx, dx)
     ! Computes D2 for an evenly spaced grid according to a second order finite
     ! difference method
@@ -467,6 +462,126 @@ module NumDE
     end do 
     D = D/dx
   end subroutine
+
+  subroutine D1xFD2_2d(D, nx, ny, dx)
+    ! Computes D2 for an evenly spaced grid according to a second order finite
+    ! difference method
+    implicit none
+    ! D should be an (nx*ny) x (nx*ny) array
+    real :: D(:, :), dx
+    integer :: nx, ny, i, n, m
+    integer :: indx
+  
+    D = 0.0
+
+    indx = ny
+    do m = 1, ny
+      do n = 1, nx
+        i = m + ny*(n-1) 
+        ! we require a lot of logic gates in order to make sure we are not
+        ! violating the array
+        if(1 < n) then
+          D(i, i-indx) = -1.0
+        end if
+        if(n < nx) then
+          D(i, i+indx) = 1.0
+        end if
+      end do 
+    end do 
+    D = D/(2*dx)
+  end subroutine D1xFD2_2d
+
+   subroutine D1yFD2_2d(D, nx, ny, dy)
+    ! Computes D2 for an evenly spaced grid according to a second order finite
+    ! difference method
+    implicit none
+    ! D should be an (nx*ny) x (nx*ny) array
+    real :: D(:, :), dy 
+    integer :: nx, ny, i, m, n
+    integer :: indy
+  
+    D = 0.0
+
+    indy = 1
+    do m = 1, ny
+      do n = 1, nx
+        i = m + ny*(n-1) 
+        ! we require a lot of logic gates in order to make sure we are not
+        ! violating the array
+        if(1 < m) then
+          D(i, i-indy) = 1.0
+        end if
+        if(m < ny) then
+          D(i, i+indy) = -1.0
+        end if
+      end do 
+    end do 
+    D = D/(2*dy)
+  end subroutine D1yFD2_2d
+
+  subroutine PD1xFD2_2d(D, nx, ny, dx)
+    ! Computes D2 for an evenly spaced grid according to a second order finite
+    ! difference method
+    implicit none
+    ! D should be an (nx*ny) x (nx*ny) array
+    real :: D(:, :), dx
+    integer :: nx, ny, i, n, m
+    integer :: indx
+  
+    D = 0.0
+
+    indx = ny
+    do m = 1, ny
+      do n = 1, nx
+        i = m + ny*(n-1) 
+        ! we require a lot of logic gates in order to make sure we are not
+        ! violating the array
+        if(1 < n) then
+          D(i, i-indx) = -1.0
+        else 
+          D(i, m+ny*(nx-1)) = -1.0
+        end if
+        if(n < nx) then
+          D(i, i+indx) = 1.0
+        else 
+          D(i, m) = 1.0
+        end if
+      end do 
+    end do 
+    D = D/(2*dx)
+  end subroutine PD1xFD2_2d
+
+   subroutine PD1yFD2_2d(D, nx, ny, dy)
+    ! Computes D2 for an evenly spaced grid according to a second order finite
+    ! difference method
+    implicit none
+    ! D should be an (nx*ny) x (nx*ny) array
+    real :: D(:, :), dy 
+    integer :: nx, ny, i, m, n
+    integer :: indy
+  
+    D = 0.0
+
+    indy = 1
+    do m = 1, ny
+      do n = 1, nx
+        i = m + ny*(n-1) 
+        ! we require a lot of logic gates in order to make sure we are not
+        ! violating the array
+        if(1 < m) then
+          D(i, i-indy) = 1.0
+        else 
+          D(i, ny+ny*(n-1)) = 1.0
+        end if
+        if(m < ny) then
+          D(i, i+indy) = -1.0
+        else 
+          D(i, 1+ny*(n-1)) = -1.0
+        end if
+      end do 
+    end do 
+    D = D/(2*dy)
+  end subroutine PD1yFD2_2d
 
   subroutine vec_boundary(bound,interior,corner,nc,nx, ny)
     ! Returns a populaated bound array with the indices of the boudary for a
@@ -632,6 +747,47 @@ module NumDE
       T(i+1) = T(i) + dt
     end do 
   end subroutine 
+
+  subroutine NRK4(F, Y, T, ma, num_points, dt)
+    implicit none
+  
+    real :: F(:, :), Y(:, :), T(:), dt
+    real, dimension(ma, 4) :: K
+    real, dimension(4) :: B, C
+    integer :: ma, num_points, i
+    
+    B = (/1./6., 1./3., 1./3., 1./6. /)
+    C = (/ 0.0, 1./2., 1./2., 1.0 /)
+    K = 0.
+
+    do i = 1, num_points
+      ! find k vec
+      !if(i.eq.2) then
+        !print *, " "
+        !call printmat(K, ma, 4)
+        !print *, " "
+      !end if
+      K(:,1) = matmul(F, Y(:,i))
+      K(ma,1) = K(ma,1) + (T(i) + C(1)*dt)**2
+      K(:,2) = matmul(F, Y(:, i) + dt*K(:,1)/2.)
+      K(ma,2) = K(ma,2) + (T(i) + C(2)*dt)**2
+      K(:,3) = matmul(F, Y(:, i) + dt*K(:,2)/2.)
+      K(ma,3) = K(ma,3) + (T(i) + C(3)*dt)**2
+      K(:,4) = matmul(F, Y(:, i) + dt*K(:,3))
+      !print *, K(ma, 4)
+      K(ma,4) = K(ma,4) + (T(i) + C(4)*dt)**2
+      !print *, K(ma, 4)
+      !if(i.eq.1) then
+        !print *, " "
+        !call printmat(K, ma, 4)
+        !print *, " "
+      !end if
+      !update Y  
+      Y(:,i+1) = Y(:,i) + dt*(b(1)*k(:,1) + b(2)*k(:,2) +&
+                              b(3)*k(:,3) + b(4)*k(:,4))
+      T(i+1) = T(i) + dt
+    end do 
+  end subroutine NRK4
 
   subroutine find_empty_row(A, empty, notempty, ma, num_empty, num_notempty)
     ! Returns an array of row indices specifiying which rows of A have all zero

@@ -1,0 +1,159 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{enumitem}
+\usepackage{verbatim}
+\usepackage{xcolor}
+\usepackage{soul}
+
+\title{Homework 3: Report}
+\author{Dante Buhl}
+
+\DeclareMathOperator{\cond}{cond}
+\DeclareMathOperator{\vecspan}{span}
+
+\begin{document}
+
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+\newcommand{\bmp}[1]{\begin{minipage}{#1\textwidth}}
+\newcommand{\emp}{\end{minipage}}
+\newcommand{\R}{\mathbb{R}}
+%\newcommand{\Imag}{\mathbb{I}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\K}{\bs{\mathrm{K}}}
+\newcommand{\m}{\bs{\mu}_*}
+\newcommand{\s}{\bs{\Sigma}_*}
+\newcommand{\dt}{\Delta t}
+\newcommand{\dx}{\Delta x}
+\newcommand{\tr}[1]{\text{Tr}(#1)}
+\newcommand{\Tr}[1]{\text{Tr}(#1)}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+
+\maketitle
+
+\section*{Question 1: Consistency and Stability}
+    \begin{align}
+        \begin{cases}
+            U_t + U_x = 0 \quad \quad x \in [0, 2\pi],
+            \quad t \ge 0\\
+            U(x,0) = \sin^2(x)\\
+            \text{Periodic B.C.}
+        \end{cases} \\
+        u_j^{k+1} = u_j^k - \frac{\dt}{2\dx}(u_{j+1}^{k+1} - u_{j-1}^{k+1})
+    \end{align}
+
+\begin{enumerate}[label=\alph*)]
+
+    \item Compute the Local Truncation Error of the scheme in (2). Is the scheme
+    consistent? If so, to which orders in $\dt$ and $\dx$
+    \begin{proof}
+        \begin{align*}
+            \dt \tau_j^{k+1} &= \bs{y}_j^{k+1} - \bs{y}_j^k + \frac{\dt}{2\dx}(\bs{y}_{j+1}^{k+1}
+            - \bs{y}_{j-1}^{k+1})\\
+            \tau_j^{k+1} &= \dot{\bs{y}}_j^{k+1} + \frac{\dt}{2}\ddot{\bs{y}}_j^{k+1} +
+            O(\dt^2) + 
+            \frac{1}{2\dx}(2\dx \bs{y}_{x j}^{k+1} + \frac{2\dx^3}{6} \bs{y}_{x j}^{k+1}
+            +O(\dx^5))\\
+            \tau_j^{k+1} &= \frac{\dt}{2}\ddot{\bs{y}}_j^{k+1} +
+            \frac{\dx^2}{6} \bs{y}_{xxx j}^{k+1} + O(\dt^2)+O(\dx^4) 
+        \end{align*}
+        Thus we have shown that the local truncation error, $\tau_j^{k+1}$
+        scales with $\dt$ with order 1, and with $\dx$ with order 2. Thus, the
+        scheme is consistent with order 1 in time and order 2 in space. 
+    \end{proof}
+
+    \item \hl{Compute the Von-Neumann Stability Analysis of (2). Is the scheme
+    convergent?}
+\end{enumerate}
+
+\section*{Question 2: Method of Characteristics for Advection}\
+    \large
+    \begin{align}
+        \begin{cases}
+            U_t + (fU)_x + (gU)_y =0 \\
+            U(x,y,0) = \frac{1}{2\pi^2}\sin^2(x+y)
+        \end{cases}
+    \end{align}
+    \normalsize
+    \begin{align}
+        f(x,y) = \sin(x)\sin(y), \quad\quad g(x,y) = 1 - e^{\sin(x+y)} \\
+        \mathbb{T} = \left\{(x,y) \in \R^2:\quad 0 \le x \le 2\pi, \quad 0 \le
+        y \le 2\pi\right\}
+    \end{align}
+    \begin{align}
+        \begin{cases}
+            U(0,y,t) = U(2\pi,y,t), \quad 0 \le y \le 2\pi\\
+            U(x,0,t) = U(x,2\pi,t), \quad 0 \le x \le 2\pi
+        \end{cases}
+    \end{align}
+\begin{enumerate}[label=\alph*)]
+
+    \item Show that the following integral evaluates to 1. 
+    \begin{align*}
+        \int_{\mathbb{T}} U(x,y,t)dxdy = 1,\quad  \forall t \ge 0
+    \end{align*}
+    \begin{proof}
+        \begin{align*}
+            U_t &= -(fU)_x - (gU)_y \\
+            \int_{\mathbb{T}} U_t dA &= \int_{\mathbb{T}}-(fU)_x - (gU)_y dA\\
+            \pd{}{t}\int_{\mathbb{T}} U dA &= \int_{\mathbb{T}}-(fU)_x - (gU)_y dA\\
+            \pd{}{t}\int_{\mathbb{T}} U dA &= \int_{\partial\mathbb{T}} -\left<fU,
+            gU\right>\cdot \eta ds\\
+            \eta &= 
+            \begin{cases}
+                \left<0,1\right>, y = 2\pi\\
+                \left<0,-1\right>, y = 0\\
+                \left<1,0\right>, x = 2\pi\\
+                \left<-1,0\right>, x = 0
+            \end{cases}
+        \end{align*}
+        \begin{align*}
+            \pd{}{t}\int_{\mathbb{T}} U dA &= \int_0^{2\pi} fU|_{x=0} dy
+            - \int_0^{2\pi} gU|_{y=2\pi} dx 
+            - \int_0^{2\pi} fU|_{x=2\pi} dy
+            + \int_{2\pi}^0 gU|_{y=0} dx \\
+        \end{align*}
+        \begin{align*}
+            \int_0^{2\pi} gU|_{y=0} dx &= \int_0^{2\pi} gU|_{y=2\pi} dx\\
+            \int_0^{2\pi} fU|_{x=0} dy &= 0 \\
+            \int_0^{2\pi} fU|_{x=2\pi} dy &= 0\\ 
+            \pd{}{t}\int_{\mathbb{T}} U dA &= 0 
+        \end{align*}
+        Therefore we have that the value of the integral is constant. Now we
+        must simply show that it is at one timestep equal to one. 
+        \begin{align*}
+            \int_{\mathbb{T}} U(x,y,0) dA &=
+            \frac{1}{2\pi^2}\int_0^{2\pi}\int_0^{2\pi} \sin^2(x+y)dxdy\\
+            &= \frac{1}{4\pi^2}\int_0^{2\pi}\int_0^{2\pi}1 - \cos(2x+2y)dxdy\\
+            &= \frac{1}{4\pi^2}\left(4\pi^2 -
+            \int_0^{2\pi}\int_0^{2\pi}\cos(2x+2y)dxdy\right)\\
+            &= 1 - \frac{1}{4\pi^2}\int_0^{2\pi}\int_0^{2\pi}\cos(2x+2y)dxdy\\
+            &= 1 - \frac{1}{4\pi^2}\int_0^{2\pi}0dxdy\\
+            &= 1
+        \end{align*}
+        Thus we have that U will satisfy this integral at every timestep.
+    \end{proof}
+    
+    \item \hl{Contour Plots}
+
+\end{enumerate}
+
+\section*{Question 3: Finite Differences for Advection}
+
+\begin{enumerate}[label=\alph*)]
+
+    \item \hl{Contour Plots}
+    \item \hl{Integral of FD Scheme}
+    \item \hl{Max Pointwise Error}
+    \item \hl{Mean Squared Error}
+
+
+\end{enumerate}
+
+\end{document}

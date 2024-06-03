@@ -1,0 +1,3 @@
+#!/bin/bash
+
+mpirun --use-hwthread-cpus -np 3 driver.exe <IC.dat > output.txt
