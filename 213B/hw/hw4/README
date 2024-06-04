@@ -1,0 +1,10 @@
+Hello Long, 
+
+Here is a quick summary about how to run and compile my code. You want to first go into the fortran directory and make. Note that there are some compiler flags set which are unnecessary. Some examples are the Lapack LBlas and OpenMP flags. None of these routines are currently being used in this driver file so they can be removed. The alternative is installing them onto your computer. 
+
+Once you type make, the driver will run the source code for all three problems. Note that this takes nearly 20 minutes to compute, primarily because of the test of mean squared error versus gridsize at the end of the code. You may comment this out in order to get the rest of the code to run quickly. As an output, the code generates several .dat files all containing information about the run. There is also an output.txt file which I forget if it has anything useful in it. To see the results use the gnuplot script I have written inside of the fortran directory, or run the matlab script I have written in the matlab directory (note that this script accesses the files in the fortran directory so it is best not to move it). I also have a section commented out which makes a nice video of the finite difference evolution, this takes another few minutes to run so I often make it once and then comment it out. 
+
+If you have any questions or concerns about my code, please let me know and I will get back to you as soon as I can. 
+
+Thank you!
+-Dante-
