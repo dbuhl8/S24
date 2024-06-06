@@ -191,11 +191,11 @@ module pgameoflife
 
       if (id.eq.0) then ! If root processor
         ! Left
-        CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,np-1,tg+2*id+1,A(:,1),m,&
-          MPI_INTEGER,np-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        !CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,np-1,tg+2*id+1,A(:,1),m,&
+          !MPI_INTEGER,np-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
         ! Right
-        CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,1,tg+2*id+4,&
-          A(:,num_tasks+2),m, MPI_INTEGER,1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
+        !CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,1,tg+2*id+4,&
+          !A(:,num_tasks+2),m, MPI_INTEGER,1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
         ! Top
 
         ! Bottom
@@ -204,11 +204,11 @@ module pgameoflife
 
       else if (id.eq.np-1) then ! If last processor
         ! Left
-        CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
-          MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        !CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
+          !MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
         ! Right
-        CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,0,tg+2,&
-          A(:,num_tasks+2),m, MPI_INTEGER,0,tg+1,MPI_COMM_WORLD,stat,ie)
+        !CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,0,tg+2,&
+          !A(:,num_tasks+2),m, MPI_INTEGER,0,tg+1,MPI_COMM_WORLD,stat,ie)
         ! Top
 
         ! Bottom
@@ -217,11 +217,11 @@ module pgameoflife
 
       else  ! Any processor in the middle
         ! Left
-        CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
-          MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        !CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
+          !MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
         ! Right
-        CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,id+1,tg+2*id+4,&
-          A(:,num_tasks+2),m, MPI_INTEGER,id+1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
+        !CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,id+1,tg+2*id+4,&
+          !A(:,num_tasks+2),m, MPI_INTEGER,id+1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
         ! Top
 
         ! Bottom
@@ -285,59 +285,115 @@ module pgameoflife
         nm =  int(sqrt(real(np)))
         nn =  nm
 
-        ! Left Mapping
-        if(id.lt.nm) then
-          pmap(1) = id+nm*(nn-1) 
-          ! Add up/down branch to do the corners
-        else
-          pmap(1) = id-nm
-          ! Add up/down branch to do the corners
-        end if
-        ! Right Mapping
-        if(id.ge.nm*(nn-1)) then
-          pmap(2) = id-nm*(nn-1) 
-          ! Add up/down branch to do the corners
-        else
-          pmap(2) = id+nm
-          ! Add up/down branch to do the corners
-        end if
-        ! Up Mapping
-        if(mod(id,nm).eq.0) then
-          pmap(3) = id+nm-1
-        else
-          pmap(3) = id-1
-        end if
-        ! Down Mapping
-        if(mod(id+1,nm).eq.0) then
-          pmap(4) = id-nm+1
-        else
-          pmap(4) = id+1
-        end if
+        ! Mapping -----------------------------------------------
+          ! Left Mappin
+          if(id.lt.nm) then
+            pmap(1) = id+nm*(nn-1) 
+            ! UL, DL
+            ! if top row
+            if(mod(id,nm).eq.0) then
+              pmap(5) = id+nm*(nn)-1
+              pmap(7) = id+nm*(nn-1)+1
+            ! else if bottom row
+            else if(mod(id+1,nm).eq.0) then
+              pmap(5) = id+nm*(nn-1)-1
+              pmap(7) = id+nm*(nn-2)+1
+            ! else middle
+            else 
+              pmap(5) = id+nm*(nn-1)-1
+              pmap(7) = id+nm*(nn-1)+1
+            end if
+          else
+            pmap(1) = id-nm
+            ! UL, DL
+            ! if top row
+            if(mod(id,nm).eq.0) then
+              pmap(5) = id-1
+              pmap(7) = id-nm+1
+            ! else if bottom row
+            else if(mod(id+1,nm).eq.0) then
+              pmap(5) = id-nm-1
+              pmap(7) = id-2*nm+1
+            ! else middle
+            else 
+              pmap(5) = id-nm-1
+              pmap(7) = id-nm+1 
+            end if
+          end if
+
+          ! Right Mapping
+          if(id.ge.nm*(nn-1)) then
+            pmap(2) = id-nm*(nn-1) 
+            ! UR, DR
+            ! if top row
+            if(mod(id,nm).eq.0) then
+              pmap(6) = id-nm*(nn)-2
+              pmap(8) = id-nm*(nn-1)+1
+            ! else if bottom row
+            else if(mod(id+1,nm).eq.0) then
+              pmap(6) = id-nm*(nn-1)-1
+              pmap(8) = id-nm*(nn-1)
+            ! else middle
+            else 
+              pmap(6) = id-nm*(nn-1)-1
+              pmap(8) = id-nm*(nn-1)+1
+            end if
+          else
+            pmap(2) = id+nm
+            ! UR, DR
+            ! if top row
+            if(mod(id,nm).eq.0) then
+              pmap(6) = id+2*nm-1
+              pmap(8) = id+nm+1
+            ! else if bottom row
+            else if(mod(id+1,nm).eq.0) then
+              pmap(6) = id+nm-1
+              pmap(8) = id+1
+            ! else middle
+            else 
+              pmap(6) = id+nm-1
+              pmap(8) = id+nm+1
+            end if
+          end if
+
+          ! Up Mapping
+          if(mod(id,nm).eq.0) then
+            pmap(3) = id+nm-1
+          else
+            pmap(3) = id-1
+          end if
+
+          ! Down Mapping
+          if(mod(id+1,nm).eq.0) then
+            pmap(4) = id-nm+1
+          else
+            pmap(4) = id+1
+          end if
+        ! Mapping -----------------------------------------------
 
         allocate(ind_array(nm))
         do i = 1, nm
           ind_array(i) = 1 + (i-1)*nm
         end do 
 
-        counts(:,1) = m/nm
-        counts(:,2) = n/nn
+        ! Agglomeration ----------------------------------------
+          counts(:,1) = m/nm
+          counts(:,2) = n/nn
+          ex_m = mod(m, nm) 
+          ex_n = mod(n, nn) 
 
-        ex_m = mod(m, nm) 
-        ex_n = mod(n, nn) 
-
-        if (ex_m .ne. 0) then
-          do i = 1, ex_m
-            counts((nm-i)+ind_array,1) = counts((nm-i)+ind_array,1) + 1
-          end do
-        end if
-        if (ex_n .ne. 0) then
-          do i = 1, ex_n
-            counts(np-nm*i+1:np-nm*(i-1),2)=counts(np-nm*i+1:np-nm*(i-1),2)+1
-          end do
-        end if
+          if (ex_m .ne. 0) then
+            do i = 1, ex_m
+              counts((nm-i)+ind_array,1) = counts((nm-i)+ind_array,1) + 1
+            end do
+          end if
+          if (ex_n .ne. 0) then
+            do i = 1, ex_n
+              counts(np-nm*i+1:np-nm*(i-1),2)=counts(np-nm*i+1:np-nm*(i-1),2)+1
+            end do
+          end if
+        ! Agglomeration ----------------------------------------
     
-        !nm = counts(id+1, 1)
-        !nn = counts(id+1, 2)
         deallocate(ind_array)
       
       else if (mod(np,2).eq.0) then
