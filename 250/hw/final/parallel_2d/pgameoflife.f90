@@ -11,6 +11,7 @@ module pgameoflife
   ! General Utility Vars
   integer :: sx, ex, sy, ey, num_tasks, num_procs
   integer :: nm, nn, npm, npn
+  integer, dimension(8) :: pmap
   
   ! Subroutines and Functions
   contains
@@ -182,6 +183,55 @@ module pgameoflife
       !call MPI_BARRIER(MPI_COMM_WORLD, ie)
     end subroutine pupdate_bound_1d
 
+    subroutine pupdate_bound_2d(A, m, n, id, np, tg)
+      ! After updating individual matrices, need to update ghost cells (involves
+      ! the other processors)
+      implicit none
+      integer :: A(:,:), id, np, m, tg, stat, ie, n
+
+      if (id.eq.0) then ! If root processor
+        ! Left
+        CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,np-1,tg+2*id+1,A(:,1),m,&
+          MPI_INTEGER,np-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        ! Right
+        CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,1,tg+2*id+4,&
+          A(:,num_tasks+2),m, MPI_INTEGER,1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
+        ! Top
+
+        ! Bottom
+       
+        ! Corners
+
+      else if (id.eq.np-1) then ! If last processor
+        ! Left
+        CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
+          MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        ! Right
+        CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,0,tg+2,&
+          A(:,num_tasks+2),m, MPI_INTEGER,0,tg+1,MPI_COMM_WORLD,stat,ie)
+        ! Top
+
+        ! Bottom
+       
+        ! Corners
+
+      else  ! Any processor in the middle
+        ! Left
+        CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
+          MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        ! Right
+        CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,id+1,tg+2*id+4,&
+          A(:,num_tasks+2),m, MPI_INTEGER,id+1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
+        ! Top
+
+        ! Bottom
+       
+        ! Corners
+
+      end if
+      !call MPI_BARRIER(MPI_COMM_WORLD, ie)
+    end subroutine pupdate_bound_2d
+
     subroutine mpi_decomp_1d(id, np, n, counts)
       ! Decomposes the data given to the program along columns (pencils)
       ! according to the number of CPU's
@@ -210,6 +260,11 @@ module pgameoflife
       integer, allocatable :: ind_array(:)
 
       num_procs = np
+      ! pmap is length 8 array for each processor and contains the information
+      ! as to which processor to ask for which information. 
+      !        ---------------------
+      ! pmap = |L|R|U|D|UL|UR|DL|DR|
+      !        ---------------------
 
       ! Cases for Domain Decomposition
       if (int(sqrt(real(np)))**2 .eq. np) then 
@@ -229,6 +284,35 @@ module pgameoflife
         ! these two are the default values for the subarray
         nm =  int(sqrt(real(np)))
         nn =  nm
+
+        ! Left Mapping
+        if(id.lt.nm) then
+          pmap(1) = id+nm*(nn-1) 
+          ! Add up/down branch to do the corners
+        else
+          pmap(1) = id-nm
+          ! Add up/down branch to do the corners
+        end if
+        ! Right Mapping
+        if(id.ge.nm*(nn-1)) then
+          pmap(2) = id-nm*(nn-1) 
+          ! Add up/down branch to do the corners
+        else
+          pmap(2) = id+nm
+          ! Add up/down branch to do the corners
+        end if
+        ! Up Mapping
+        if(mod(id,nm).eq.0) then
+          pmap(3) = id+nm-1
+        else
+          pmap(3) = id-1
+        end if
+        ! Down Mapping
+        if(mod(id+1,nm).eq.0) then
+          pmap(4) = id-nm+1
+        else
+          pmap(4) = id+1
+        end if
 
         allocate(ind_array(nm))
         do i = 1, nm
