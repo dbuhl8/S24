@@ -10,7 +10,7 @@ module pgameoflife
 
   ! General Utility Vars
   integer :: sx, ex, sy, ey, num_tasks, num_procs
-  integer :: nm, nn
+  integer :: nm, nn, npm, npn
   
   ! Subroutines and Functions
   contains
@@ -252,8 +252,8 @@ module pgameoflife
           end do
         end if
     
-        nm = counts(id+1, 1)
-        nn = counts(id+1, 2)
+        !nm = counts(id+1, 1)
+        !nn = counts(id+1, 2)
         deallocate(ind_array)
       
       else if (mod(np,2).eq.0) then
