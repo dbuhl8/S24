@@ -10,7 +10,7 @@ module pgameoflife
 
   ! General Utility Vars
   integer :: sx, ex, sy, ey, num_tasks, num_procs
-  integer :: nm, nn, npm, npn
+  integer :: nm, nn, npm, npn, ntm, ntn
   integer, dimension(8) :: pmap
   
   ! Subroutines and Functions
@@ -189,19 +189,43 @@ module pgameoflife
       implicit none
       integer :: A(:,:), id, np, m, tg, stat, ie, n
 
+      ! pmap is length 8 array for each processor and contains the information
+      ! as to which processor to ask for which information. 
+      !        ---------------------
+      ! pmap = |L|R|U|D|UL|UR|DL|DR|
+      !        ---------------------
+      ! Starting communication channels
+      ! NOTE: going to need to change the tag function
       if (id.eq.0) then ! If root processor
-        ! Left
-        !CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,np-1,tg+2*id+1,A(:,1),m,&
-          !MPI_INTEGER,np-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-        ! Right
-        !CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,1,tg+2*id+4,&
-          !A(:,num_tasks+2),m, MPI_INTEGER,1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
-        ! Top
-
-        ! Bottom
-       
+        ! Edges
+          ! Left
+          !                sendbuf counts type     dest       tag  recvbuf counts 
+          !CALL MPI_ISENDRECV(A(:,2),ntm,MPI_INTEGER,pmap(1),tg+2*id+1,A(:,1),ntm,&
+            !MPI_INTEGER,pmap(1),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+          !    type      src     tag       comm      stat   ie
+          ! Right
+          !CALL MPI_ISENDRECV(A(:,ntn+1),ntm,MPI_INTEGER,pmap(2),tg+2*id+4,&
+            !A(:,ntn2),ntm, MPI_INTEGER,pmap(1),tg+2*id+3,MPI_COMM_WORLD,stat,ie)
+          ! Top
+          !CALL MPI_ISENDRECV(A(2,:),ntn,MPI_INTEGER,pmap(3),tg+2*id+1,A(1,:),ntn,&
+            !MPI_INTEGER,pmap(3),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+          ! Bottom
+          !CALL MPI_ISENDRECV(A(ntm+1,:),ntn,MPI_INTEGER,pmap(4),tg+2*id+1,&
+            !A(ntm+2,:),ntn,MPI_INTEGER,pamp(4),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
         ! Corners
-
+          ! Upper Left
+          !CALL MPI_ISENDRECV(A(2,2),1,MPI_INTEGER,pmap(5),tg+2*id+1,&
+            !A(1,1),1,MPI_INTEGER,pamp(5),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+          ! Upper Right
+          !CALL MPI_ISENDRECV(A(2,ntn+1),1,MPI_INTEGER,pmap(6),tg+2*id+1,&
+            !A(1,ntn+2),1,MPI_INTEGER,pamp(6),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+          ! Down Left
+          !CALL MPI_ISENDRECV(A(ntm+1,2),1,MPI_INTEGER,pmap(7),tg+2*id+1,&
+            !A(ntm+2,1),1,MPI_INTEGER,pamp(7),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+          ! Down Right
+          !CALL MPI_ISENDRECV(A(ntm+1,ntn+1),1,MPI_INTEGER,pmap(8),tg+2*id+1,&
+            !A(ntm+2,ntn+2),1,MPI_INTEGER,pamp(8),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        ! Done
       else if (id.eq.np-1) then ! If last processor
         ! Left
         !CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
@@ -214,7 +238,6 @@ module pgameoflife
         ! Bottom
        
         ! Corners
-
       else  ! Any processor in the middle
         ! Left
         !CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
@@ -227,7 +250,6 @@ module pgameoflife
         ! Bottom
        
         ! Corners
-
       end if
       !call MPI_BARRIER(MPI_COMM_WORLD, ie)
     end subroutine pupdate_bound_2d
@@ -452,6 +474,17 @@ module pgameoflife
 
       end if
     end subroutine mpi_decomp_2d
+
+    function ftag(src,dest,step) 
+      ! Returns a tag for MPI Communication based on the following function
+      ! tag = 1|***|***|******
+      !         src|dst| step
+      ! tag = 1*10**(12) + src*10**9 + dest*10**6+step
+      ! Assumptions: less than 1000 processors, less than 1000000 steps
+      implicit none
+      integer :: ftag, src, dest, step
+      ftag = 10**(12) + src*10**9 + dest*10**6 + step
+    end function ftag
 
     character(len=20) function str(k)
       ! "Convert an integer to string."
