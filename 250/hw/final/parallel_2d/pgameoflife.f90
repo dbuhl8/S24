@@ -12,6 +12,7 @@ module pgameoflife
   integer :: sx, ex, sy, ey, num_tasks, num_procs
   integer :: nm, nn, npm, npn, ntm, ntn
   integer, dimension(8) :: pmap
+  integer :: row_type, row_type2
   
   ! Subroutines and Functions
   contains
@@ -66,6 +67,8 @@ module pgameoflife
       integer, dimension(m) :: mplus, mminus
       integer :: i, j
 
+      !print *, "got here"
+
       do i = 1, n
         nplus(i) = i+1
         nminus(i) = i-1
@@ -101,6 +104,52 @@ module pgameoflife
         end do
       end do
     end subroutine update
+
+    subroutine update_2d(A, m, n)
+      ! Note that this needs to be upgraded for non square matrices. 
+      implicit none
+      integer, intent(in) :: m,n
+      integer :: A(:, :)
+      integer, dimension(m, n) :: B
+      integer, dimension(n) :: nplus, nminus
+      integer, dimension(m) :: mplus, mminus
+      integer :: i, j
+
+      do i = 1, n
+        nplus(i) = i+1
+        nminus(i) = i-1
+      end do 
+      nplus(n) = 1
+      nminus(1) = n
+      do i = 1, m
+        mplus(i) = i+1
+        mminus(i) = i-1
+      end do 
+      mplus(m) = 1
+      mminus(1) = m
+
+      B = 0.0
+
+      do j = 2, n-1
+        do i = 2, m-1
+          B(i, j) = A(mplus(i),nplus(j))+A(mplus(i),j)+A(mplus(i),nminus(j)) &
+            + A(i,nplus(j))+A(i,nminus(j))+A(mminus(i),nplus(j)) &
+            + A(mminus(i),j) + A(mminus(i),nminus(j))
+        end do 
+      end do 
+
+      do j = 2, n-1
+        do i = 2, m-1
+          if (B(i, j) .eq. 3.0) then
+            A(i, j) = 1.0
+          else if (B(i,j) .eq. 2.0) then
+            !  do nothing
+          else
+            A(i, j) = 0.0
+          end if
+        end do
+      end do
+    end subroutine update_2d
 
     ! This routine might never be used. I like the idea of a MPI_BCast instead
     ! of parallel IO
@@ -183,11 +232,13 @@ module pgameoflife
       !call MPI_BARRIER(MPI_COMM_WORLD, ie)
     end subroutine pupdate_bound_1d
 
-    subroutine pupdate_bound_2d(A, m, n, id, np, tg)
+    subroutine pupdate_bound_2d(A, id, tg)
       ! After updating individual matrices, need to update ghost cells (involves
       ! the other processors)
       implicit none
-      integer :: A(:,:), id, np, m, tg, stat, ie, n
+      integer :: A(:,:), id, tg, stat, ie
+      integer, dimension(ntn) :: helper, helper2
+      integer, dimension(ntm) :: helper3, helper4
 
       ! pmap is length 8 array for each processor and contains the information
       ! as to which processor to ask for which information. 
@@ -195,63 +246,54 @@ module pgameoflife
       ! pmap = |L|R|U|D|UL|UR|DL|DR|
       !        ---------------------
       ! Starting communication channels
-      ! NOTE: going to need to change the tag function
-      if (id.eq.0) then ! If root processor
-        ! Edges
-          ! Left
-          !                sendbuf counts type     dest       tag  recvbuf counts 
-          !CALL MPI_ISENDRECV(A(:,2),ntm,MPI_INTEGER,pmap(1),tg+2*id+1,A(:,1),ntm,&
-            !MPI_INTEGER,pmap(1),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-          !    type      src     tag       comm      stat   ie
-          ! Right
-          !CALL MPI_ISENDRECV(A(:,ntn+1),ntm,MPI_INTEGER,pmap(2),tg+2*id+4,&
-            !A(:,ntn2),ntm, MPI_INTEGER,pmap(1),tg+2*id+3,MPI_COMM_WORLD,stat,ie)
-          ! Top
-          !CALL MPI_ISENDRECV(A(2,:),ntn,MPI_INTEGER,pmap(3),tg+2*id+1,A(1,:),ntn,&
-            !MPI_INTEGER,pmap(3),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-          ! Bottom
-          !CALL MPI_ISENDRECV(A(ntm+1,:),ntn,MPI_INTEGER,pmap(4),tg+2*id+1,&
-            !A(ntm+2,:),ntn,MPI_INTEGER,pamp(4),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-        ! Corners
-          ! Upper Left
-          !CALL MPI_ISENDRECV(A(2,2),1,MPI_INTEGER,pmap(5),tg+2*id+1,&
-            !A(1,1),1,MPI_INTEGER,pamp(5),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-          ! Upper Right
-          !CALL MPI_ISENDRECV(A(2,ntn+1),1,MPI_INTEGER,pmap(6),tg+2*id+1,&
-            !A(1,ntn+2),1,MPI_INTEGER,pamp(6),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-          ! Down Left
-          !CALL MPI_ISENDRECV(A(ntm+1,2),1,MPI_INTEGER,pmap(7),tg+2*id+1,&
-            !A(ntm+2,1),1,MPI_INTEGER,pamp(7),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-          ! Down Right
-          !CALL MPI_ISENDRECV(A(ntm+1,ntn+1),1,MPI_INTEGER,pmap(8),tg+2*id+1,&
-            !A(ntm+2,ntn+2),1,MPI_INTEGER,pamp(8),tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-        ! Done
-      else if (id.eq.np-1) then ! If last processor
+      !
+      ! Edges
         ! Left
-        !CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
-          !MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        !                sendbuf counts type     dest       tag  recvbuf counts 
+        CALL MPI_ISENDRECV(A(2:ntm+1,2),ntm,MPI_INTEGER,pmap(1),&
+          ftag(id,pmap(1),tg,1),A(2:ntm+1,1),ntm,MPI_INTEGER,pmap(1),&
+          ftag(pmap(1),id,tg,2),MPI_COMM_WORLD,stat,ie)
+        !    type      src     tag       comm      stat   ie
         ! Right
-        !CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,0,tg+2,&
-          !A(:,num_tasks+2),m, MPI_INTEGER,0,tg+1,MPI_COMM_WORLD,stat,ie)
+        CALL MPI_ISENDRECV(A(2:ntm+1,ntn+1),ntm,MPI_INTEGER,pmap(2),&
+          ftag(id,pmap(2),tg,2),A(2:ntm+1,ntn+2),ntm, MPI_INTEGER,pmap(2),&
+          ftag(pmap(2),id,tg,1),MPI_COMM_WORLD,stat,ie)
         ! Top
+        !helper = A(2,2:ntn+1) 
+        !CALL MPI_ISENDRECV(helper,ntn,MPI_INTEGER,pmap(3),&
+          !ftag(id,pmap(3),tg,3),A(1,2),1,row_type,pmap(3),&
+          !ftag(pmap(3),id,tg,4),MPI_COMM_WORLD,stat,ie)
+        CALL MPI_ISENDRECV(A(2,2),1,row_type,pmap(3),&
+          ftag(id,pmap(3),tg,3),A(1,2),1,row_type,pmap(3),&
+          ftag(pmap(3),id,tg,4),MPI_COMM_WORLD,stat,ie)
 
         ! Bottom
-       
-        ! Corners
-      else  ! Any processor in the middle
-        ! Left
-        !CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
-          !MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-        ! Right
-        !CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,id+1,tg+2*id+4,&
-          !A(:,num_tasks+2),m, MPI_INTEGER,id+1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
-        ! Top
+        !helper2 = A(ntm+1,2:ntn+1) 
+        !CALL MPI_ISENDRECV(helper2,ntn,MPI_INTEGER,pmap(4),&
+          !ftag(id,pmap(4),tg,4),A(ntm+2,2),1,row_type,pmap(4),&
+          !ftag(pmap(4),id,tg,3),MPI_COMM_WORLD,stat,ie)
+        CALL MPI_ISENDRECV(A(ntm+1,2),1,row_type,pmap(4),&
+          ftag(id,pmap(4),tg,4),A(ntm+2,2),1,row_type,pmap(4),&
+          ftag(pmap(4),id,tg,3),MPI_COMM_WORLD,stat,ie)
 
-        ! Bottom
-       
-        ! Corners
-      end if
-      !call MPI_BARRIER(MPI_COMM_WORLD, ie)
+      ! Corners
+        ! Upper Left
+        CALL MPI_ISENDRECV(A(2,2),1,MPI_INTEGER,pmap(5),&
+          ftag(id,pmap(5),tg,5),A(1,1),1,MPI_INTEGER,pmap(5),&
+          ftag(pmap(5),id,tg,8),MPI_COMM_WORLD,stat,ie)
+        ! Upper Right
+        CALL MPI_ISENDRECV(A(2,ntn+1),1,MPI_INTEGER,pmap(6),&
+          ftag(id,pmap(6),tg,6),A(1,ntn+2),1,MPI_INTEGER,pmap(6),&
+          ftag(pmap(6),id,tg,7),MPI_COMM_WORLD,stat,ie)
+        ! Down Left
+        CALL MPI_ISENDRECV(A(ntm+1,2),1,MPI_INTEGER,pmap(7),&
+          ftag(id,pmap(7),tg,7),A(ntm+2,1),1,MPI_INTEGER,pmap(7),&
+          ftag(pmap(7),id,tg,6),MPI_COMM_WORLD,stat,ie)
+        ! Down Right
+        CALL MPI_ISENDRECV(A(ntm+1,ntn+1),1,MPI_INTEGER,pmap(8),&
+          ftag(id,pmap(8),tg,8),A(ntm+2,ntn+2),1,MPI_INTEGER,pmap(8),&
+          ftag(pmap(8),id,tg,5),MPI_COMM_WORLD,stat,ie)
+      ! Done
     end subroutine pupdate_bound_2d
 
     subroutine mpi_decomp_1d(id, np, n, counts)
@@ -278,7 +320,7 @@ module pgameoflife
       ! Decomposes the data given to the program into subgrids according to the
       ! number of CPU's
       implicit none
-      integer :: id, np, m, n, ex_m, ex_n, counts(:,:), i
+      integer :: id, np, m, n, ex_m, ex_n, counts(:,:), i, ie
       integer, allocatable :: ind_array(:)
 
       num_procs = np
@@ -349,12 +391,12 @@ module pgameoflife
             ! UR, DR
             ! if top row
             if(mod(id,nm).eq.0) then
-              pmap(6) = id-nm*(nn)-2
+              pmap(6) = id-nm*(nn-2)-1
               pmap(8) = id-nm*(nn-1)+1
             ! else if bottom row
             else if(mod(id+1,nm).eq.0) then
               pmap(6) = id-nm*(nn-1)-1
-              pmap(8) = id-nm*(nn-1)
+              pmap(8) = id-nm*(nn)+1
             ! else middle
             else 
               pmap(6) = id-nm*(nn-1)-1
@@ -414,12 +456,30 @@ module pgameoflife
               counts(np-nm*i+1:np-nm*(i-1),2)=counts(np-nm*i+1:np-nm*(i-1),2)+1
             end do
           end if
+          ntm = counts(id+1,1)
+          ntn = counts(id+1,2)
         ! Agglomeration ----------------------------------------
     
         deallocate(ind_array)
+
+        ! Create MPI types for row vector sends
+        call MPI_TYPE_VECTOR(ntn,1,ntm+2,MPI_INTEGER,row_type,ie)
+        call MPI_TYPE_COMMIT(row_type,ie)
+        !call MPI_TYPE_SUBARRAY(2,(/ntm+2,ntn+2/), (/1,ntn/), (
+        !call MPI_TYPE_CONTIGUOUS(ntn,MPI_INTEGER,row_type2,ie)
+        !call MPI_TYPE_COMMIT(row_type2,ie)
       
       else if (mod(np,2).eq.0) then
         ! if np is even, divide the domain in half, and then split rows
+
+        ! -----
+        ! |1|4| 
+        ! -----
+        ! |2|5| 
+        ! -----
+        ! |3|6| 
+        ! -----
+
         nm = 2
         nn = np/2
          
@@ -435,6 +495,17 @@ module pgameoflife
       else if (mod(np,3).eq.0) then
         ! if np is divisible by 3, then decompose the domain into 3 columns and
         ! then split those columns to rows. 
+
+        ! -----
+        ! |1|4| 
+        ! -----
+        ! |2|5| 
+        ! -----
+        ! |3|6| 
+        ! -----
+        ! | 7 | 
+        ! -----
+
         nm = 3
         nn = np/3
          
@@ -475,16 +546,28 @@ module pgameoflife
       end if
     end subroutine mpi_decomp_2d
 
-    function ftag(src,dest,step) 
+    function ftag(src,dest,step,dir) 
+      ! Returns a tag for MPI Communication based on the following function
+      ! tag = **** | ** | ** |  * 
+      !       step | src|dst | dir
+      ! tag = 1*10**(11) + src*10**8 + dest*10**5+step
+      ! Assumptions: less than 100 processors, less than 100000 steps
+      implicit none
+      integer :: ftag, src, dest, step, dir
+      ftag = step*10**5 + src*10**3 + dest*10+dir
+    end function ftag
+
+    function rtag(src,step) 
       ! Returns a tag for MPI Communication based on the following function
       ! tag = 1|***|***|******
       !         src|dst| step
-      ! tag = 1*10**(12) + src*10**9 + dest*10**6+step
-      ! Assumptions: less than 1000 processors, less than 1000000 steps
+      ! tag = 1*10**(11) + src*10**8 + dest*10**5+step
+      ! Assumptions: less than 100 processors, less than 100000 steps
       implicit none
-      integer :: ftag, src, dest, step
-      ftag = 10**(12) + src*10**9 + dest*10**6 + step
-    end function ftag
+      integer :: rtag, src, step
+      rtag = src + step**2
+    end function rtag
+
 
     character(len=20) function str(k)
       ! "Convert an integer to string."

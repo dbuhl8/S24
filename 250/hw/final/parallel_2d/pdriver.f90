@@ -47,7 +47,7 @@ program pdriver
   call mpi_decomp_2d(id, np, m, n, cnt)
   ! Allocating local memory
   allocate(G(cnt(id+1,1)+2,cnt(id+1,2)+2))
-  G = 0.
+  G = 0
 
   ! Compute the Disp_vec array
   do i = 1, nm
@@ -67,20 +67,16 @@ program pdriver
   end do 
 
   ! Debug: Make sure disp vec and counts are correct
-    !if (id.eq.0) then
+    !if (id.eq.3) then
       !do i = 1, np
         !print *, i, dv(i,1), dv(i,2)
-      !end do 
-    !end if
-    !if (id.eq.0) then
-      !do i = 1, np
         !print *, i, cnt(i,1), cnt(i,2)
       !end do 
     !end if
-  ! Debug ----------------------------------------
+    !print *, id, dv(id+1,1), dv(id+1,2)
+    !print *, id, cnt(id+1,1), cnt(id+1,2)
 
-  ! MPI IO / MPI_SCATTER Not currently working  
-  ! Debug ----------------------------------------
+    ! MPI IO / MPI_SCATTER Not currently working  
     ! Create subarray MPI types (not sure if edge and corner type are needed yet)
     ! Body Type
     !                           ndims glbsz   subsz       starts      
@@ -123,7 +119,6 @@ program pdriver
   dv = dv+1
   if(id.eq.0) then
     do i = 2, np
-
       ! Debug print statements to check indices
         !print *, "Sending array ", i-1
         !print *, "Sending Indices ", dv(i,1), dv(i,1)+cnt(i,1)-1,&
@@ -133,7 +128,6 @@ program pdriver
       call MPI_SEND(A(dv(i,1):dv(i,1)+cnt(i,1)-1,&
         dv(i,2):dv(i,2)+cnt(i,2)-1),&
         product(cnt(i,:)), MPI_INTEGER, i-1,i,MPI_COMM_WORLD,ie)
-
     end do 
     ! Giving itself its own portion
     G(2:cnt(1,1)+1,2:cnt(1,2)+1) = A(1:cnt(1,1),1:cnt(1,2))
@@ -142,78 +136,117 @@ program pdriver
     call MPI_RECV(G(2:cnt(id+1,1)+1,2:cnt(id+1,2)+1),product(cnt(id+1,:)),&
       MPI_INTEGER, 0,id+1,MPI_COMM_WORLD,stat,ie)
   end if
-  ! Downticking dv
-  dv = dv-1
 
   ! Debug ----------------------------------------
     ! Making sure arrays are dsitributed correctly.
+    !call MPI_BARRIER(MPI_COMM_WORLD,ie)
     !if (id .eq. 0) then
       !print *, " ", id
       !call printmat(G, cnt(id+1,1)+2, cnt(id+1,2)+2)
+      !open(fn+id+1, file=''//trim(str(id))//'.dat')
+      !call writemat(G, ntm+2, ntn+2,fn+id+1)
+      !close(fn+id+1)
       !print *, " "
     !end if
     !call MPI_BARRIER(MPI_COMM_WORLD,ie)
     !if (id .eq. 1) then
       !print *, " ", id
       !call printmat(G, cnt(id+1,1)+2, cnt(id+1,2)+2)
+      !open(fn+id+1, file=''//trim(str(id))//'.dat')
+      !call writemat(G, ntm+2, ntn+2,fn+id+1)
+      !close(fn+id+1)
       !print *, " "
     !end if
     !call MPI_BARRIER(MPI_COMM_WORLD,ie)
     !if (id .eq. 2) then
       !print *, " ", id
       !call printmat(G, cnt(id+1,1)+2, cnt(id+1,2)+2)
+      !open(fn+id+1, file=''//trim(str(id))//'.dat')
+      !call writemat(G, ntm+2, ntn+2,fn+id+1)
+      !close(fn+id+1)
       !print *, " "
     !end if
     !call MPI_BARRIER(MPI_COMM_WORLD,ie)
     !if (id .eq. 3) then
       !print *, " ", id
       !call printmat(G, cnt(id+1,1)+2, cnt(id+1,2)+2)
+      !open(fn+id+1, file=''//trim(str(id))//'.dat')
+      !call writemat(G, ntm+2, ntn+2,fn+id+1)
+      !close(fn+id+1)
       !print *, " "
     !end if
     !call MPI_BARRIER(MPI_COMM_WORLD,ie)
     !print *, "got past print", id
-  ! Debug ----------------------------------------
 
-  ! Debug ----------------------------------------
     ! Making sure mapping array is computed correctly
-    print *, "ID: ", id, ", pmap :", pmap
-  ! Debug ----------------------------------------
-  
+    !print *, "ID: ", id, ", pmap :", pmap
+    !print *, "id: ", id, ", ntm: ", ntm, ", ntn:", ntn
+    !open(fn+id+1, file=''//trim(str(id))//'.dat')
+    !call writemat(G, ntm+2, ntn+2, fn+id+1)
+    !write(fn+id+1, *) " "
+  ! Debug ---------------------------------------
+ 
   ! ------------------------- Sequential Component
-  !if(id.eq.0) then
-    !open(fn, file='gol.dat')
-    !call writemat(A, m, n, fn)
-  !end if
-  
-  !nt = 1000
-  !do i = 1, nt
-    !call pupdate_bound_2d(G, m, id, np, i*100)
-    !call MPI_BARRIER(MPI_COMM_WORLD, ie)
-    !write (fn+id+2, *) " "
-    !call update(G, m, num_tasks+2)
+  if(id.eq.0) then
+    open(fn, file='gol.dat')
+    call writemat(A, m, n, fn)
+  end if
+ 
+  nt = 1000
+  do i = 1, nt
+    ! there is a memory bug in pupdate_bound_2d
+    call pupdate_bound_2d(G, id, i)
+    !print *, "id:",id,",got here"
+    call MPI_BARRIER(MPI_COMM_WORLD, ie)
+    !print *, "id:",id,",got here"
+    call update_2d(G, ntm+2, ntn+2)
+    !print *, "id:",id,",got here"
+    call MPI_BARRIER(MPI_COMM_WORLD, ie)
+    !print *, "id:",id,",got here"
     ! IO Step
     ! This will probably be replaced with send/recv instead of gathers for now
     !call MPI_GATHERV(G(:,2:num_tasks+1), num_tasks*m, MPI_INTEGER, A, cnt,&
       !dv, MPI_INTEGER, 0, MPI_COMM_WORLD, ie)
-    !if (id.eq.0) then
-      !call writemat(A, m, n, fn)
-    !end if
+    if (id.eq.0) then
+      do j = 1, np-1
+        call MPI_RECV(A(dv(j+1,1):dv(j+1,1)+cnt(j+1,1)-1,dv(j+1,2):dv(j+1,2)&
+          +cnt(j+1,2)-1),product(cnt(j+1,:)),MPI_INTEGER,j,rtag(j,i),&
+          MPI_COMM_WORLD,stat,ie)
+        print *, "Recevied from processor :", j, " on step :", i
+      end do 
+      A(1:cnt(1,1),1:cnt(1,2)) = G(2:cnt(1,1)+1,2:cnt(1,2)+1)
+    else 
+      call MPI_SEND(G(2:ntm+1,2:ntn+1),ntm*ntn,MPI_INTEGER,0,rtag(id,i),&
+        MPI_COMM_WORLD,ie)
+    end if
+    if (id.eq.0) then
+      call writemat(A, m, n, fn)
+    end if
+    ! Debug ---------------------------------------
+      !call writemat(G, ntm+2, ntn+2, fn+id+1)
+      !write(fn+id+1, *) "  "
+      !write(fn+id+1, *) " i :", i
+      !write(fn+id+1, *) " "
+    ! Debug ---------------------------------------
     ! End IO
-  !end do 
+  end do 
   ! ------------------------- END Sequential Component
 
-  !if (id.eq.0) then 
+  if (id.eq.0) then 
+    close(fn)
     ! just in case I forget to uptick fn
-    !fn = fn +1
-    !open(fn, file='params.dat')
-      !write(fn, "(3I6)") m, n,nt+1
-    !close(fn)
-  !end if
+    fn = fn + np + 1
+    open(fn, file='params.dat')
+      write(fn, "(3I6)") m, n,nt+1
+    close(fn)
+  end if
 
   ! Deallocating and closing
   deallocate(cnt, dv, stat, G)
   if(id.eq.0) then
     deallocate(A)
+  !else 
+    !close(fn+id+1)
   end if
   call MPI_FINALIZE(ie)
 end program pdriver

@@ -8,7 +8,7 @@ G = reshape(transpose(G), p);
 
 % The routine to make the movie is taken from 
 % https://www.mathworks.com/help/matlab/ref/movie.html#d126e1052750
-
+help = size(G)
 h = figure;
 frames = p(3);
 M(frames) = struct('cdata',[],'colormap',[]);
@@ -19,5 +19,5 @@ for i = 1:frames;
     M(i) = getframe; 
 end
 h.Visible = 'on';
-movie(M,1,30);
+movie(M,1,1);
 
