@@ -10,7 +10,7 @@ FFLAGS = -fdefault-real-8 -fdefault-double-8 -fbounds-check -g -llapack -lblas -
 
 
 final: driver.exe
-	./driver.exe > output.txt
+	./driver.exe 
 	gnuplot final_plot.p
 
 hw4: driver.exe

@@ -1203,7 +1203,67 @@ module NumDE
     end do 
   end subroutine CRK4
 
-  
+  !subroutine lgwt(x,w,N,a,b)
+    !This function provides N quadrature points (vector x) and 
+    !quadrature weights (vector y) to compute the integral of any 
+    !function f(x) in the interval [a,b] via the Legendre-Gauss 
+    !quadrature rule. 
+    !The integral of f(x) in [a,b] can be computed as  
+    !sum(f(x).*w) or w'*f(x)
+    !implicit none
+    !real :: x(:,:), w(:), a,b
+    !integer :: N, N1, N2, i,j,k
+    !real,dimension(N+1,1) :: xu, y, y0
+    !real,dimension(N+1,N+2) :: L,Lp, Lp_inv
+    !integer,dimension(N+1,1) :: n_vec
+    !logical :: bool
+    !integer, dimension(N1) :: P_vec
+    !N = N-1
+    !N1 = N+1
+    !N2 = N+2
+    ! need to rewrite this myself
+    !xu=linspace(-1,1,N1)
+    !do i = 1, N1
+      !xu(i,1) = -1. + 2.*(i-1)/(N1-1) 
+      !n_vec(i,1) = i-1
+    !end do 
+    ! Initial guess
+    ! need to rewiret this with an N vector
+    !y=cos((2*n_vec+1)*pi/(2*N+2))+(0.27/N1)*sin(pi*xu*N/N2);
+    !% Legendre-Gauss Vandermonde Matrix
+    !L=0.
+    !% Derivative of LGVM
+    ! need to do this too
+    !Lp=0.
+    !% Compute the zeros of the N+1 Legendre Polynomial
+    !% using the recursion relation and the Newton-Raphson method
+    !y0=2.
+    !% Iterate until new points are uniformly within epsilon of old points
+    !do while (maxval(abs(y-y0))>1.d-15)
+        !L(:,1)=1.
+        !Lp(:,1)=0.
+        !L(:,2)=y(:,1)
+        !Lp(:,2)=1.
+        !do k = 2, N1
+            !L(:,k+1)=((2*k-1)*y(:,1)*L(:,k)-(k-1)*L(:,k-1))/k
+        !end do
+        !Lp=(N2)*(L(:,N1)-y(:,1)*L(:,N2))/(1-y(:,1)**2)
+        !y0=y
+        ! what in the gods of element wise dividion is this
+        ! need to compute Lp inverse
+        !Lp_inv = Lp
+        !call LU(Lp_inv,N1,bool,P_vec)
+        !call LUsolve(Lp_inv,N1,L(:,N2:N2),Y,1,P_vec)
+        !y(:,1)=y0(:,1)-y(:,1)
+    !end do 
+    !% Linear map from[-1,1] to [a,b]
+    !x(:,1)=(a*(1-y(:,1))+b*(1+y(:,1)))/2
+    !x = 1
+    !% Compute the weights
+    !w=(b-a)/((1-y(:,1)**2)*Lp**2)*(N2/N1)**2
+    !w = 1
+  !end subroutine lgwt
+      
 end module NumDE
 
 
