@@ -127,9 +127,9 @@ module NumDE
     do i = 1, num_points
       ! find k vec
       K(:,1) = matmul(F, Y(:,i))
-      K(:,2) = matmul(F, Y(:, i) + dt*K(:,1)/2.)
-      K(:,3) = matmul(F, Y(:, i) + dt*K(:,2)/2.)
-      K(:,4) = matmul(F, Y(:, i) + dt*K(:,3))
+      K(:,2) = matmul(F, Y(:,i) + dt*K(:,1)/2.)
+      K(:,3) = matmul(F, Y(:,i) + dt*K(:,2)/2.)
+      K(:,4) = matmul(F, Y(:,i) + dt*K(:,3))
       !update Y  
       Y(:,i+1) = Y(:,i) + dt*(b(1)*k(:,1) + b(2)*k(:,2) +&
                               b(3)*k(:,3) + b(4)*k(:,4))

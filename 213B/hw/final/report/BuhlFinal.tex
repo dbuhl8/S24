@@ -1,0 +1,75 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{enumitem}
+\usepackage{verbatim}
+\usepackage{xcolor}
+\usepackage{soul}
+
+\title{Final Report}
+\author{Dante Buhl}
+
+\DeclareMathOperator{\cond}{cond}
+\DeclareMathOperator{\vecspan}{span}
+
+\begin{document}
+
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+\newcommand{\bmp}[1]{\begin{minipage}{#1\textwidth}}
+\newcommand{\emp}{\end{minipage}}
+\newcommand{\R}{\mathbb{R}}
+%\newcommand{\Imag}{\mathbb{I}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\I}{\mathrm{I}}
+\newcommand{\K}{\bs{\mathrm{K}}}
+\newcommand{\m}{\bs{\mu}_*}
+\newcommand{\s}{\bs{\Sigma}_*}
+\newcommand{\dt}{\Delta t}
+\newcommand{\dx}{\Delta x}
+\newcommand{\tr}[1]{\text{Tr}(#1)}
+\newcommand{\Tr}[1]{\text{Tr}(#1)}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+
+\maketitle
+
+\section*{Question 1: Bessels Function Solution}
+    \begin{align}
+        \begin{cases}
+            U_t = \nu\left(U_{rr} +\frac{1}{r}U_{r}\right) \quad \quad r \in [1,
+            3],
+            \quad t \ge 0\\
+            U(r,0) = 15(r-r_1)^2(r_2-r)^2e^{-\sin(2r)-r}\\
+            U(1,t) = 0\\
+            U(3,t) = 0
+        \end{cases} \\
+        r_1 = 1, \quad r_2 = 3, \quad \nu = \frac{1}{4}
+    \end{align}
+
+\begin{enumerate}[label=\alph*)]
+
+    \item Plot the solution keeping 60 modes of the bessels function expansion
+    at times 0, 0.5, 1, 2. 
+
+    \item Plot the functions 
+\end{enumerate}
+
+\section*{Question 2: Finite Differences Solution}
+\begin{enumerate}[label=\alph*)]
+
+    \item
+
+\end{enumerate}
+
+\section*{Question 3: Prove Second Order Accuracy in $\Delta r$}
+
+\begin{enumerate}[label=\alph*)]
+
+    \item
+\end{enumerate}
+
+\end{document}

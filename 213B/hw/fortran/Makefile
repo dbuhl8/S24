@@ -1,4 +1,4 @@
-OBJECTS = LinAl.o NumDE.o hw4_driver.o # Make sure the correct driver is in the objects variable
+OBJECTS = LinAl.o NumDE.o final_driver.o # Make sure the correct driver is in the objects variable
 	
 MODULES = LinAl.mod NumDE.mod
 

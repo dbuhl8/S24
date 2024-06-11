@@ -6,6 +6,7 @@ set output "mpe.png"
 set title 'Max Pointwise Error between FD and Ch'
 set xlabel 'Time'
 set ylabel 'Error'
+set log y
 plot "mpe_error.dat" u 1:2 w l
 
 #Plot 2
