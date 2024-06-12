@@ -4,6 +4,7 @@
 !Description: A driver routine to run the game of life
 
 ! NOTE: Needs an input file giving some initial condition
+! i.e. mpirun -np 4 driver.exe < IC
 
 program pdriver
   ! Parallelized Version
@@ -34,39 +35,66 @@ program pdriver
   ! Allocating Memory
   allocate(cnt(np,2),dv(np,2),stat(np))
 
-  ! simulate the game of life
-  if (id.eq.0) then
-    call readmat(A, m, n) 
-    !call getprobsize(m, n)
-  end if
-  
+  ! Reading in Initial Condition
+    if (id.eq.0) then
+      call readmat(A, m, n) 
+      !call getprobsize(m, n)
+    end if
+  !   ---------------------------------------
+ 
+  ! Broadcasting global array size accross processors 
   call MPI_BCAST(m, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ie)
   call MPI_BCAST(n, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ie)
 
   ! Decompose the tasks and distribute to available processors 
   call mpi_decomp_2d(id, np, m, n, cnt)
+
   ! Allocating local memory
   allocate(G(cnt(id+1,1)+2,cnt(id+1,2)+2))
   G = 0
 
   ! Compute the Disp_vec array
-  do i = 1, nm
-    do j = 1, nn
-      k = nm*(j-1)+i
-      if(i .eq. 1) then
-        dv(k,1) = 0
-      else
-        dv(k,1) = dv(k-1,1)+cnt(k-1,1)
-      end if
-      if(j .eq. 1) then
-        dv(k,2) = 0
-      else 
-        dv(k,2) = dv(k-nm,2)+cnt(k-nm,2)
-      end if
+    do i = 1, nm
+      do j = 1, nn
+        k = nm*(j-1)+i
+        if(i .eq. 1) then
+          dv(k,1) = 0
+        else
+          dv(k,1) = dv(k-1,1)+cnt(k-1,1)
+        end if
+        if(j .eq. 1) then
+          dv(k,2) = 0
+        else 
+          dv(k,2) = dv(k-nm,2)+cnt(k-nm,2)
+        end if
+      end do 
     end do 
-  end do 
+  !   ---------------------------------------
 
-  ! Debug: Make sure disp vec and counts are correct
+  ! ---------Sending info to processors-----------
+    dv = dv+1
+    if(id.eq.0) then
+      do i = 2, np
+        ! Debug print statements to check indices
+          !print *, "Sending array ", i-1
+          !print *, "Sending Indices ", dv(i,1), dv(i,1)+cnt(i,1)-1,&
+            !dv(i,2), dv(i,2)+cnt(i,2)-1
+        ! Debug ----------------------------------------
+
+        call MPI_SEND(A(dv(i,1):dv(i,1)+cnt(i,1)-1,&
+          dv(i,2):dv(i,2)+cnt(i,2)-1),&
+          product(cnt(i,:)), MPI_INTEGER, i-1,i,MPI_COMM_WORLD,ie)
+      end do 
+      ! Giving itself its own portion
+      G(2:cnt(1,1)+1,2:cnt(1,2)+1) = A(1:cnt(1,1),1:cnt(1,2))
+    else 
+      ! Receive matrix on other processors
+      call MPI_RECV(G(2:cnt(id+1,1)+1,2:cnt(id+1,2)+1),product(cnt(id+1,:)),&
+        MPI_INTEGER, 0,id+1,MPI_COMM_WORLD,stat,ie)
+    end if
+  !   ---------------------------------------
+
+  ! Debug: print statements for debuggins
     !if (id.eq.3) then
       !do i = 1, np
         !print *, i, dv(i,1), dv(i,2)
@@ -113,31 +141,6 @@ program pdriver
       !nm*nn, core_type, 0, MPI_COMM_WORLD, ie)
     !call MPI_SCATTERV(A, cnt(:,1)*cnt(:,2), dv, MPI_INTEGER, G,&
       !nm*nn, core_type, 0, MPI_COMM_WORLD, ie)
-  ! Debug ----------------------------------------
-
-  ! Sending info to processors
-  dv = dv+1
-  if(id.eq.0) then
-    do i = 2, np
-      ! Debug print statements to check indices
-        !print *, "Sending array ", i-1
-        !print *, "Sending Indices ", dv(i,1), dv(i,1)+cnt(i,1)-1,&
-          !dv(i,2), dv(i,2)+cnt(i,2)-1
-      ! Debug ----------------------------------------
-
-      call MPI_SEND(A(dv(i,1):dv(i,1)+cnt(i,1)-1,&
-        dv(i,2):dv(i,2)+cnt(i,2)-1),&
-        product(cnt(i,:)), MPI_INTEGER, i-1,i,MPI_COMM_WORLD,ie)
-    end do 
-    ! Giving itself its own portion
-    G(2:cnt(1,1)+1,2:cnt(1,2)+1) = A(1:cnt(1,1),1:cnt(1,2))
-  else 
-    ! Receive matrix on other processors
-    call MPI_RECV(G(2:cnt(id+1,1)+1,2:cnt(id+1,2)+1),product(cnt(id+1,:)),&
-      MPI_INTEGER, 0,id+1,MPI_COMM_WORLD,stat,ie)
-  end if
-
-  ! Debug ----------------------------------------
     ! Making sure arrays are dsitributed correctly.
     !call MPI_BARRIER(MPI_COMM_WORLD,ie)
     !if (id .eq. 0) then
@@ -180,58 +183,59 @@ program pdriver
 
     ! Making sure mapping array is computed correctly
     !print *, "ID: ", id, ", pmap :", pmap
-    !print *, "id: ", id, ", ntm: ", ntm, ", ntn:", ntn
+    !print *, "ID: ", id, ", Num Row Tasks: ", ntm, ", Num Col Tasks:", ntn
     !open(fn+id+1, file=''//trim(str(id))//'.dat')
     !call writemat(G, ntm+2, ntn+2, fn+id+1)
     !write(fn+id+1, *) " "
   ! Debug ---------------------------------------
  
-  ! ------------------------- Sequential Component
-  if(id.eq.0) then
-    open(fn, file='gol.dat')
-    call writemat(A, m, n, fn)
-  end if
- 
-  nt = 1000
-  do i = 1, nt
-    ! there is a memory bug in pupdate_bound_2d
-    call pupdate_bound_2d(G, id, i)
-    !print *, "id:",id,",got here"
-    call MPI_BARRIER(MPI_COMM_WORLD, ie)
-    !print *, "id:",id,",got here"
-    call update_2d(G, ntm+2, ntn+2)
-    !print *, "id:",id,",got here"
-    call MPI_BARRIER(MPI_COMM_WORLD, ie)
-    !print *, "id:",id,",got here"
-    ! IO Step
-    ! This will probably be replaced with send/recv instead of gathers for now
-    !call MPI_GATHERV(G(:,2:num_tasks+1), num_tasks*m, MPI_INTEGER, A, cnt,&
-      !dv, MPI_INTEGER, 0, MPI_COMM_WORLD, ie)
-    if (id.eq.0) then
-      do j = 1, np-1
-        call MPI_RECV(A(dv(j+1,1):dv(j+1,1)+cnt(j+1,1)-1,dv(j+1,2):dv(j+1,2)&
-          +cnt(j+1,2)-1),product(cnt(j+1,:)),MPI_INTEGER,j,rtag(j,i),&
-          MPI_COMM_WORLD,stat,ie)
-        print *, "Recevied from processor :", j, " on step :", i
-      end do 
-      A(1:cnt(1,1),1:cnt(1,2)) = G(2:cnt(1,1)+1,2:cnt(1,2)+1)
-    else 
-      call MPI_SEND(G(2:ntm+1,2:ntn+1),ntm*ntn,MPI_INTEGER,0,rtag(id,i),&
-        MPI_COMM_WORLD,ie)
-    end if
-    if (id.eq.0) then
+  ! ------------------------- Output and Update (timestepping)
+    if(id.eq.0) then
+      open(fn, file='gol.dat')
       call writemat(A, m, n, fn)
     end if
-    ! Debug ---------------------------------------
-      !call writemat(G, ntm+2, ntn+2, fn+id+1)
-      !write(fn+id+1, *) "  "
-      !write(fn+id+1, *) " i :", i
-      !write(fn+id+1, *) " "
-    ! Debug ---------------------------------------
-    ! End IO
-  end do 
-  ! ------------------------- END Sequential Component
+   
+    nt = 1000
+    do i = 1, nt
+      ! there is a memory bug in pupdate_bound_2d
+      call pupdate_bound_2d(G, id, i)
+      !print *, "id:",id,",got here"
+      call MPI_BARRIER(MPI_COMM_WORLD, ie)
+      !print *, "id:",id,",got here"
+      call update_2d(G, ntm+2, ntn+2)
+      !print *, "id:",id,",got here"
+      call MPI_BARRIER(MPI_COMM_WORLD, ie)
+      !print *, "id:",id,",got here"
+      ! IO Step
+      ! This will probably be replaced with send/recv instead of gathers for now
+      !call MPI_GATHERV(G(:,2:num_tasks+1), num_tasks*m, MPI_INTEGER, A, cnt,&
+        !dv, MPI_INTEGER, 0, MPI_COMM_WORLD, ie)
+      if (id.eq.0) then
+        do j = 1, np-1
+          call MPI_RECV(A(dv(j+1,1):dv(j+1,1)+cnt(j+1,1)-1,dv(j+1,2):dv(j+1,2)&
+            +cnt(j+1,2)-1),product(cnt(j+1,:)),MPI_INTEGER,j,rtag(j,i),&
+            MPI_COMM_WORLD,stat,ie)
+          print *, "Recevied from processor :", j, " on step :", i
+        end do 
+        A(1:cnt(1,1),1:cnt(1,2)) = G(2:cnt(1,1)+1,2:cnt(1,2)+1)
+      else 
+        call MPI_SEND(G(2:ntm+1,2:ntn+1),ntm*ntn,MPI_INTEGER,0,rtag(id,i),&
+          MPI_COMM_WORLD,ie)
+      end if
+      if (id.eq.0) then
+        call writemat(A, m, n, fn)
+      end if
+      ! Debug ---------------------------------------
+        !call writemat(G, ntm+2, ntn+2, fn+id+1)
+        !write(fn+id+1, *) "  "
+        !write(fn+id+1, *) " i :", i
+        !write(fn+id+1, *) " "
+      ! Debug ---------------------------------------
+      ! End IO
+    end do 
+  ! ------------------------- END TIMESTEPPING --------------
 
+  ! Finising data output for matlab
   if (id.eq.0) then 
     close(fn)
     ! just in case I forget to uptick fn
@@ -242,13 +246,12 @@ program pdriver
   end if
 
   ! Deallocating and closing
-  deallocate(cnt, dv, stat, G)
-  if(id.eq.0) then
-    deallocate(A)
-  !else 
-    !close(fn+id+1)
-  end if
+    deallocate(cnt, dv, stat, G)
+    if(id.eq.0) then
+      deallocate(A)
+    end if
+  ! -------------------------
+  ! Ending MPI
   call MPI_FINALIZE(ie)
 end program pdriver
-
 

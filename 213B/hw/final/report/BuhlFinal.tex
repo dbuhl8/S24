@@ -124,7 +124,21 @@
     order 2 decay in $\dt^*$. 
         \begin{proof}
             First we must show that the conditional absolute stability of this
-            scheme. \hl{come back and finish this}
+            scheme. We begin by looking at the characteristic polynomial of this
+            method. We have, 
+            \begin{align*}
+                u^{k+1} = u^{k} + \frac{\dt}{12}\bs{M}\left(23u^{k} - 16u^{k-1}
+                + 5u^{k-2}\right)
+                \tag{AB3}\\
+                z^3 - z^2 = \lambda\dt\left(\frac{23z^2 - 16z + 5}{12}\right)
+            \end{align*}   
+            \begin{align*}
+                \dt = \frac{12}{\lambda}\left(\frac{z^3 - z^2}{23z^2 - 16z +
+                5}\right)\\
+                \dt = \frac{12}{\lambda}\left(\frac{e^{3i\theta} -
+                e^{2i\theta}}{23e^{2i\theta} - 16e^{i\theta} +
+                5}\right)
+            \end{align*}
         \end{proof}
         \begin{figure}[ht]
             \centering
@@ -162,7 +176,40 @@
 
 \begin{enumerate}[label=\alph*)]
 
-    \item
+    \item We prove that this finite differnce discretization is second order
+    accurate in $\Delta r$. To do this we look at the taylor expansions of $U$. 
+    \begin{proof}
+        As said already. we beign with the Taylor Expansions.
+        \begin{align*}
+            y_{j-1} = y_j - \Delta r \left(\frac{\partial y}{\partial r}\right)_j
+            + \frac{\Delta r^2}{2}\left(\frac{\partial^2 y}{\partial
+            r^2}\right)_j - \frac{\Delta r^3}{6}\left(\frac{\partial^3 y}{\partial
+            r^3}\right)_j + \frac{\Delta r^4}{24}\left(\frac{\partial^4 y}{\partial
+            r^4}\right)_j\\
+            y_{j+1} = y_j + \Delta r \left(\frac{\partial y}{\partial r}\right)_j
+            + \frac{\Delta r^2}{2}\left(\frac{\partial^2 y}{\partial
+            r^2}\right)_j + \frac{\Delta r^3}{6}\left(\frac{\partial^3 y}{\partial
+            r^3}\right)_j + \frac{\Delta r^4}{24}\left(\frac{\partial^4 y}{\partial
+            r^4}\right)_j
+        \end{align*}
+        We then substitute these taylor expansions into the finite difference
+        scheme and solve for the local truncation error. The result is, 
+        \begin{align*}
+            \tau_j +  \left(\frac{\partial^2 y}{\partial
+            r^2}\right)_j + \frac{1}{r_j}\left(\frac{\partial y}{\partial
+            r}\right)_j = \frac{\Delta r^2\left(\frac{\partial^2 y}{\partial
+            r^2}\right)_j + \frac{\Delta r^4}{12}\left(\frac{\partial^4 y}{\partial
+            r^4}\right)_j + O(\Delta r^6) }{\Delta r^2} + \frac{ 2\Delta r \left(\frac{\partial y}{
+            \partial r}\right)_j + \frac{\Delta r^3}{3}\left(\frac{\partial^3 y}{\partial
+            r^3}\right)_j + O(\Delta r^5) }{2r_j\Delta r} \\
+            \tau_j = \Delta r^2 \left(\frac{1}{12}\left(\frac{\partial^4 y}{\partial
+            r^4}\right)_j + \frac{1}{6r_j}\left(\frac{\partial^3 y}{\partial
+            r^3}\right)_j + h.o.t\right)
+        \end{align*}
+        Thus we find that this scheme as expected (it being a second order
+        finite difference scheme) is in fact a second ordered finite difference
+        scheme. 
+    \end{proof}
 \end{enumerate}
 
 \end{document}

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-mpirun --use-hwthread-cpus -np 6 driver.exe <IC > output.txt
+mpirun --use-hwthread-cpus -np 15 driver.exe <IC > output.txt

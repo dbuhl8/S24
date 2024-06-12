@@ -568,8 +568,8 @@ module pgameoflife
           end if
         ! Mapping -----------------------------------------------
 
-        allocate(ind_array(nm))
-        do i = 1, nm
+        allocate(ind_array(nn))
+        do i = 1, nn
           ind_array(i) = 1 + (i-1)*nm
         end do 
 
@@ -593,33 +593,140 @@ module pgameoflife
           ntn = counts(id+1,2)
         ! Agglomeration ----------------------------------------
 
+        ! Mpi Derivated Datatypes for Row Comm
+        call MPI_TYPE_VECTOR(ntn,1,ntm+2,MPI_INTEGER,row_type,ie)
+        call MPI_TYPE_COMMIT(row_type,ie)
+
         deallocate(ind_array)
       else if (mod(np,3).eq.0) then
         ! if np is divisible by 3, then decompose the domain into 3 columns and
         ! then split those columns to rows. 
 
-        ! -----
-        ! |1|4| 
-        ! -----
-        ! |2|5| 
-        ! -----
-        ! |3|6| 
-        ! -----
-        ! | 7 | 
-        ! -----
+        ! -------
+        ! |0|2|5|
+        ! -------
+        ! |1|3|6|
+        ! -------
 
-        nm = 3
-        nn = np/3
-         
-        ex_m = mod(m, nm)
-        ex_n = mod(n, nn)
-        if (ex_m .ne. 0) then
+        nm = np/3
+        nn = 3
 
-        end if
-        if (ex_n .ne. 0) then
+        ! Mapping -----------------------------------------------
+          ! Left Mappin
+          if(id.lt.nm) then
+            pmap(1) = id+nm*(nn-1) 
+            ! UL, DL
+            ! if top row
+            if(mod(id,nm).eq.0) then
+              pmap(5) = id+nm*(nn)-1
+              pmap(7) = id+nm*(nn-1)+1
+            ! else if bottom row
+            else if(mod(id+1,nm).eq.0) then
+              pmap(5) = id+nm*(nn-1)-1
+              pmap(7) = id+nm*(nn-2)+1
+            ! else middle
+            else 
+              pmap(5) = id+nm*(nn-1)-1
+              pmap(7) = id+nm*(nn-1)+1
+            end if
+          else
+            pmap(1) = id-nm
+            ! UL, DL
+            ! if top row
+            if(mod(id,nm).eq.0) then
+              pmap(5) = id-1
+              pmap(7) = id-nm+1
+            ! else if bottom row
+            else if(mod(id+1,nm).eq.0) then
+              pmap(5) = id-nm-1
+              pmap(7) = id-2*nm+1
+            ! else middle
+            else 
+              pmap(5) = id-nm-1
+              pmap(7) = id-nm+1 
+            end if
+          end if
 
-        end if
+          ! Right Mapping
+          if(id.ge.nm*(nn-1)) then
+            pmap(2) = id-nm*(nn-1) 
+            ! UR, DR
+            ! if top row
+            if(mod(id,nm).eq.0) then
+              pmap(6) = id-nm*(nn-2)-1
+              pmap(8) = id-nm*(nn-1)+1
+            ! else if bottom row
+            else if(mod(id+1,nm).eq.0) then
+              pmap(6) = id-nm*(nn-1)-1
+              pmap(8) = id-nm*(nn)+1
+            ! else middle
+            else 
+              pmap(6) = id-nm*(nn-1)-1
+              pmap(8) = id-nm*(nn-1)+1
+            end if
+          else
+            pmap(2) = id+nm
+            ! UR, DR
+            ! if top row
+            if(mod(id,nm).eq.0) then
+              pmap(6) = id+2*nm-1
+              pmap(8) = id+nm+1
+            ! else if bottom row
+            else if(mod(id+1,nm).eq.0) then
+              pmap(6) = id+nm-1
+              pmap(8) = id+1
+            ! else middle
+            else 
+              pmap(6) = id+nm-1
+              pmap(8) = id+nm+1
+            end if
+          end if
 
+          ! Up Mapping
+          if(mod(id,nm).eq.0) then
+            pmap(3) = id+nm-1
+          else
+            pmap(3) = id-1
+          end if
+
+          ! Down Mapping
+          if(mod(id+1,nm).eq.0) then
+            pmap(4) = id-nm+1
+          else
+            pmap(4) = id+1
+          end if
+        ! Mapping -----------------------------------------------
+
+        allocate(ind_array(nn))
+        do i = 1, nn
+          ind_array(i) = 1 + (i-1)*nm
+        end do 
+
+        ! Agglomeration ----------------------------------------
+          counts(:,1) = m/nm
+          counts(:,2) = n/nn
+          ex_m = mod(m, nm) 
+          ex_n = mod(n, nn) 
+
+          if (ex_m .ne. 0) then
+            do i = 1, ex_m
+              counts((nm-i)+ind_array,1) = counts((nm-i)+ind_array,1) + 1
+            end do
+          end if
+          if (ex_n .ne. 0) then
+            do i = 1, ex_n
+              counts(np-nm*i+1:np-nm*(i-1),2)=counts(np-nm*i+1:np-nm*(i-1),2)+1
+            end do
+          end if
+          ntm = counts(id+1,1)
+          ntn = counts(id+1,2)
+        ! Agglomeration ----------------------------------------
+
+        ! MPI Derivated Datatypes for Row Comm
+        call MPI_TYPE_VECTOR(ntn,1,ntm+2,MPI_INTEGER,row_type,ie)
+        call MPI_TYPE_COMMIT(row_type,ie)
+
+        deallocate(ind_array)
       else
         ! if np is odd and doesn't satisfy any other criterium, then decompose
         ! into 2 columns, and then split those columnds evenly to rows, and for
@@ -644,7 +751,6 @@ module pgameoflife
           ! give extras to the last processor
 
         !end if
-
       end if
     end subroutine mpi_decomp_2d
 
@@ -669,7 +775,6 @@ module pgameoflife
       integer :: rtag, src, step
       rtag = src + step**2
     end function rtag
-
 
     character(len=20) function str(k)
       ! "Convert an integer to string."
