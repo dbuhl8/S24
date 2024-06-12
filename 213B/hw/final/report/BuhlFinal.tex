@@ -30,6 +30,7 @@
 \newcommand{\m}{\bs{\mu}_*}
 \newcommand{\s}{\bs{\Sigma}_*}
 \newcommand{\dt}{\Delta t}
+\newcommand{\dr}{\Delta r}
 \newcommand{\dx}{\Delta x}
 \newcommand{\tr}[1]{\text{Tr}(#1)}
 \newcommand{\Tr}[1]{\text{Tr}(#1)}
@@ -138,6 +139,49 @@
                 \dt = \frac{12}{\lambda}\left(\frac{e^{3i\theta} -
                 e^{2i\theta}}{23e^{2i\theta} - 16e^{i\theta} +
                 5}\right)
+            \end{align*}
+            Now in order to show that this fraction when colinear with the
+            largest eigenvalue of $\bs{M}$ has a maxinum of $\frac{6}{11}$ we must consider two things, first
+            the largest eigenvalue of $\bs{M}$ which we will show analytically
+            to be real valued, and a constrianed optimization problem for
+            $\frac{\rho(z)}{\sigma(z)}$. First we consider the eigenvalues of
+            $\bs{M}$. One will first notice the Tridiagonal form of $\bs{M}$.
+            This is a special form of a matrix, and furthermore the matrix is
+            also known to have a ``Toeplitz'' form. Theese two properties combined
+            have been shown to produce an analytical form for the eigenvalues of
+            that matrix. As seen in a paper by Kulkarni, Schmidt, and Tsui, the
+            eigenvalaues of Tridiagonal (pseudo-)Toeplitz matrices have the
+            following form, 
+            \begin{align*}
+                \lambda = a - 2\sqrt{bc}\cos\left(\frac{i\pi}{n+1}\right), \quad
+                i = 1, \ldots, n\\
+                a = \frac{-2}{\dr^2}, \quad b = \frac{1}{\dr^2} +
+                \frac{1}{2r\dr}, \quad c = \frac{1}{\dr^2} -
+                \frac{1}{2r\dr}\\
+                bc = \frac{1}{\dr^4} - \frac{1}{2r\dr^3} + \frac{1}{2r\dr^3} -
+                \frac{1}{4r^2\dr^2}\\
+                bc = \frac{1}{\dr^4} - \frac{1}{4r^2\dr^2}
+            \end{align*}
+            Now we notice that if $\dr << 1$ then $\frac{1}{\dr^4} >>
+            \frac{1}{\dr^2}$, which implies that $\sqrt{bc}$ is a real valued
+            quantity, and therefore so is each value of $\lambda$ for this
+            matrix $\bs{M}$. 
+
+            Next we look for all of the real-valued minimums (minimums because
+            $\lambda$ is bounded to be negative by its given form). In order to
+            do this we will consider only Re$\left(\frac{\rho(z)}{\sigma(z)}\right)$. 
+            \begin{align*}
+                \rho(x+iy) = x^3 - xy^2 - x^2 + y^2 + i(x^2y - y^3 -xy)\\
+                \sigma(x+iy) = 23x^2 - 23y^2 - 16x + 5 + i\left(46xy -
+                16y\right)\\
+                \text{Re}\left(\frac{\rho(z)}{\sigma(z)}\right) =
+                \text{Re}\left(\frac{\rho(z)\bar{\sigma}(z)}{\sigma(z)\bar{\sigma}(z)}\right)\\
+            \end{align*}
+            \begin{align*}
+                f(x,y) = \text{Re}\left(\frac{\rho(z)}{\sigma(z)}\right) &= \frac{(23x^2 -
+                23y^2 - 16x + 5)(x^3 - xy^2 - x^2 + y^2) - \left(46xy -  16y\right)\left(x^2y - y^3 -xy\right)}
+                {(23x^2 - 23y^2 - 16x + 5)^2 + \left(46xy - 16y\right)^2}\\
+                L(x,y,\mu) &= f(x,y) - \mu(x^2 + y^2 - 1)
             \end{align*}
         \end{proof}
         \begin{figure}[ht]
