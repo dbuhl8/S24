@@ -22,7 +22,7 @@ program final_driver
   integer :: idum=1
 
   ! Question 1
-  integer, parameter :: nb=60, nq=100000
+  integer, parameter :: nb=60, nq=50000
   real(kind=kr), dimension(nb,1) :: beta,weights
   real(kind=kr) :: err,wnm, b2,e2,de
   real(kind=kr) :: l, dl, s,xs
@@ -178,7 +178,7 @@ program final_driver
       call D2FD2_1D(D2, nr, dr)
      
       do j = 1, nr
-        D1(i,:) = D1(i,:)/R(i+1,1)
+        D1(j,:) = D1(j,:)/R(j+1,1)
       end do 
        
       D = v*(D2+D1) 

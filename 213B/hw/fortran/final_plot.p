@@ -35,7 +35,8 @@ set title "Final MPE v Grid Size"
 set xlabel 'Grid Size'
 set ylabel 'E(2)'
 set log xy 
-plot "final_mpe.dat" u 1:2
+set xrange [40:220]
+plot "final_mpe.dat" u 1:2 w lp ps 3, x**(-2)
 
 #Plot 5
 reset 
@@ -43,7 +44,7 @@ set output "r_norm.png"
 set title "||R_k|| v k"
 set xlabel "k"
 set ylabel "||R_k||"
-plot "r_norm.dat" u 1:2 
+plot "r_norm.dat" u 1:2 w lp ps 3
 
 #Plot 6
 reset 
