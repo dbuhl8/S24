@@ -89,7 +89,7 @@ program pdriver
     call MPI_BARRIER(MPI_COMM_WORLD, ie)
     !write (fn+id+2, *) " After getting bounds"
     !call writemat(G, m, num_tasks+2, fn+2+id)
-    write (fn+id+2, *) " "
+    !write (fn+id+2, *) " "
     call update(G, m, num_tasks+2)
     !write (fn+id+2, *) " After update"
     !call writemat(G, m, num_tasks+2, fn+2+id)

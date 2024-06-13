@@ -129,7 +129,7 @@ program final_driver
       call D1FD2_1D(D1, n, dr)
       call D2FD2_1D(D2, n, dr)
       do j = 1, nr
-        D1(i,:) = D1(i,:)/R(i+1,1)
+        D1(j,:) = D1(j,:)/R(j+1,1)
       end do 
       D = v*(D2 + D1)
       ! lapack call

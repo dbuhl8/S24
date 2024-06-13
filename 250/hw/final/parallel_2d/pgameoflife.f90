@@ -9,10 +9,11 @@ module pgameoflife
   implicit none
 
   ! General Utility Vars
-  integer :: sx, ex, sy, ey, num_tasks, num_procs
+  integer :: sm, em, sn, en, num_tasks, num_procs
   integer :: nm, nn, npm, npn, ntm, ntn
   integer, dimension(8) :: pmap
   integer :: row_type, row_type2
+  integer :: g2s_type, s2s_type
   
   ! Subroutines and Functions
   contains
@@ -205,6 +206,30 @@ module pgameoflife
       implicit none
       integer :: A(:,:), id, np, m, tg, stat, ie
 
+#ifdef HB 
+      if (id.eq.0) then ! If root processor
+        ! Prev
+        CALL MPI_ISEND(A(:,2),m,MPI_INTEGER,np-1,tg+2*id+1,MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(:,1),m,MPI_INTEGER,np-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        ! Next 
+        CALL MPI_ISEND(A(:,num_tasks+1),m,MPI_INTEGER,1,tg+2*id+4,MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(:,num_tasks+2),m, MPI_INTEGER,1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
+      else if (id.eq.np-1) then ! If last processor
+        ! Prev
+        CALL MPI_ISEND(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(:,1),m,MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        ! Next
+        CALL MPI_ISEND(A(:,num_tasks+1),m,MPI_INTEGER,0,tg+2,MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(:,num_tasks+2),m, MPI_INTEGER,0,tg+1,MPI_COMM_WORLD,stat,ie)
+      else  ! Any processor in the middle
+        ! Prev
+        CALL MPI_ISEND(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(:,1),m,MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+        ! Next
+        call MPI_ISEND(A(:,num_tasks+1),m,MPI_INTEGER,id+1,tg+2*id+4,MPI_COMM_WORLD,stat,ie)
+        call MPI_IRECV(A(:,num_tasks+2),m, MPI_INTEGER,id+1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
+      end if
+#else
       if (id.eq.0) then ! If root processor
         ! Prev
         CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,np-1,tg+2*id+1,A(:,1),m,&
@@ -212,7 +237,6 @@ module pgameoflife
         ! Next 
         CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,1,tg+2*id+4,&
           A(:,num_tasks+2),m, MPI_INTEGER,1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
-
       else if (id.eq.np-1) then ! If last processor
         ! Prev
         CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
@@ -220,7 +244,6 @@ module pgameoflife
         ! Next
         CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,0,tg+2,&
           A(:,num_tasks+2),m, MPI_INTEGER,0,tg+1,MPI_COMM_WORLD,stat,ie)
-
       else  ! Any processor in the middle
         ! Prev
         CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
@@ -229,7 +252,7 @@ module pgameoflife
         CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,id+1,tg+2*id+4,&
           A(:,num_tasks+2),m, MPI_INTEGER,id+1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
       end if
-      !call MPI_BARRIER(MPI_COMM_WORLD, ie)
+#endif
     end subroutine pupdate_bound_1d
 
     subroutine pupdate_bound_2d(A, id, tg)
@@ -247,6 +270,51 @@ module pgameoflife
       !        ---------------------
       ! Starting communication channels
       !
+#ifdef HB
+      ! Edges
+        ! Left
+        CALL MPI_ISEND(A(2:ntm+1,2),ntm,MPI_INTEGER,pmap(1),&
+          ftag(id,pmap(1),tg,1),MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(2:ntm+1,1),ntm,MPI_INTEGER,pmap(1),&
+          ftag(pmap(1),id,tg,2),MPI_COMM_WORLD,stat,ie)
+        ! right
+        CALL MPI_ISEND(A(2:ntm+1,ntn+1),ntm,MPI_INTEGER,pmap(2),&
+          ftag(id,pmap(2),tg,2),MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(2:ntm+1,ntn+2),ntm, MPI_INTEGER,pmap(2),&
+          ftag(pmap(2),id,tg,1),MPI_COMM_WORLD,stat,ie)
+        ! Top
+        CALL MPI_ISEND(A(2,2),1,row_type,pmap(3),&
+          ftag(id,pmap(3),tg,3),MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(1,2),1,row_type,pmap(3),&
+          ftag(pmap(3),id,tg,4),MPI_COMM_WORLD,stat,ie)
+        ! Bottom
+        CALL MPI_ISEND(A(ntm+1,2),1,row_type,pmap(4),&
+          ftag(id,pmap(4),tg,4),MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(ntm+2,2),1,row_type,pmap(4),&
+          ftag(pmap(4),id,tg,3),MPI_COMM_WORLD,stat,ie)
+      ! Corners
+        ! Upper Left
+        CALL MPI_ISEND(A(2,2),1,MPI_INTEGER,pmap(5),&
+          ftag(id,pmap(5),tg,5),MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(1,1),1,MPI_INTEGER,pmap(5),&
+          ftag(pmap(5),id,tg,8),MPI_COMM_WORLD,stat,ie)
+        ! Upper Right
+        CALL MPI_ISEND(A(2,ntn+1),1,MPI_INTEGER,pmap(6),&
+          ftag(id,pmap(6),tg,6),MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(1,ntn+2),1,MPI_INTEGER,pmap(6),&
+          ftag(pmap(6),id,tg,7),MPI_COMM_WORLD,stat,ie)
+        ! Down Left
+        CALL MPI_ISEND(A(ntm+1,2),1,MPI_INTEGER,pmap(7),&
+          ftag(id,pmap(7),tg,7),MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(ntm+2,1),1,MPI_INTEGER,pmap(7),&
+          ftag(pmap(7),id,tg,6),MPI_COMM_WORLD,stat,ie)
+        ! Down Right
+        CALL MPI_ISEND(A(ntm+1,ntn+1),1,MPI_INTEGER,pmap(8),&
+          ftag(id,pmap(8),tg,8),MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(ntm+2,ntn+2),1,MPI_INTEGER,pmap(8),&
+          ftag(pmap(8),id,tg,5),MPI_COMM_WORLD,stat,ie)
+      ! Done
+#else
       ! Edges
         ! Left
         !                sendbuf counts type     dest       tag  recvbuf counts 
@@ -259,23 +327,14 @@ module pgameoflife
           ftag(id,pmap(2),tg,2),A(2:ntm+1,ntn+2),ntm, MPI_INTEGER,pmap(2),&
           ftag(pmap(2),id,tg,1),MPI_COMM_WORLD,stat,ie)
         ! Top
-        !helper = A(2,2:ntn+1) 
-        !CALL MPI_ISENDRECV(helper,ntn,MPI_INTEGER,pmap(3),&
-          !ftag(id,pmap(3),tg,3),A(1,2),1,row_type,pmap(3),&
-          !ftag(pmap(3),id,tg,4),MPI_COMM_WORLD,stat,ie)
         CALL MPI_ISENDRECV(A(2,2),1,row_type,pmap(3),&
           ftag(id,pmap(3),tg,3),A(1,2),1,row_type,pmap(3),&
           ftag(pmap(3),id,tg,4),MPI_COMM_WORLD,stat,ie)
 
         ! Bottom
-        !helper2 = A(ntm+1,2:ntn+1) 
-        !CALL MPI_ISENDRECV(helper2,ntn,MPI_INTEGER,pmap(4),&
-          !ftag(id,pmap(4),tg,4),A(ntm+2,2),1,row_type,pmap(4),&
-          !ftag(pmap(4),id,tg,3),MPI_COMM_WORLD,stat,ie)
         CALL MPI_ISENDRECV(A(ntm+1,2),1,row_type,pmap(4),&
           ftag(id,pmap(4),tg,4),A(ntm+2,2),1,row_type,pmap(4),&
           ftag(pmap(4),id,tg,3),MPI_COMM_WORLD,stat,ie)
-
       ! Corners
         ! Upper Left
         CALL MPI_ISENDRECV(A(2,2),1,MPI_INTEGER,pmap(5),&
@@ -294,6 +353,7 @@ module pgameoflife
           ftag(id,pmap(8),tg,8),A(ntm+2,ntn+2),1,MPI_INTEGER,pmap(8),&
           ftag(pmap(8),id,tg,5),MPI_COMM_WORLD,stat,ie)
       ! Done
+#endif
     end subroutine pupdate_bound_2d
 
     subroutine mpi_decomp_1d(id, np, n, counts)
@@ -316,11 +376,12 @@ module pgameoflife
       end if
     end subroutine mpi_decomp_1d
 
-    subroutine mpi_decomp_2d(id, np, m, n, counts)
+    subroutine mpi_decomp_2d(id, np, m, n, counts, dv)
       ! Decomposes the data given to the program into subgrids according to the
       ! number of CPU's
       implicit none
-      integer :: id, np, m, n, ex_m, ex_n, counts(:,:), i, ie
+      integer :: id, np, m, n, ex_m, ex_n, counts(:,:), dv(:,:)
+      integer :: i, j, k, ie
       integer, allocatable :: ind_array(:)
 
       num_procs = np
@@ -458,6 +519,22 @@ module pgameoflife
           end if
           ntm = counts(id+1,1)
           ntn = counts(id+1,2)
+          ! creating disp_vec
+          do i = 1, nm
+            do j = 1, nn
+              k = nm*(j-1)+i
+              if(i .eq. 1) then
+                dv(k,1) = 0
+              else
+                dv(k,1) = dv(k-1,1)+counts(k-1,1)
+              end if
+              if(j .eq. 1) then
+                dv(k,2) = 0
+              else 
+                dv(k,2) = dv(k-nm,2)+counts(k-nm,2)
+              end if
+            end do 
+          end do 
         ! Agglomeration ----------------------------------------
     
         deallocate(ind_array)
@@ -465,9 +542,17 @@ module pgameoflife
         ! Create MPI types for row vector sends
         call MPI_TYPE_VECTOR(ntn,1,ntm+2,MPI_INTEGER,row_type,ie)
         call MPI_TYPE_COMMIT(row_type,ie)
-        !call MPI_TYPE_SUBARRAY(2,(/ntm+2,ntn+2/), (/1,ntn/), (
-        !call MPI_TYPE_CONTIGUOUS(ntn,MPI_INTEGER,row_type2,ie)
-        !call MPI_TYPE_COMMIT(row_type2,ie)
+        sm = dv(id+1,1)
+        sn = dv(id+1,2)
+        em = sm + counts(id+1,1)-1
+        en = sn + counts(id+1,2)-1
+        !print *, m,n,ntm,ntn,sm,sn
+        !call MPI_TYPE_CREATE_SUBARRAY(2, (/m,n/), (/ntm,ntn/), (/sm,sn/), &
+          !MPI_ORDER_FORTRAN, MPI_INTEGER, g2s_type, ie)
+        !call MPI_TYPE_COMMIT(g2s_type,ie)
+        !call MPI_TYPE_CREATE_SUBARRAY(2, (/ntm+2,ntn+2/), (/ntm,ntn/),(/2,2/),&
+          !MPI_ORDER_FORTRAN, MPI_INTEGER, s2s_type,ie)
+        !call MPI_TYPE_COMMIT(s2s_type,ie)
       else if (mod(np,2).eq.0) then
         ! if np is even, divide the domain in half, and then split rows
 
@@ -591,6 +676,22 @@ module pgameoflife
           end if
           ntm = counts(id+1,1)
           ntn = counts(id+1,2)
+          ! creating disp_vec
+          do i = 1, nm
+            do j = 1, nn
+              k = nm*(j-1)+i
+              if(i .eq. 1) then
+                dv(k,1) = 0
+              else
+                dv(k,1) = dv(k-1,1)+counts(k-1,1)
+              end if
+              if(j .eq. 1) then
+                dv(k,2) = 0
+              else 
+                dv(k,2) = dv(k-nm,2)+counts(k-nm,2)
+              end if
+            end do 
+          end do 
         ! Agglomeration ----------------------------------------
 
         ! Mpi Derivated Datatypes for Row Comm
@@ -720,6 +821,22 @@ module pgameoflife
           end if
           ntm = counts(id+1,1)
           ntn = counts(id+1,2)
+          ! creating disp_vec
+          do i = 1, nm
+            do j = 1, nn
+              k = nm*(j-1)+i
+              if(i .eq. 1) then
+                dv(k,1) = 0
+              else
+                dv(k,1) = dv(k-1,1)+counts(k-1,1)
+              end if
+              if(j .eq. 1) then
+                dv(k,2) = 0
+              else 
+                dv(k,2) = dv(k-nm,2)+counts(k-nm,2)
+              end if
+            end do 
+          end do 
         ! Agglomeration ----------------------------------------
 
         ! MPI Derivated Datatypes for Row Comm

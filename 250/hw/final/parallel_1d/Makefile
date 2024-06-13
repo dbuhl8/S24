@@ -4,7 +4,7 @@ OBJECTS = pgameoflife.o pdriver.o
 	
 MODULES = pgameoflife.mod
 
-FFLAGS = -fdefault-real-8 -fdefault-double-8 -fbounds-check -g -llapack -lblas #-fopenmp
+FFLAGS = -fdefault-real-8 -fdefault-double-8 -fbounds-check -g -cpp -DHB
 
 .PHONY: clean
 

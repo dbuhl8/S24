@@ -5,7 +5,6 @@
 
 ! NOTE: Needs an input file giving some initial condition
 ! i.e. mpirun -np 4 driver.exe < IC
-
 program pdriver
   ! Parallelized Version
   use pgameoflife
@@ -47,32 +46,33 @@ program pdriver
   call MPI_BCAST(n, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ie)
 
   ! Decompose the tasks and distribute to available processors 
-  call mpi_decomp_2d(id, np, m, n, cnt)
+  call mpi_decomp_2d(id, np, m, n, cnt, dv)
 
   ! Allocating local memory
   allocate(G(cnt(id+1,1)+2,cnt(id+1,2)+2))
   G = 0
-
+  
   ! Compute the Disp_vec array
-    do i = 1, nm
-      do j = 1, nn
-        k = nm*(j-1)+i
-        if(i .eq. 1) then
-          dv(k,1) = 0
-        else
-          dv(k,1) = dv(k-1,1)+cnt(k-1,1)
-        end if
-        if(j .eq. 1) then
-          dv(k,2) = 0
-        else 
-          dv(k,2) = dv(k-nm,2)+cnt(k-nm,2)
-        end if
-      end do 
-    end do 
+  ! NOTE: this bit has been moved into the 2d decomp part of the code
+    !do i = 1, nm
+      !do j = 1, nn
+        !k = nm*(j-1)+i
+        !if(i .eq. 1) then
+          !dv(k,1) = 0
+        !else
+          !dv(k,1) = dv(k-1,1)+cnt(k-1,1)
+        !end if
+        !if(j .eq. 1) then
+          !dv(k,2) = 0
+        !else 
+          !dv(k,2) = dv(k-nm,2)+cnt(k-nm,2)
+        !end if
+      !end do 
+    !end do 
   !   ---------------------------------------
 
   ! ---------Sending info to processors-----------
-    dv = dv+1
+    dv = dv+1 ! for the send recv method this needs to be upticked by one
     if(id.eq.0) then
       do i = 2, np
         ! Debug print statements to check indices
@@ -92,6 +92,10 @@ program pdriver
       call MPI_RECV(G(2:cnt(id+1,1)+1,2:cnt(id+1,2)+1),product(cnt(id+1,:)),&
         MPI_INTEGER, 0,id+1,MPI_COMM_WORLD,stat,ie)
     end if
+
+    ! using scatter gather, this doesn't work :'( 
+    !call MPI_SCATTERV(A,cnt(:,1)*cnt(:,2),dv(:,1)+m*dv(:,2),MPI_INTEGER,G,1,&
+      !s2s_type,0,MPI_COMM_WORLD,ie)
   !   ---------------------------------------
 
   ! Debug: print statements for debuggins
@@ -194,18 +198,14 @@ program pdriver
       open(fn, file='gol.dat')
       call writemat(A, m, n, fn)
     end if
-   
-    nt = 1000
+  
+    nt = 80
     do i = 1, nt
       ! there is a memory bug in pupdate_bound_2d
       call pupdate_bound_2d(G, id, i)
-      !print *, "id:",id,",got here"
       call MPI_BARRIER(MPI_COMM_WORLD, ie)
-      !print *, "id:",id,",got here"
       call update_2d(G, ntm+2, ntn+2)
-      !print *, "id:",id,",got here"
       call MPI_BARRIER(MPI_COMM_WORLD, ie)
-      !print *, "id:",id,",got here"
       ! IO Step
       ! This will probably be replaced with send/recv instead of gathers for now
       !call MPI_GATHERV(G(:,2:num_tasks+1), num_tasks*m, MPI_INTEGER, A, cnt,&
@@ -236,14 +236,15 @@ program pdriver
   ! ------------------------- END TIMESTEPPING --------------
 
   ! Finising data output for matlab
-  if (id.eq.0) then 
-    close(fn)
-    ! just in case I forget to uptick fn
-    fn = fn + np + 1
-    open(fn, file='params.dat')
-      write(fn, "(3I6)") m, n,nt+1
-    close(fn)
-  end if
+    if (id.eq.0) then 
+      close(fn)
+      ! just in case I forget to uptick fn
+      fn = fn + np + 1
+      open(fn, file='params.dat')
+        write(fn, "(3I6)") m, n,nt+1
+      close(fn)
+    end if
+  ! -------------------------
 
   ! Deallocating and closing
     deallocate(cnt, dv, stat, G)
