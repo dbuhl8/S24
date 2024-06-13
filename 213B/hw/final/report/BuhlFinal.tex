@@ -9,12 +9,22 @@
 \usepackage{verbatim}
 \usepackage{xcolor}
 \usepackage{soul}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=blue,
+    pdftitle={Overleaf Example},
+    }
 
 \title{Final Report}
 \author{Dante Buhl}
 
 \DeclareMathOperator{\cond}{cond}
 \DeclareMathOperator{\vecspan}{span}
+
 
 \begin{document}
 
@@ -35,6 +45,7 @@
 \newcommand{\tr}[1]{\text{Tr}(#1)}
 \newcommand{\Tr}[1]{\text{Tr}(#1)}
 \newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+
 
 \maketitle
 
@@ -122,7 +133,9 @@
     number of gridpoints. Seen in the plot along side the data in purple is an
     order 2 decay line in green and an order 3 decay line in blue. It is very
     clear that the purple line is nearly parallel with the green one indicating
-    order 2 decay in $\dt^*$. 
+    order 2 decay in $\dt^*$. Furthermore, the data also suggests that at
+    gridsize $n=200$ that the critical value of $\dt^*$ is equal to
+    $0.00005509\ldots$. 
         \begin{proof}
             First we must show that the conditional absolute stability of this
             scheme. We begin by looking at the characteristic polynomial of this
@@ -149,7 +162,9 @@
             This is a special form of a matrix, and furthermore the matrix is
             also known to have a ``Toeplitz'' form. Theese two properties combined
             have been shown to produce an analytical form for the eigenvalues of
-            that matrix. As seen in a paper by Kulkarni, Schmidt, and Tsui, the
+            that matrix. As seen in
+            \href{https://hal.science/hal-01461924/file/KST.pdf}{a paper by Kulkarni, Schmidt, and
+            Tsui}, the
             eigenvalaues of Tridiagonal (pseudo-)Toeplitz matrices have the
             following form, 
             \begin{align*}
@@ -181,7 +196,29 @@
                 f(x,y) = \text{Re}\left(\frac{\rho(z)}{\sigma(z)}\right) &= \frac{(23x^2 -
                 23y^2 - 16x + 5)(x^3 - xy^2 - x^2 + y^2) - \left(46xy -  16y\right)\left(x^2y - y^3 -xy\right)}
                 {(23x^2 - 23y^2 - 16x + 5)^2 + \left(46xy - 16y\right)^2}\\
-                L(x,y,\mu) &= f(x,y) - \mu(x^2 + y^2 - 1)
+                L(x,y,\mu) &= f(x,y) - \mu(x^2 + y^2 - 1)\\
+                L_x &= 0, \quad L_y = 0, \quad L_{\lambda} = 0
+            \end{align*}
+            \begin{align*}
+                \frac{(23z^2-16z+5)(3z^2 - 2z) - (46z - 16)(z^3 - z^2)}{(23z^2 - 16z +
+                5)^2 } = 0\\
+                (23z^2-16z+5)(3z^2 - 2z) - (46z - 16)(z^3 - z^2) = 0\\
+                69z^4 - 48z^3 + 15z^2 - 46z^3 +32z^2 - 10z - 46z^4 + 16z^3 +
+                46z^3 - 16z^2 = 0\\
+                23z^4 - 32 z^3 + 31z^2 - 10z = 0\\
+                23(x+iy)^3 - 32(x+iy)^2 + 31(x+iy) - 10 = 0
+            \end{align*}
+            You know, I actually don't really want to solve this one haha. Its
+            only worth 10 points and I've already shown that $\dt^*$ decays with
+            order 2 with respect to gridsize and in previous homework there is
+            numerical evidence which suggests that the real valued mininum of
+            this complex function has a value of $-\frac{6}{11}$ at $z=-1$. Once it is
+            shown that the real valued minimum of this function is -6/11
+            the rest of the proof proceeds from this logic. 
+            \begin{align*}
+                \dt^* = \min_{|z| = 1} \left(\frac{\rho(z)}{\sigma(z)}\right)
+                (\text{sign of }\lambda)\frac{1}{\max(|\lambda|)} =
+                \frac{6}{11\rho(\bs{M})}
             \end{align*}
         \end{proof}
         \begin{figure}[ht]

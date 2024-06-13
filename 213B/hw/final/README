@@ -1,0 +1,10 @@
+Hello Long,
+
+Here is the information needed to run my code and compile correctly. You are going to make sure that you have LAPACK installed on your computer and that you know how to link those libraries to a fortran compiler as part of my code relies on them to find the eigenvalues of a couple matrices. 
+
+Once you have that (you may also go into the makefile and remove the -fopenmp compiler flag as I do not use any parallelization in this assignment), please go into the fortran directory and type make. On my machine it finishes in about 20 seconds, and then a gnuplot script is immediately ran after the fortran is finished. 
+
+This will produce several .png files with the plots it needs. A lot of the data will be written out into .dat files if you'd like to look at them yourself. And then finally, to do some of the visualization please make your way into the matlab folder and run the matlab script there. 
+
+Let me know if you have any quesitons about the assignment or my submission. 
+-Dante-
