@@ -14,6 +14,7 @@ module pgameoflife
   integer, dimension(8) :: pmap
   integer :: row_type, row_type2
   integer :: g2s_type, s2s_type
+  logical :: row_decomp
   
   ! Subroutines and Functions
   contains
@@ -85,25 +86,47 @@ module pgameoflife
 
       B = 0.0
 
-      do j = 1, n
-        do i = 1, m
-          B(i, j) = A(mplus(i),nplus(j))+A(mplus(i),j)+A(mplus(i),nminus(j)) &
-            + A(i,nplus(j))+A(i,nminus(j))+A(mminus(i),nplus(j)) &
-            + A(mminus(i),j) + A(mminus(i),nminus(j))
+      if (row_decomp) then
+        do j = 1, n
+          do i = 2, m-1
+            B(i, j) = A(mplus(i),nplus(j))+A(mplus(i),j)+A(mplus(i),nminus(j)) &
+              + A(i,nplus(j))+A(i,nminus(j))+A(mminus(i),nplus(j)) &
+              + A(mminus(i),j) + A(mminus(i),nminus(j))
+          end do 
         end do 
-      end do 
 
-      do j = 1, n
-        do i = 1, m
-          if (B(i, j) .eq. 3.0) then
-            A(i, j) = 1.0
-          else if (B(i,j) .eq. 2.0) then
-            !  do nothing
-          else
-            A(i, j) = 0.0
-          end if
+        do j = 1, n
+          do i = 2, m-1
+            if (B(i, j) .eq. 3.0) then
+              A(i, j) = 1.0
+            else if (B(i,j) .eq. 2.0) then
+              !  do nothing
+            else
+              A(i, j) = 0.0
+            end if
+          end do
         end do
-      end do
+      else 
+        do j = 2, n-1
+          do i = 1, m
+            B(i, j) = A(mplus(i),nplus(j))+A(mplus(i),j)+A(mplus(i),nminus(j)) &
+              + A(i,nplus(j))+A(i,nminus(j))+A(mminus(i),nplus(j)) &
+              + A(mminus(i),j) + A(mminus(i),nminus(j))
+          end do 
+        end do 
+
+        do j = 2, n-1
+          do i = 1, m
+            if (B(i, j) .eq. 3.0) then
+              A(i, j) = 1.0
+            else if (B(i,j) .eq. 2.0) then
+              !  do nothing
+            else
+              A(i, j) = 0.0
+            end if
+          end do
+        end do
+      end if
     end subroutine update
 
     subroutine update_2d(A, m, n)
@@ -204,53 +227,80 @@ module pgameoflife
       ! After updating individual matrices, need to update ghost cells (involves
       ! the other processors)
       implicit none
-      integer :: A(:,:), id, np, m, tg, stat, ie
+      integer :: A(:,:), id, np, m, tg, stat, ie, rtg
 
 #ifdef HB 
-      if (id.eq.0) then ! If root processor
-        ! Prev
-        CALL MPI_ISEND(A(:,2),m,MPI_INTEGER,np-1,tg+2*id+1,MPI_COMM_WORLD,stat,ie)
-        CALL MPI_IRECV(A(:,1),m,MPI_INTEGER,np-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-        ! Next 
-        CALL MPI_ISEND(A(:,num_tasks+1),m,MPI_INTEGER,1,tg+2*id+4,MPI_COMM_WORLD,stat,ie)
-        CALL MPI_IRECV(A(:,num_tasks+2),m, MPI_INTEGER,1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
-      else if (id.eq.np-1) then ! If last processor
-        ! Prev
-        CALL MPI_ISEND(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,MPI_COMM_WORLD,stat,ie)
-        CALL MPI_IRECV(A(:,1),m,MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-        ! Next
-        CALL MPI_ISEND(A(:,num_tasks+1),m,MPI_INTEGER,0,tg+2,MPI_COMM_WORLD,stat,ie)
-        CALL MPI_IRECV(A(:,num_tasks+2),m, MPI_INTEGER,0,tg+1,MPI_COMM_WORLD,stat,ie)
-      else  ! Any processor in the middle
-        ! Prev
-        CALL MPI_ISEND(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,MPI_COMM_WORLD,stat,ie)
-        CALL MPI_IRECV(A(:,1),m,MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-        ! Next
-        call MPI_ISEND(A(:,num_tasks+1),m,MPI_INTEGER,id+1,tg+2*id+4,MPI_COMM_WORLD,stat,ie)
-        call MPI_IRECV(A(:,num_tasks+2),m, MPI_INTEGER,id+1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
+      if (row_decomp) then
+        rtg = tg
+        ! top
+        call MPI_ISEND(A(2,1),1,row_type,pmap(1),ftag(id,pmap(1),rtg,1),&
+          MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(1,1),1,row_type,pmap(1),ftag(pmap(1),id,rtg,2),&
+          MPI_COMM_WORLD, stat,ie)
+        ! bottom
+        call MPI_ISEND(A(num_tasks+1,1),1,row_type,pmap(2),ftag(id,pmap(2),rtg,2),&
+          MPI_COMM_WORLD, stat,ie)
+        CALL MPI_IRECV(A(num_tasks+2,1),1,row_type,pmap(2),ftag(pmap(2),id,rtg,1),&
+          MPI_COMM_WORLD, stat,ie)
+      else 
+        if (id.eq.0) then ! If root processor
+          ! Prev
+          CALL MPI_ISEND(A(:,2),m,MPI_INTEGER,np-1,tg+2*id+1,MPI_COMM_WORLD,stat,ie)
+          CALL MPI_IRECV(A(:,1),m,MPI_INTEGER,np-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+          ! Next 
+          CALL MPI_ISEND(A(:,num_tasks+1),m,MPI_INTEGER,1,tg+2*id+4,MPI_COMM_WORLD,stat,ie)
+          CALL MPI_IRECV(A(:,num_tasks+2),m, MPI_INTEGER,1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
+        else if (id.eq.np-1) then ! If last processor
+          ! Prev
+          CALL MPI_ISEND(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,MPI_COMM_WORLD,stat,ie)
+          CALL MPI_IRECV(A(:,1),m,MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+          ! Next
+          CALL MPI_ISEND(A(:,num_tasks+1),m,MPI_INTEGER,0,tg+2,MPI_COMM_WORLD,stat,ie)
+          CALL MPI_IRECV(A(:,num_tasks+2),m, MPI_INTEGER,0,tg+1,MPI_COMM_WORLD,stat,ie)
+        else  ! Any processor in the middle
+          ! Prev
+          CALL MPI_ISEND(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,MPI_COMM_WORLD,stat,ie)
+          CALL MPI_IRECV(A(:,1),m,MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+          ! Next
+          call MPI_ISEND(A(:,num_tasks+1),m,MPI_INTEGER,id+1,tg+2*id+4,MPI_COMM_WORLD,stat,ie)
+          call MPI_IRECV(A(:,num_tasks+2),m, MPI_INTEGER,id+1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
+        end if
       end if
 #else
-      if (id.eq.0) then ! If root processor
-        ! Prev
-        CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,np-1,tg+2*id+1,A(:,1),m,&
-          MPI_INTEGER,np-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-        ! Next 
-        CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,1,tg+2*id+4,&
-          A(:,num_tasks+2),m, MPI_INTEGER,1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
-      else if (id.eq.np-1) then ! If last processor
-        ! Prev
-        CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
-          MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-        ! Next
-        CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,0,tg+2,&
-          A(:,num_tasks+2),m, MPI_INTEGER,0,tg+1,MPI_COMM_WORLD,stat,ie)
-      else  ! Any processor in the middle
-        ! Prev
-        CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
-          MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
-        ! Next
-        CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,id+1,tg+2*id+4,&
-          A(:,num_tasks+2),m, MPI_INTEGER,id+1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
+      if (row_decomp) then
+         ! top
+        call MPI_ISEND(A(2,1),1,row_type,pmap(1),ftag(id,pmap(1),rtg,1),&
+          MPI_COMM_WORLD,stat,ie)
+        CALL MPI_IRECV(A(1,1),1,row_type,pmap(1),ftag(pmap(1),id,rtg,2),&
+          MPI_COMM_WORLD, stat,ie)
+        ! bottom
+        call MPI_ISEND(A(num_tasks+1,1),1,row_type,pmap(2),ftag(id,pmap(2),rtg,2),&
+          MPI_COMM_WORLD, stat,ie)
+        CALL MPI_IRECV(A(num_tasks+2,1),1,row_type,pmap(1),ftag(pmap(1),id,rtg,2),&
+          MPI_COMM_WORLD, stat,ie)
+      else 
+        if (id.eq.0) then ! If root processor
+          ! Prev
+          CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,np-1,tg+2*id+1,A(:,1),m,&
+            MPI_INTEGER,np-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+          ! Next 
+          CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,1,tg+2*id+4,&
+            A(:,num_tasks+2),m, MPI_INTEGER,1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
+        else if (id.eq.np-1) then ! If last processor
+          ! Prev
+          CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
+            MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+          ! Next
+          CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,0,tg+2,&
+            A(:,num_tasks+2),m, MPI_INTEGER,0,tg+1,MPI_COMM_WORLD,stat,ie)
+        else  ! Any processor in the middle
+          ! Prev
+          CALL MPI_ISENDRECV(A(:,2),m,MPI_INTEGER,id-1,tg+2*id+1,A(:,1),m,&
+            MPI_INTEGER,id-1,tg+2*id+2,MPI_COMM_WORLD,stat,ie)
+          ! Next
+          CALL MPI_ISENDRECV(A(:,num_tasks+1),m,MPI_INTEGER,id+1,tg+2*id+4,&
+            A(:,num_tasks+2),m, MPI_INTEGER,id+1,tg+2*id+3,MPI_COMM_WORLD,stat,ie)
+        end if
       end if
 #endif
     end subroutine pupdate_bound_1d
@@ -356,23 +406,55 @@ module pgameoflife
 #endif
     end subroutine pupdate_bound_2d
 
-    subroutine mpi_decomp_1d(id, np, n, counts)
+    subroutine mpi_decomp_1d(char1,id, np, m,n, counts)
       ! Decomposes the data given to the program along columns (pencils)
       ! according to the number of CPU's
       implicit none
-      integer :: id, np, n, extras, i, counts(:)
+      integer :: id, np, n, extras, i, counts(:),ie,m
+      character :: char1
 
-      num_procs = np
-      num_tasks = n/np
-      extras = mod(n, np) 
-      counts = num_tasks
-      if (extras .ne. 0) then
-        do i = 1, extras
-          if(id.eq.np-i) then
-            num_tasks = num_tasks+1 
-          end if
-          counts(np-i+1) = num_tasks+1
-        end do
+      if (char1 .eq. 'R') then
+        ! row wise decomposition
+        row_decomp = .true.
+        num_procs = np
+        num_tasks = m/np 
+        extras = mod(m, np)
+        counts = num_tasks
+        if (extras .ne. 0) then
+          do i = 1, extras
+            if (id .eq. np-i) then
+              num_tasks = num_tasks+1
+            end if
+            counts(np-i+1) = num_tasks+1
+          end do 
+        end if
+        if (id .eq. 0) then
+          pmap(1) = np-1
+          pmap(2) = id+1
+        else if (id.eq.np-1) then
+          pmap(1) = id-1
+          pmap(2) = 0
+        else
+          pmap(1) = id-1
+          pmap(2) = id+1
+        end if
+        ! create MPI row_type
+        call MPI_TYPE_VECTOR(n,1,num_tasks+2,MPI_INTEGER,row_type,ie)
+        call MPI_TYPE_COMMIT(row_type,ie) 
+      else 
+        ! column decomposition
+        num_procs = np
+        num_tasks = n/np
+        extras = mod(n, np) 
+        counts = num_tasks
+        if (extras .ne. 0) then
+          do i = 1, extras
+            if(id.eq.np-i) then
+              num_tasks = num_tasks+1 
+            end if
+            counts(np-i+1) = num_tasks+1
+          end do
+        end if
       end if
     end subroutine mpi_decomp_1d
 
@@ -890,7 +972,7 @@ module pgameoflife
       ! Assumptions: less than 100 processors, less than 100000 steps
       implicit none
       integer :: rtag, src, step
-      rtag = src + step**2
+      rtag = src + step*10**2
     end function rtag
 
     character(len=20) function str(k)

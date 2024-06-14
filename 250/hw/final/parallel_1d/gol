@@ -1,3 +1,3 @@
 #!/bin/bash
 
-mpirun --use-hwthread-cpus -np 3 driver.exe <IC
+mpirun --use-hwthread-cpus -np 4 driver.exe <IC

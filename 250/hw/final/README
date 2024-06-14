@@ -1,0 +1,11 @@
+Hi Uli/Nic,
+
+Sorry for the confusion, but the 4 different versions of my code all work slightly differently and so the instructions are quite complicated. I misread the assignment PDF and put them in my report. So please just see that section of my report titled ''Instructions for Running the Code''. 
+
+The jist is really, type make in each subdirectory (there are 3: serial, parallel_1d, parallel_2d). This will produce and executable (and in the case of the serial version, actually run the executable). Then in each directory there is a shell file that will run the executable with an initial state file called IC (or sometimes IC.dat). There is also a slurm file, but I would use the one in the hb directory as that is a version of the code that I tested on HB (the others have a compiler flag in the Makefile which adjusts the code to use a version of MPI that HB has on it). Once the code is ran, two files will be created 'gol.dat' and 'params.dat' both of which a matlab script will use to visualized the data. This is titled 'gol.m' in each subdirectory (maybe gof.m in the serial directory). Then a movie will play which is nice to watch. 
+
+Anyways, I'm sorry for leaving you with such a mess, I was just having a hard time debugging all of the different methods at the same time so I created subdirectories for each method. The result is what you are going to receive. The format of the IC files isn't very hard to understand, just peak into the actual files and read the tid-bit in the report about the formatting. 
+
+If you have any questions at all (or can't get the damn code to run) please let me know and I will get back to you as soon as I can. 
+
+-Dante-

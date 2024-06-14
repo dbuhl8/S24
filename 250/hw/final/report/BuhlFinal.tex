@@ -78,6 +78,7 @@ extra row/column).
 
 \begin{enumerate}[label=\alph*)]
 \item There are 3 versions of this code; a serial version, a parallel 1D column
+or row
 decomposition (parallel\_1d), and a parallel 2D decomposition (parallel\_2d). All of the versions read in
 initial states in the same way. The executable is ran with an input file called
 IC or IC.dat (this is seen in the gol.slurm files in each subdirectory). In
@@ -85,7 +86,9 @@ order to compile the code just type make in each directory (in the serial
 version, the makefile also runs the code). This will produce an executable
 called driver.exe. Note that the makefile should include the compiler flag -cpp
 and -DHB. This essentially runs the code on a version of MPI which is supported
-by Hummingbird. Then to run the code (on hummingbird) simply type sbatch
+by Hummingbird. It should also be noted that the 1D Parallel code chooses to do
+a row or column decomposition based off of the boolean titled ``rowdecomp'' at
+the top of that directories driver file. Then to run the code (on hummingbird) simply type sbatch
 gol.slurm. This will work as long as the IC file is formatted properly. 
 
 In order to format the IC file properly follow the guidelines here. The first
@@ -144,10 +147,43 @@ corner.
 
 \section*{Performance Model}
 
-\begin{enumerate}[label=\alph*)]
-\item
-\end{enumerate}
+A performance model for the 2D case is not very hard to formulate. We look first
+at the execution time, then the efficiency, and finally the isoefficiency. There
+are some things to note about the communication time model for this code. Since
+the IO part of the code runs in a serial manner, there is a necessary lag in the
+execution time (which would be helped by using parallel IO in some regard). This
+gives rise to the term quadratic in $P$ within the communication time. Each
+proccessor has to wait $(P-1)$ number of subgrid communication times. Also note
+that $m$ and $n$ are the sizes of the subarrays rather than the size of the global
+array $M,N$. 
 
-
+\begin{align*}
+    T_{\text{comp}} &= t_cMN, \quad \text{no repeated computations}\\
+    T_{\text{comm}} &= P(2(t_s + mt_w) + 2(t_s + nt_w) + 4(t_s + t_w)) + (P-1)P(t_s +
+    mnt_w)\\
+    T_{\text{IO}} &= t_IMN\\
+    T_{GOL} &= \frac{T_{\text{comp}} + T_{\text{comm}}}{P} + T_{\text{IO}}\\
+            &= \frac{t_cMN}{P} +
+    2(t_s + mt_z) + 2(t_s + nt_w) + 4(t_s + t_w) + (P-1)(t_s+mnt_w) + t_IMN
+\end{align*}
+\begin{align*}
+    E = \frac{t_cMN + t_IMN}{t_cMN +
+    2P(t_s + mt_z) + 2P(t_s + nt_w) + 4P(t_s + t_w) + P(P-1)(t_s+mnt_w) + t_IMN}
+\end{align*}
+    Some remarks about the execution time and efficiency, we can see obviously
+    that the execution time may increase or decrease with $P$ depending on the
+    relative weight of the computation time versus the cost for the serialized
+    communication in the IO. If the IO were parallelized we would see the
+    execution time decrease with $P$ and there would be an lower bound of the
+    communication time (not IO related). We can also see that the efficiency of
+    this code decreases with $P$ rather rapidly because of the serialized
+    IO structure. We can obtain the isoefficiency from this model as well and we
+    see that if $P$ were to increase, we would need $M$ or $N$ to increase by
+    $P^2$ in order to keep efficiency constant. Therefore the Isoefficiency is
+    $O(P^2)$ which according to Nic's lecture notes, is poorly scalable. Again
+    if the IO were parallelized we would see that the Isoefficiency would be
+    order P, but the efficiency would still decrease with $P$, just at a slower
+    rate. I didn't test the performance model, but I'm pretty sure it works like
+    this. 
 
 \end{document}
